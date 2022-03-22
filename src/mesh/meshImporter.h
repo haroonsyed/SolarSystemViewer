@@ -14,6 +14,5 @@ class MeshImporter {
     std::vector<float> getPositionIndex(std::string meshFilePath);
     std::vector<float> getNormalIndex(std::string meshFilePath);
     std::vector<float> getColorIndex(std::string meshFilePath);
-    std::vector<unsigned int> getMesh(std::string meshFilePath);
     std::vector<float> readSepTriMesh(std::string meshFilePath);
 };

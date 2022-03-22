@@ -167,19 +167,20 @@ std::vector<float> MeshImporter::getColorIndex(std::string meshFilePath) {
     return colors;
 }
 
-std::vector<unsigned int> MeshImporter::getMesh(std::string meshFilePath) {
-    std::vector<unsigned int> mesh;
+// Groundwork for index buffer object if implemented later
+// std::vector<unsigned int> MeshImporter::getMesh(std::string meshFilePath) {
+//     std::vector<unsigned int> mesh;
 
-    std::vector<std::vector<unsigned int>> vertexVec = buildMesh(meshFilePath);
+//     std::vector<std::vector<unsigned int>> vertexVec = buildMesh(meshFilePath);
 
-    // Inefficient I know, but I really like being able to address each vertex indiv.
-    // If there are performance issues when loading I'll directly load the mesh
-    for (auto vertex : vertexVec) {
-        mesh.insert(mesh.end(), vertex.begin(), vertex.end());
-    }
+//     // Inefficient I know, but I really like being able to address each vertex indiv.
+//     // If there are performance issues when loading I'll directly load the mesh
+//     for (auto vertex : vertexVec) {
+//         mesh.insert(mesh.end(), vertex.begin(), vertex.end());
+//     }
 
-    return mesh;
-}
+//     return mesh;
+// }
 
 // Uses indexes to build a separate tri structure
 std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
