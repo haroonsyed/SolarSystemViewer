@@ -12,7 +12,7 @@
 // PRIVATE FUNCTIONS
 /*********************/
 
-// Returns the x,y,z coordinates of vertex n from vIndex
+// Returns the triplet of float data from an index of vertex index (ex: x,y,z position for vertex #5)
 std::vector<float> MeshImporter::getIndexedPosition(std::vector<float> vIndex, int index)
 {
     std::vector<float> vertex;
@@ -22,19 +22,6 @@ std::vector<float> MeshImporter::getIndexedPosition(std::vector<float> vIndex, i
     vertex.push_back(vIndex[index * 3 + 2]);
 
     return vertex;
-}
-
-// Divides vIndex by maximum coordinate within it
-void MeshImporter::normalizeMesh(std::vector<float>& vIndex)
-{
-    // Normalize vertices
-    float max = 0;
-    for (float v : vIndex) {
-        max = std::abs(v) > max ? v : max;
-    }
-    for (int i = 0; i < vIndex.size(); i++) {
-        vIndex[i] /= max * 1.1; // 1.1 to keep it better in window instead of exact
-    }
 }
 
 // Used to build the index of vertex data for an attribute. The actual indices themseleves are from buildFaces
@@ -57,7 +44,7 @@ std::vector<type> MeshImporter::getAttributeIndex(std::string meshFilePath, std:
         // Build index
         if (delimited[0] == attribute) {
 
-            // Get each position (list of 3 coordinates)
+            // Expects triplet of information
             attributeIndex.push_back((type)std::stof(delimited[1]));
             attributeIndex.push_back((type)std::stof(delimited[2]));
             attributeIndex.push_back((type)std::stof(delimited[3]));
@@ -69,21 +56,28 @@ std::vector<type> MeshImporter::getAttributeIndex(std::string meshFilePath, std:
     return attributeIndex;
 }
 
-// Given a string containing data vertex data in format "pos/tex/norm" or "pos//norm" returns vectorized indices
-std::vector<unsigned int> MeshImporter::buildVertex(std::string vertex) {
+// Given a string containing vertex data in .obj format ; returns vectorized indices
+// NEEDS CHANGE TO SUPPORT TEXTURES.
+std::vector<unsigned int> MeshImporter::buildVertex(std::string line) {
 
     StringUtil sutil;
-    std::vector<std::string> delimited = sutil.delimit(vertex, '/');
+    std::vector<std::string> delimited = sutil.delimit(line, '/');
     std::vector<unsigned int> vertexIndices;
+    /*
+    1. Position
+    2. Color/Texture
+    3. Normal
+    */
 
-    for (std::string indice : delimited) {
-        vertexIndices.push_back(std::stoul(indice) - 1); // -1 to account for obj index start at 1 instead of 0
-    }
+   // HARDCODED FOR NOW, REMOVE AFETR TESTING
+   vertexIndices.push_back(std::stoul(delimited[0]) - 1); 
+   vertexIndices.push_back(0); // Color data, hard coded for now
+   vertexIndices.push_back(std::stoul(delimited[1]) - 1);
 
-    // Just have 1:1 correspondance vIndex with nIndex if no normal data is present, will be computed
-    if (vertexIndices.size() == 1) {
-        vertexIndices.push_back(vertexIndices[0]);
-    }
+   // Uncomment to go back to full obj compatiblity
+    // for (std::string indice : delimited) {
+    //     vertexIndices.push_back(std::stoul(indice) - 1); // -1 to account for obj index start at 1 instead of 0
+    // }
 
     return vertexIndices;
 }
@@ -133,54 +127,17 @@ std::vector<std::vector<unsigned int>> MeshImporter::buildMesh(std::string meshF
     return meshData;
 }
 
-// Gets all normals corresponding to the vertices in the vIndex
-std::vector<float> MeshImporter::getNormalIndex(std::string meshFilePath) {
-    std::vector<float> normalIndex = getAttributeIndex<float>(meshFilePath, "vn");
-
-    return normalIndex;
-}
-
-// Goes through all neighboring faces for each vertex and averages normals
-std::vector<float> MeshImporter::buildNormals(std::vector<float>& vIndex, std::vector<std::vector<unsigned int>>& mesh) {
-
-    std::vector<float> nIndex;
-
-    for (int i = 0; i < vIndex.size()/3; i++) { // Div 3 because x,y,z for each pos
-
-        float xNorm = 0;
-        float yNorm = 0;
-        float zNorm = 0;
-        int faceCount = 0;
-
-        for (int j = 0; j < mesh.size() / 3; j++) { // Go through each face
-            for (int k = 0; k < 3; k++) { // Go through vertices of tri
-                if (mesh[j*3 + k][0] == (unsigned int)i) { // If vertex in question is part of face
-
-                    faceCount++;
-
-                    auto a = getIndexedPosition(vIndex, mesh[j * 3 + 0][0]);
-                    auto b = getIndexedPosition(vIndex, mesh[j * 3 + 1][0]);
-                    auto c = getIndexedPosition(vIndex, mesh[j * 3 + 2][0]);
-
-                    // Compute normal of face (facing outward somehow...)
-                    glm::vec3 ab = glm::vec3(b[0] - a[0], b[1] - a[1], b[2] - a[0]);
-                    glm::vec3 ac = glm::vec3(c[0]-a[0], c[1]-a[1], c[2]-a[0]);
-                    glm::vec3 norm = glm::cross(ab, ac);
-
-                    // Take running average of normal data
-                    xNorm += (norm.x - xNorm) / faceCount;
-                    yNorm += (norm.y - yNorm) / faceCount;
-                    zNorm += (norm.z - zNorm) / faceCount;
-
-                }
-            }
-        }
-
-        // Write normal for this vertex into nIndex
-        nIndex.insert(nIndex.end(), {xNorm, yNorm, zNorm});
+// Divides vIndex by maximum coordinate within it
+void MeshImporter::normalizeMesh(std::vector<float>& vIndex)
+{
+    // Normalize vertices
+    float max = 0;
+    for (float v : vIndex) {
+        max = std::abs(v) > max ? v : max;
     }
-
-    return nIndex;
+    for (int i = 0; i < vIndex.size(); i++) {
+        vIndex[i] /= max;
+    }
 }
 
 /*********************/
@@ -188,78 +145,74 @@ std::vector<float> MeshImporter::buildNormals(std::vector<float>& vIndex, std::v
 /*********************/
 
 // Returns an index of all the vertices in a mesh
-std::vector<float> MeshImporter::getVIndex(std::string meshFilePath)
+std::vector<float> MeshImporter::getPositionIndex(std::string meshFilePath)
 {
     std::vector<float> vIndex = getAttributeIndex<float>(meshFilePath, "v");
 
     return vIndex;
 }
 
-// Returns an index of all faces, with 3 uints representing position of each vertex for each face in vIndex
-std::vector<unsigned int> MeshImporter::getFaceIndex(std::string meshFilePath)
-{
-    std::vector<unsigned int> vIndex = getAttributeIndex<unsigned int>(meshFilePath, "f");
+// Gets all normals corresponding to the vertices in the vIndex
+std::vector<float> MeshImporter::getNormalIndex(std::string meshFilePath) {
+    std::vector<float> normalIndex = getAttributeIndex<float>(meshFilePath, "vn");
 
-    return vIndex;
+    return normalIndex;
 }
 
-// Uses vIndex and fIndex to build a separate tris structure
-std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
-{
-    std::ifstream file(meshFilePath);
-    StringUtil sutil;
+// Hard code to red for now
+std::vector<float> MeshImporter::getColorIndex(std::string meshFilePath) {
+    std::vector<float> colors;
+    auto color = { 1.0f,0.0f,0.0f };
+    colors.insert(colors.end(), color);
+    return colors;
+}
 
-    std::vector<float> vIndex;
-    std::vector<float> nIndex;
-    std::vector<std::vector<unsigned int>> mesh;
-    std::vector<float> vertices;
+std::vector<unsigned int> MeshImporter::getMesh(std::string meshFilePath) {
+    std::vector<unsigned int> mesh;
 
-    std::string line;
+    std::vector<std::vector<unsigned int>> vertexVec = buildMesh(meshFilePath);
 
-    vIndex = getVIndex(meshFilePath);
-    nIndex = getNormalIndex(meshFilePath);
-    mesh = buildMesh(meshFilePath);
-    normalizeMesh(vIndex);
-
-    // Build normals if they don't exist in file
-    if (nIndex.size() == 0) {
-        nIndex = buildNormals(vIndex, mesh);
+    // Inefficient I know, but I really like being able to address each vertex indiv.
+    // If there are performance issues when loading I'll directly load the mesh
+    for (auto vertex : vertexVec) {
+        mesh.insert(mesh.end(), vertex.begin(), vertex.end());
     }
 
-    // Go through the vIndex and fIndex and build a separate tri structure with color data
+    return mesh;
+}
+
+// Uses indexes to build a separate tri structure
+std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
+{
+
+    std::vector<float> posIndex = getPositionIndex(meshFilePath);
+    std::vector<float> nIndex = getNormalIndex(meshFilePath);
+    std::vector<float> cIndex = getColorIndex(meshFilePath);
+    std::vector<std::vector<unsigned int>> mesh = buildMesh(meshFilePath);
+    normalizeMesh(posIndex);
+
+    std::vector<float> vertices;
+
+    if(posIndex.size() == 0 ||  nIndex.size() == 0) {
+        std::cout << "Missing index data!" << std::endl;
+    }
+
+
+    // Go through the posIndex and fIndex and build a separate tri structure with color data
     // Vertex Format: x,y,z,nx,ny,nz,r,g,b
-
-    // MULTI COLOR TRI
-    //auto color1 = { 1.0f,0.0f,0.0f };
-    //auto color2 = { 0.0f,1.0f,0.0f };
-    //auto color3 = { 0.0f,0.0f,1.0f };
-
-    // WHITE
-    //auto color1 = { 1.0f,1.0f,1.0f };
-    //auto color2 = { 1.0f,1.0f,1.0f };
-    //auto color3 = { 1.0f,1.0f,1.0f };
-
-    // RED
-    auto color1 = { 1.0f,0.0f,0.0f };
-    auto color2 = { 1.0f,0.0f,0.0f };
-    auto color3 = { 1.0f,0.0f,0.0f };
-
-    std::vector<std::initializer_list<float>> triColors = { color1, color2, color3 };
 
     int vertexNumber = 0;
     for (std::vector<unsigned int> vertex : mesh) {
 
-        int normPos = vertex.size() == 3 ? 2 : 1; //  if in pos/tex/norm versus pos//norm format
-
         // Get coord data from index
-        auto pos = getIndexedPosition(vIndex, vertex[0]);
-        auto norm = getIndexedPosition(nIndex, vertex[normPos]); // If tex coo
-        auto color = triColors[vertexNumber % 3];
+        auto pos = getIndexedPosition(posIndex, vertex[0]);
+        auto color = getIndexedPosition(cIndex, vertex[1]);
+        auto norm = getIndexedPosition(nIndex, vertex[2]); 
 
         //Insert into vertices, with color data
         vertices.insert(vertices.end(), pos.begin(), pos.end());
         vertices.insert(vertices.end(), norm.begin(), norm.end());
-        vertices.insert(vertices.end(), color);
+        vertices.insert(vertices.end(), color.begin(), color.end());
 
         vertexNumber++;
 
