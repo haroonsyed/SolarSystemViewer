@@ -1,5 +1,5 @@
-# SolarSystemViewer
-[Link to Repository](https://github.com/haroonsyed/SolarSystemViewer)
+# SolarSystemSimulator
+[Link to Repository](https://github.com/haroonsyed/SolarSystemSimulator)
 
 ## Made in CAP4730: Computer Graphics at the University of Florida
 ### Under Dr. Aleirza Entezari
@@ -23,7 +23,7 @@
 ### Compilation Instructions
 **Windows**
 1. Clone this repo using <br>
-`git clone https://github.com/haroonsyed/SolarSystemViewer.git --recursive`
+`git clone https://github.com/haroonsyed/SolarSystemSimulator.git --recursive`
 2. Install cmake
 3. Open the folder containing repo in visual studio, run main.cpp
 
@@ -34,7 +34,7 @@
 
 **Linux**
 1. Clone this repo using <br>
-`git clone https://github.com/haroonsyed/SolarSystemViewer.git --recursive`
+`git clone https://github.com/haroonsyed/SolarSystemSimulator.git --recursive`
 2. Install the following dependencies: 
 libxmu-dev libxi-dev libgl-dev libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
 3. Install cmake
