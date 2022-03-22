@@ -1,4 +1,5 @@
 #include "system.h"
+#include <unordered_map>
 
 System::System() {
   timeFactor = 1000;
@@ -12,19 +13,22 @@ void System::update() {
   
   const float G = 6.67430e-11;
 
-  // FIND A WAY TO OPTIMIZE (perhaps memoization?!?)
-  for(GravBody &body1 : bodies) {
-    glm::vec3 force = glm::vec3(0.0);
-    const float M1 = body1.getMass();
+  // Possible to half time in future by storing force between bodies instead
+  std::unordered_map<int, std::pair<glm::vec3,glm::vec3>> map;
 
-    for(GravBody &body2 : bodies) {
-      if(&body1 != &body2) {
+
+  for(int i=0; i<bodies.size(); i++) {
+    glm::vec3 force = glm::vec3(0.0);
+    const float M1 = bodies[i].getMass();
+
+    for(int j=0; j<bodies.size(); j++) {
+      if(i != j) {
         
         // (G*M1*M2)/R^2
-        float M2 = body2.getMass();
+        float M2 = bodies[j].getMass();
         
         // Below avoids sqrt (otherwise one can use distance)
-        glm::vec3 temp = body1.getPosition() - body2.getPosition();
+        glm::vec3 temp = bodies[i].getPosition() - bodies[j].getPosition();
         float r2 = glm::dot(temp, temp);
         float magnitude = (G*M1*M2)/r2;
 
@@ -38,10 +42,18 @@ void System::update() {
     // Determine new velocity 
     // vf=vi+a*t where a=F/m
     glm::vec3 acceleration = force/M1;
-    body1.setVelocity( body1.getVelocity() + acceleration * timeFactor );
+    glm::vec3 velocity = bodies[i].getVelocity() + acceleration * timeFactor;
+    glm::vec3 position = bodies[i].getPosition() + timeFactor * velocity;
+    map[i] =  {velocity, position};
 
-    // Determine new position based on velocity
-    body1.setPosition( body1.getPosition() + timeFactor * body1.getVelocity() );
+  }
+
+
+  // Update position and velocity
+  for(int i=0; i<bodies.size(); i++) {
+
+    bodies[i].setVelocity(map[i].first);
+    bodies[i].setPosition(map[i].second);
 
   }
 
