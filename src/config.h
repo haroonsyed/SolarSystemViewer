@@ -6,6 +6,6 @@
 static const unsigned int SCR_WIDTH = 800;
 static const unsigned int SCR_HEIGHT = 600;
 static bool useSeparateTriangles = true;
-static const std::string meshFilePath = "../data/al.obj";
+static const std::string meshFilePath = "../assets/models/sphere.obj";
 static const std::string vertexShaderPath = "../shaders/phong.vs";
 static const std::string fragShaderPath = "../shaders/phong.fs";

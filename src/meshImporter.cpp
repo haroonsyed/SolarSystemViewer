@@ -230,9 +230,9 @@ std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
     // Vertex Format: x,y,z,nx,ny,nz,r,g,b
 
     // MULTI COLOR TRI
-    auto color1 = { 1.0f,0.0f,0.0f };
-    auto color2 = { 0.0f,1.0f,0.0f };
-    auto color3 = { 0.0f,0.0f,1.0f };
+    //auto color1 = { 1.0f,0.0f,0.0f };
+    //auto color2 = { 0.0f,1.0f,0.0f };
+    //auto color3 = { 0.0f,0.0f,1.0f };
 
     // WHITE
     //auto color1 = { 1.0f,1.0f,1.0f };
@@ -240,9 +240,9 @@ std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
     //auto color3 = { 1.0f,1.0f,1.0f };
 
     // RED
-    //auto color1 = { 1.0f,0.0f,0.0f };
-    //auto color2 = { 1.0f,0.0f,0.0f };
-    //auto color3 = { 1.0f,0.0f,0.0f };
+    auto color1 = { 1.0f,0.0f,0.0f };
+    auto color2 = { 1.0f,0.0f,0.0f };
+    auto color3 = { 1.0f,0.0f,0.0f };
 
     std::vector<std::initializer_list<float>> triColors = { color1, color2, color3 };
 
