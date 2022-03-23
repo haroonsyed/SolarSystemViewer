@@ -14,7 +14,7 @@
 #include "meshManager.h"
 #include "./input/inputController.h"
 #include "config.h"
-#include "mesh/mesh.h"
+#include "./physics/system.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -47,9 +47,21 @@ int main()
     glewInit();
 
     // Load scene
-    Mesh sphere;
-    sphere.setMesh("../assets/models/sphere.obj");
-    sphere.setShaders(vertexShaderPath, fragShaderPath);
+    System system;
+    GravBody p1;
+    p1.setMass(6e24);
+    p1.setPosition(glm::vec3(0, 0.5 * 8e9, 0));
+    p1.setVelocity(glm::vec3(5e4, 0, 0));
+    p1.getMesh()->setMesh("../assets/models/sphere.obj");
+    p1.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
+    system.addBody(p1);
+    GravBody p2;
+    p2.setMass(6e24);
+    p2.setPosition(glm::vec3(0, -0.5 * 8e9, 0));
+    p2.setVelocity(glm::vec3(-5e4, 0, 0));
+    p2.getMesh()->setMesh("../assets/models/sphere.obj");
+    p2.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
+    system.addBody(p2);
 
     // render loop
     // -----------
@@ -59,54 +71,61 @@ int main()
     MeshManager* meshManager = MeshManager::getInstance();
     while (!glfwWindowShouldClose(window))
     {
-        // Bind all object in scene and render them
-        sphere.bind();
+        // Clear previous frame
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Input
         inputController.processInput();
 
-        // Setup transform matrices
-        glm::mat4 model = glm::mat4(1.0f);
+        // Simulation
+        //system.update();
 
-        if (inputController.mousePressed) {
-            int mouseX = inputController.mouseX;
-            int mouseY = inputController.mouseY;
-            // The negative one invert makes moving the model feel more natural in x direction
-            model = glm::rotate(model, (float)(mouseX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::rotate(model, (float)(mouseY) * glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // Find max distance object in order to make a windowing function
+        float maxDistance = 0.0f; // Used for windowing function
+        for (GravBody& body : system.getBodies()) {
+            maxDistance = std::fmaxf(maxDistance, glm::length(body.getPosition()));
         }
-        else {
-            model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
+
         glm::mat4 view = inputController.getViewTransform();
 
         // Light info
         glm::vec3 lightPos = glm::vec3(-1.0f, 0.2f, -1.0f);
-        lightPos *= 1000; // Make it appear far away
+        lightPos *= 1000;
 
-        //Pass to gpu
-        unsigned int shaderProgram = shaderManager->getBoundShader();
-        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
-        glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
+        // Loop through objects in system and render them
+        int count = 0;
+        for (GravBody& body : system.getBodies()) {
 
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // Setup transform matrix for this body
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::scale(model, glm::vec3(0.2));
+            model = glm::translate(model, glm::vec3(2 * count, 0, 0));
+            //model = glm::translate(model, body.getPosition());
+            //model = glm::scale(model, glm::vec3(1 / maxDistance));
+            count++;
 
-        std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-        const unsigned int VAO = bufferInfo[0];
-        const unsigned int VBO = bufferInfo[1];
-        const unsigned int numVertices = bufferInfo[2];
-        glUseProgram(shaderProgram);
-        glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, numVertices);
-        // glBindVertexArray(0); // unbind our VA no need to unbind it every time 
- 
+            body.getMesh()->bind();
+
+            //Pass to gpu
+            unsigned int shaderProgram = shaderManager->getBoundShader();
+            unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+            unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
+            glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
+
+            std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
+            const unsigned int VAO = bufferInfo[0];
+            const unsigned int VBO = bufferInfo[1];
+            const unsigned int numVertices = bufferInfo[2];
+            glUseProgram(shaderProgram);
+            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+            glDrawArrays(GL_TRIANGLES, 0, numVertices);
+
+        }
+
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
