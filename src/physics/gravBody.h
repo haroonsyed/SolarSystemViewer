@@ -1,6 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "mesh.h"
+#include "../mesh/mesh.h"
 
 class GravBody {
 	private:

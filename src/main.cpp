@@ -10,9 +10,9 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // My Imports
-#include "meshImporter.h"
+#include "./mesh/meshImporter.h"
 #include "shaderImporter.h"
-#include "inputController.h"
+#include "./input/inputController.h"
 #include "config.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
