@@ -20,5 +20,6 @@ class GravBody {
 		void setVelocity(glm::vec3 velocity);
 		float getMass();
 		void setMass(float mass);
+		Mesh* getMesh();
 
 };

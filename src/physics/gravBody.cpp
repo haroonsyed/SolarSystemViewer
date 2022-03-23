@@ -30,4 +30,6 @@ float GravBody::getMass() {
 void GravBody::setMass(float mass) {
   this->mass = mass;
 }
-
+Mesh* GravBody::getMesh() {
+  return &mesh;
+}
