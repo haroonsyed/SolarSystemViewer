@@ -4,13 +4,14 @@
 #include "gravBody.h";
 
 class System {
-	private:
+  private:
     std::vector<GravBody> bodies;
     float timeFactor;
 
-	public:
-		System();
+  public:
+	System();
     void addBody(GravBody& body);
+    std::vector<GravBody> getBodies();
     void update();
 
 };

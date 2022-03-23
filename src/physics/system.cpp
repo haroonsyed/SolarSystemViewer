@@ -9,6 +9,10 @@ void System::addBody(GravBody& body) {
   bodies.push_back(body);
 }
 
+std::vector<GravBody> System::getBodies() {
+    return bodies;
+}
+
 void System::update() {
   
   const float G = 6.67430e-11;
