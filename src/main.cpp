@@ -12,9 +12,9 @@
 // My Imports
 #include "shaderManager.h"
 #include "meshManager.h"
-#include "./mesh/meshImporter.h"
 #include "./input/inputController.h"
 #include "config.h"
+#include "mesh/mesh.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -46,6 +46,11 @@ int main()
     // // glew: load all OpenGL function pointers
     glewInit();
 
+    // Load scene
+    Mesh sphere;
+    sphere.setMesh("../assets/models/sphere.obj");
+    sphere.setShaders(vertexShaderPath, fragShaderPath);
+
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
@@ -54,19 +59,8 @@ int main()
     MeshManager* meshManager = MeshManager::getInstance();
     while (!glfwWindowShouldClose(window))
     {
-
-        // Shader
-        shaderManager->useShader(vertexShaderPath, fragShaderPath);
-        unsigned int shaderProgram = shaderManager->getBoundShader();
-
-        // Mesh
-        if ((int)(glfwGetTime()) % 2 == 0) {
-            meshManager->bindMesh("../assets/models/sphere.obj");
-        }
-        else {
-            meshManager->bindMesh("../assets/models/womanhead.obj");
-
-        }
+        // Bind all object in scene and render them
+        sphere.bind();
 
         // Input
         inputController.processInput();
@@ -91,6 +85,7 @@ int main()
         lightPos *= 1000; // Make it appear far away
 
         //Pass to gpu
+        unsigned int shaderProgram = shaderManager->getBoundShader();
         unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");

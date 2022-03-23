@@ -4,13 +4,14 @@
 #include <glm/glm.hpp>
 
 class Mesh {
-  private:
+private:
     std::string meshFilePath;
-    std::vector<float> mesh;
+    std::string vertexShaderPath;
+    std::string fragShaderPath;
 
-  public:
+public:
     glm::mat4 modelTransform;
     void setMesh(std::string meshFilePath);
-    std::vector<float> getMesh();
-    
+    void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
+    void bind();
 };
