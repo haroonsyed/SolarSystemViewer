@@ -55,8 +55,6 @@ void InputController::processInput()
             mouseX = mouseY = 0;
         }
 
-        std::cout << mouseX << "  " << mouseY << std::endl; // MOUSE DEBUG
-
     }
 
 }
