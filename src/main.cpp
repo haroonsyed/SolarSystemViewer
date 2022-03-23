@@ -11,19 +11,11 @@
 
 // My Imports
 #include "./mesh/meshImporter.h"
-#include "shaderImporter.h"
+#include "shaderManager.h"
 #include "./input/inputController.h"
 #include "config.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
-// Import shaders
-ShaderImporter shaderImporter;
-std::string vertexShader = shaderImporter.readShader(vertexShaderPath);
-std::string fragShader = shaderImporter.readShader(fragShaderPath);
-
-const char* vertexShaderSource = vertexShader.c_str();
-const char* fragmentShaderSource = fragShader.c_str();
 
 int main()
 {
@@ -52,47 +44,6 @@ int main()
 
     // // glew: load all OpenGL function pointers
     glewInit();
-
-
-    // build and compile our shader program
-    // ------------------------------------
-    // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // check for shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-    // link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 
     MeshImporter importer;
     std::vector<float> meshData = importer.readSepTriMesh(meshFilePath);
@@ -134,10 +85,15 @@ int main()
     // -----------
     glEnable(GL_DEPTH_TEST);
     InputController inputController(window);
+    ShaderManager* shaderManager = ShaderManager::getInstance();
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        // -----
+
+        // Shader
+        shaderManager->useShader(vertexShaderPath, fragShaderPath);
+        unsigned int shaderProgram = shaderManager->getBoundShader();
+
+        // Input
         inputController.processInput();
 
         // Rotate model as a function of time
@@ -190,7 +146,6 @@ int main()
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
