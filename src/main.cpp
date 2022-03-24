@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <stdlib.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -49,16 +50,16 @@ int main()
     // Load scene
     System system;
     GravBody p1;
-    p1.setMass(6e24);
-    p1.setPosition(glm::vec3(0, 0.5 * 8e9, 0));
-    p1.setVelocity(glm::vec3(5e4, 0, 0));
+    p1.setMass(6e18);
+    p1.setPosition(glm::vec3(0, 0, 0));
+    p1.setVelocity(glm::vec3(0, 0, 0));
     p1.getMesh()->setMesh("../assets/models/sphere.obj");
     p1.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
     system.addBody(p1);
     GravBody p2;
-    p2.setMass(6e24);
-    p2.setPosition(glm::vec3(0, -0.5 * 8e9, 0));
-    p2.setVelocity(glm::vec3(-5e4, 0, 0));
+    p2.setMass(7e16);
+    p2.setPosition(glm::vec3(0, 239, 0));
+    p2.setVelocity(glm::vec3(-1, 0, 0));
     p2.getMesh()->setMesh("../assets/models/sphere.obj");
     p2.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
     system.addBody(p2);
@@ -77,33 +78,42 @@ int main()
 
         // Input
         inputController.processInput();
+        glm::mat4 view = inputController.getViewTransform();
+        if (inputController.mousePressed) {
+            int mouseX = inputController.mouseX;
+            int mouseY = inputController.mouseY;
+            // The negative one invert makes moving the model feel more natural in x direction
+            view = glm::rotate(view, (float)(mouseX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            view = glm::rotate(view, (float)(mouseY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        }
 
         // Simulation
-        //system.update();
+        system.update();
 
         // Find max distance object in order to make a windowing function
         float maxDistance = 0.0f; // Used for windowing function
         for (GravBody& body : system.getBodies()) {
-            maxDistance = std::fmaxf(maxDistance, glm::length(body.getPosition()));
+            glm::vec3 pos = body.getPosition();
+            float maxComponent = std::fmaxf(std::abs(pos.x), std::fmax(std::abs(pos.y), std::abs(pos.z)));
+            maxDistance = std::fmaxf(maxDistance, maxComponent);
         }
-
-        glm::mat4 view = inputController.getViewTransform();
+        // Increase max distance 10% to keep everything windowed
+        maxDistance *= 1.1;
 
         // Light info
-        glm::vec3 lightPos = glm::vec3(-1.0f, 0.2f, -1.0f);
-        lightPos *= 1000;
+        glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, -0.2f);
+        lightPos *= 10000;
+
+        system.getBodies()[1].print();
 
         // Loop through objects in system and render them
-        int count = 0;
         for (GravBody& body : system.getBodies()) {
 
             // Setup transform matrix for this body
             glm::mat4 model = glm::mat4(1.0f);
-            model = glm::scale(model, glm::vec3(0.2));
-            model = glm::translate(model, glm::vec3(2 * count, 0, 0));
-            //model = glm::translate(model, body.getPosition());
-            //model = glm::scale(model, glm::vec3(1 / maxDistance));
-            count++;
+            //model = glm::translate(model, (float)glfwGetTime() * glm::vec3(0.1));
+            model = glm::translate(model, (body.getPosition()/500.0f));
+            model = glm::scale(model, glm::vec3(0.05));
 
             body.getMesh()->bind();
 

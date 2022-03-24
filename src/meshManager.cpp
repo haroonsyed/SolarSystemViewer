@@ -60,8 +60,6 @@ void MeshManager::bindMesh(std::string meshFilePath) {
     // Bind the shaderProgram
 
     auto buffers = meshMap.at(meshKey);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
 
     bufferInfo = buffers;
 
