@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 
 System::System() {
-  timeFactor = 1;
+  timeFactor = 1*60;
 }
 
 void System::addBody(GravBody& body) {
@@ -16,7 +16,7 @@ std::vector<GravBody> System::getBodies() {
 
 void System::update() {
   
-  const double G = 6.67430e-11 * 1e-6; // 1e-6 is a scale factor to avoid float error
+  const double G = 6.67430e-11 * 1e-12; // 1e-6 is a scale factor to avoid float error
 
   // Possible to half time in future by storing force between bodies instead
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
@@ -35,8 +35,13 @@ void System::update() {
         // Below avoids sqrt (otherwise one can use distance)
         glm::vec3 temp = bodies[j].getPosition() - bodies[i].getPosition();
         float r2 = glm::dot(temp, temp);
-        float num = G * M1 * M2;
+        if (r2 < 25) {
+            // Clamp force if two bodies pass close (5 megaM/5000km) to each other.
+            // Effect is that they will continue current velocity.
+            continue;
+        }
         float magnitude = (G*M1*M2)/r2;
+
 
         glm::vec3 direction = glm::normalize(temp);
 
@@ -60,9 +65,6 @@ void System::update() {
     
     bodies[i].setVelocity(map[i].first);
     bodies[i].setPosition(map[i].second);
-    //if (i==0) {
-    //    bodies[i].setPosition(((float)glfwGetTime()) * glm::vec3(10000));
-    //}
 
   }
 

@@ -48,19 +48,20 @@ int main()
     glewInit();
 
     // Load scene
+    // Input must be mega meters and giga grams. (SI/1e6)
     System system;
     GravBody p1;
-    p1.setMass(6e18);
+    p1.setMass(6e24 / 1e6);
     p1.setPosition(glm::vec3(0, 0, 0));
     p1.setVelocity(glm::vec3(0, 0, 0));
     p1.getMesh()->setMesh("../assets/models/sphere.obj");
     p1.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
     system.addBody(p1);
     GravBody p2;
-    p2.setMass(7e16);
-    p2.setPosition(glm::vec3(0, 239, 0));
-    p2.setVelocity(glm::vec3(-1, 0, 0));
-    p2.getMesh()->setMesh("../assets/models/sphere.obj");
+    p2.setMass(5e3 / 1e6);
+    p2.setPosition(glm::vec3(0, 36e6 / 1e6, 0));
+    p2.setVelocity(glm::vec3(-3139 / 1e6, 0, 0));
+    p2.getMesh()->setMesh("../assets/models/womanhead.obj");
     p2.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
     system.addBody(p2);
 
@@ -101,7 +102,7 @@ int main()
         maxDistance *= 1.1;
 
         // Light info
-        glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, -0.2f);
+        glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
         lightPos *= 10000;
 
         system.getBodies()[1].print();
@@ -112,7 +113,7 @@ int main()
             // Setup transform matrix for this body
             glm::mat4 model = glm::mat4(1.0f);
             //model = glm::translate(model, (float)glfwGetTime() * glm::vec3(0.1));
-            model = glm::translate(model, (body.getPosition()/500.0f));
+            model = glm::translate(model, (body.getPosition()/50.0f));
             model = glm::scale(model, glm::vec3(0.05));
 
             body.getMesh()->bind();
