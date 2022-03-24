@@ -1,9 +1,15 @@
 #include "system.h"
 #include <unordered_map>
+#include <iostream>
 #include <GLFW/glfw3.h>
+#include "../config.h"
 
 System::System() {
-  timeFactor = 1*60;
+  // Influenced by G constant, default is aesthetic/arbitrary
+  // The physics is made framerate independent by dividing by framerate for deltaT
+  // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
+  const double DEFAULT_TIME_FACTOR = 100;
+  timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / TARGET_FRAMERATE);
 }
 
 void System::addBody(GravBody& body) {
@@ -17,6 +23,16 @@ std::vector<GravBody> System::getBodies() {
 void System::update() {
   
   const double G = 6.67430e-11 * 1e-12; // 1e-6 is a scale factor to avoid float error
+
+  // DEBUG, print every x seconds
+  if (std::fmod(glfwGetTime(),2) < (1.0/TARGET_FRAMERATE)) {
+      auto bodies = getBodies();
+      for (int i = 0; i < bodies.size(); i++) {
+          std::cout << "Body " << i << std::endl;
+          bodies[i].print();
+          std::cout << "" << std::endl;
+      }
+  }
 
   // Possible to half time in future by storing force between bodies instead
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;

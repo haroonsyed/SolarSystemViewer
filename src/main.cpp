@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <chrono>
+#include <thread>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -71,11 +73,14 @@ int main()
     InputController inputController(window);
     ShaderManager* shaderManager = ShaderManager::getInstance();
     MeshManager* meshManager = MeshManager::getInstance();
+    unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
     {
         // Clear previous frame
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        double startTime = glfwGetTime();
 
         // Input
         inputController.processInput();
@@ -91,21 +96,9 @@ int main()
         // Simulation
         system.update();
 
-        // Find max distance object in order to make a windowing function
-        float maxDistance = 0.0f; // Used for windowing function
-        for (GravBody& body : system.getBodies()) {
-            glm::vec3 pos = body.getPosition();
-            float maxComponent = std::fmaxf(std::abs(pos.x), std::fmax(std::abs(pos.y), std::abs(pos.z)));
-            maxDistance = std::fmaxf(maxDistance, maxComponent);
-        }
-        // Increase max distance 10% to keep everything windowed
-        maxDistance *= 1.1;
-
         // Light info
         glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
         lightPos *= 10000;
-
-        system.getBodies()[1].print();
 
         // Loop through objects in system and render them
         for (GravBody& body : system.getBodies()) {
@@ -136,6 +129,14 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, numVertices);
 
         }
+
+        double endTime = glfwGetTime();
+        int frameTime = (1000.0 * (endTime - startTime));
+        int targetFrameTime = 1000.0 / TARGET_FRAMERATE;
+        if (frameTime < targetFrameTime) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(targetFrameTime));
+        }
+        frameCounter++;
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
