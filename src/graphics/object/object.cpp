@@ -1,25 +1,26 @@
-#include "mesh.h"
-#include "../shaderManager.h"
-#include "../meshManager.h"
+#include "object.h"
+#include "../mesh/meshManager.h"
+#include "../shader/shaderManager.h"
 
-void Mesh::setMesh(std::string meshFilePath) {
+void Object::setMesh(std::string meshFilePath) {
 	this->meshFilePath = meshFilePath;
 }
 
-void Mesh::setShaders(std::string vertexShaderPath, std::string fragShaderPath) {
+void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath) {
 	this->vertexShaderPath = vertexShaderPath;
 	this->fragShaderPath = fragShaderPath;
 }
 
-void Mesh::bind() {
+void Object::bind() {
 
 	// First bind the shader
 	// Implement a cache system to speed this up
 	ShaderManager* shaderManager = ShaderManager::getInstance();
-	shaderManager->useShader(vertexShaderPath, fragShaderPath);
+	shaderManager->bindShader(vertexShaderPath, fragShaderPath);
 
 	// Now bind geometry to buffer
 	MeshManager* meshManager = MeshManager::getInstance();
 	meshManager->bindMesh(meshFilePath);
+
 
 }

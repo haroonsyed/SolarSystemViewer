@@ -1,13 +1,13 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "../mesh/mesh.h"
+#include "../graphics/object/object.h"
 
 class GravBody {
 	private:
     glm::vec3 position;
 		glm::vec3 velocity;
 		float mass;
-		Mesh mesh;
+		Object object;
 
 	public:
 		GravBody();
@@ -21,6 +21,6 @@ class GravBody {
 		float getMass();
 		void setMass(float mass);
 		void print();
-		Mesh* getMesh();
+		Object* getObject();
 
 };

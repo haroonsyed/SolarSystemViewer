@@ -13,11 +13,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 // My Imports
-#include "shaderManager.h"
-#include "meshManager.h"
+#include "./graphics/mesh/meshManager.h"
+#include "./graphics/shader/shaderManager.h"
 #include "./input/inputController.h"
 #include "config.h"
-#include "./physics/system.h"
+#include "./scene/scene.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -51,28 +51,26 @@ int main()
 
     // Load scene
     // Input must be mega meters and giga grams. (SI/1e6)
-    System system;
+    Scene scene;
     GravBody p1;
     p1.setMass(6e24 / 1e6);
     p1.setPosition(glm::vec3(0, 0, 0));
     p1.setVelocity(glm::vec3(0, 0, 0));
-    p1.getMesh()->setMesh("../assets/models/sphere.obj");
-    p1.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
-    system.addBody(p1);
+    p1.getObject()->setMesh("../assets/models/sphere.obj");
+    p1.getObject()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
+    scene.getSystem()->addBody(p1);
     GravBody p2;
     p2.setMass(5e3 / 1e6);
     p2.setPosition(glm::vec3(0, 36e6 / 1e6, 0));
     p2.setVelocity(glm::vec3(-3139 / 1e6, 0, 0));
-    p2.getMesh()->setMesh("../assets/models/womanhead.obj");
-    p2.getMesh()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
-    system.addBody(p2);
+    p2.getObject()->setMesh("../assets/models/womanhead.obj");
+    p2.getObject()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
+    scene.getSystem()->addBody(p2);
 
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
     InputController inputController(window);
-    ShaderManager* shaderManager = ShaderManager::getInstance();
-    MeshManager* meshManager = MeshManager::getInstance();
     unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
     {
@@ -94,41 +92,9 @@ int main()
         }
 
         // Simulation
-        system.update();
-
-        // Light info
-        glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
-        lightPos *= 10000;
-
-        // Loop through objects in system and render them
-        for (GravBody& body : system.getBodies()) {
-
-            // Setup transform matrix for this body
-            glm::mat4 model = glm::mat4(1.0f);
-            //model = glm::translate(model, (float)glfwGetTime() * glm::vec3(0.1));
-            model = glm::translate(model, (body.getPosition()/50.0f));
-            model = glm::scale(model, glm::vec3(0.05));
-
-            body.getMesh()->bind();
-
-            //Pass to gpu
-            unsigned int shaderProgram = shaderManager->getBoundShader();
-            unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-            unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
-            glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
-
-            std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-            const unsigned int VAO = bufferInfo[0];
-            const unsigned int VBO = bufferInfo[1];
-            const unsigned int numVertices = bufferInfo[2];
-            glUseProgram(shaderProgram);
-            glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-            glDrawArrays(GL_TRIANGLES, 0, numVertices);
-
-        }
+        scene.getSystem()->update();
+        scene.render(view);
+        
 
         double endTime = glfwGetTime();
         int frameTime = (1000.0 * (endTime - startTime));

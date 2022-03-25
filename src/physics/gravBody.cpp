@@ -41,6 +41,6 @@ void GravBody::print() {
 	std::cout << "Velocity: " << vx << " " << vy << " " << vz << std::endl;
 	std::cout << "Position: " << px << " " << py << " " << pz << std::endl;
 }
-Mesh* GravBody::getMesh() {
-  return &mesh;
+Object* GravBody::getObject() {
+  return &object;
 }
