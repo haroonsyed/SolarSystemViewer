@@ -14,8 +14,8 @@
                 "z": 0.0
             },
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../shaders/phong.vs",
-            "fragmentShaderPath": "../shaders/phong.fs"
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
         },
         {
             "name": "Satellite",
@@ -31,8 +31,8 @@
                 "z": 0.0
             },
             "meshFilePath": "../assets/models/womanhead.obj",
-            "vertexShaderPath": "../shaders/phong.vs",
-            "fragmentShaderPath": "../shaders/phong.fs"
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
         }
     ],
     "Lights": [

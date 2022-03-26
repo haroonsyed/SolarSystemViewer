@@ -37,10 +37,10 @@ void Scene::loadScene(std::string sceneFilePath) {
       gravBodyJSON["velocity"]["y"].get<float>()/1e6,
       gravBodyJSON["velocity"]["z"].get<float>()/1e6
     );
-    body->setMesh(gravBodyJSON["meshFilePath"]);
+    body->setMesh(gravBodyJSON["meshFilePath"].get<std::string>());
     body->setShaders(
-      gravBodyJSON["vertexShaderPath"],
-      gravBodyJSON["fragmentShaderPath"]
+      gravBodyJSON["vertexShaderPath"].get<std::string>(),
+      gravBodyJSON["fragmentShaderPath"].get<std::string>()
     );
 
     physicsSystem.addBody(body);
