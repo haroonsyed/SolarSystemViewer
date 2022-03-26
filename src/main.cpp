@@ -56,16 +56,13 @@ int main()
     p1.setMass(6e24 / 1e6);
     p1.setPosition(glm::vec3(0, 0, 0));
     p1.setVelocity(glm::vec3(0, 0, 0));
-    p1.getObject()->setMesh("../assets/models/sphere.obj");
-    p1.getObject()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
-    scene.getSystem()->addBody(p1);
+    scene.getSystem()->addBody(&p1);
     GravBody p2;
     p2.setMass(5e3 / 1e6);
     p2.setPosition(glm::vec3(0, 36e6 / 1e6, 0));
     p2.setVelocity(glm::vec3(-3139 / 1e6, 0, 0));
-    p2.getObject()->setMesh("../assets/models/womanhead.obj");
-    p2.getObject()->setShaders("../shaders/phong.vs", "../shaders/phong.fs");
-    scene.getSystem()->addBody(p2);
+    p2.setMesh("../assets/models/womanhead.obj");
+    scene.getSystem()->addBody(&p2);
 
     // render loop
     // -----------

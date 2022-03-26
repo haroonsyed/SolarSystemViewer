@@ -19,7 +19,7 @@ void Scene::render(glm::mat4 view) {
 
   // Setup light data
   std::vector<glm::vec3> lightPositions;
-  for (Light light : lights) {
+  for (Light &light : lights) {
     lightPositions.push_back(light.getPosition());
   }
 
@@ -28,15 +28,19 @@ void Scene::render(glm::mat4 view) {
   glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
   lightPos *= 10000;
 
-  for (GravBody body : physicsSystem.getBodies()) {
+  std::vector<Object*> objects;
+  for (auto bodyPtr : physicsSystem.getBodies()) {
+    objects.push_back((Object*)bodyPtr);
+  }
 
-    // Setup transform matrix for this body
+  for (Object* obj : objects) {
+
+    // Setup transform matrix for this obj
     glm::mat4 model = glm::mat4(1.0f);
-    //model = glm::translate(model, (float)glfwGetTime() * glm::vec3(0.1));
-    model = glm::translate(model, (body.getPosition() / 50.0f));
-    model = glm::scale(model, glm::vec3(0.05));
+    model = glm::translate(model, (obj->getPosition() / 50.0f));
+    model = glm::scale(model, glm::vec3(obj->getScale()));
 
-    body.getObject()->bind();
+    obj->bind();
 
     //Pass to gpu
     unsigned int shaderProgram = shaderManager->getBoundShader();
@@ -48,13 +52,8 @@ void Scene::render(glm::mat4 view) {
     glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
 
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-    const unsigned int VAO = bufferInfo[0];
-    const unsigned int VBO = bufferInfo[1];
     const unsigned int numVertices = bufferInfo[2];
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
     glDrawArrays(GL_TRIANGLES, 0, numVertices);
-
 
   }
 
