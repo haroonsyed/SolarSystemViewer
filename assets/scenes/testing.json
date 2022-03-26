@@ -1,0 +1,53 @@
+{
+    "GravBodies": [
+        {
+            "name": "Earth",
+            "mass": 6e24,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "vertexShaderPath": "../shaders/phong.vs",
+            "fragmentShaderPath": "../shaders/phong.fs"
+        },
+        {
+            "name": "Satellite",
+            "mass": 5e3,
+            "position": {
+                "x": 0.0,
+                "y": 36e6,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": -3139,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/womanhead.obj",
+            "vertexShaderPath": "../shaders/phong.vs",
+            "fragmentShaderPath": "../shaders/phong.fs"
+        }
+    ],
+    "Lights": [
+        {
+            "position": {
+                "x": -10000.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "color": {
+                "red": 1.0,
+                "green": 1.0,
+                "blue":  1.0
+            },
+            "intensity": 1.0
+        }
+    ]
+}

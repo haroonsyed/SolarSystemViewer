@@ -1,13 +1,73 @@
 #include "scene.h"
+#include <iostream>
+#include <fstream>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
+#include "nlohmann/json.hpp"
 
-System* Scene::getSystem() {
+System* Scene::getPhysicsSystem() {
   return &physicsSystem;
+}
+
+void Scene::loadScene(std::string sceneFilePath) {
+
+  using namespace nlohmann; // Testing lib namespace
+
+  // Load scene from json file
+  std::ifstream file(sceneFilePath);
+  std::string scene;
+  std::getline(file, scene, '\0');
+  json jScene = json::parse(scene);
+
+  // Construct scene. In units of MegaMeter and GigaGram
+  for (auto gravBodyJSON : jScene["GravBodies"]) {
+    GravBody* body = new GravBody();
+
+    body->setMass(gravBodyJSON["mass"].get<float>() / 1e6);
+    body->setPosition(
+      gravBodyJSON["position"]["x"].get<float>()/1e6, 
+      gravBodyJSON["position"]["y"].get<float>()/1e6,
+      gravBodyJSON["position"]["z"].get<float>()/1e6
+    );
+    body->setVelocity(
+      gravBodyJSON["velocity"]["x"].get<float>()/1e6,
+      gravBodyJSON["velocity"]["y"].get<float>()/1e6,
+      gravBodyJSON["velocity"]["z"].get<float>()/1e6
+    );
+    body->setMesh(gravBodyJSON["meshFilePath"]);
+    body->setShaders(
+      gravBodyJSON["vertexShaderPath"],
+      gravBodyJSON["fragmentShaderPath"]
+    );
+
+    physicsSystem.addBody(body);
+
+  }
+
+  for (auto lightJSON : jScene["Lights"]) {
+    Light light;
+
+    light.setPosition(
+      lightJSON["position"]["x"].get<float>()/1e6,
+      lightJSON["position"]["y"].get<float>()/1e6,
+      lightJSON["position"]["z"].get<float>()/1e6
+    );
+
+    light.setColor(
+      lightJSON["color"]["red"].get<float>(),
+      lightJSON["color"]["green"].get<float>(),
+      lightJSON["color"]["blue"].get<float>()
+    );
+
+    light.setIntensity(lightJSON["intensity"].get<float>());
+
+    lights.push_back(light);
+
+  }
+
 }
 
 void Scene::render(glm::mat4 view) {
@@ -29,7 +89,7 @@ void Scene::render(glm::mat4 view) {
   lightPos *= 10000;
 
   std::vector<Object*> objects;
-  for (auto bodyPtr : physicsSystem.getBodies()) {
+  for (Object* bodyPtr : physicsSystem.getBodies()) {
     objects.push_back((Object*)bodyPtr);
   }
 

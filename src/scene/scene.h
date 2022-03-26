@@ -9,7 +9,8 @@ class Scene {
     System physicsSystem;
 
   public:
-    System* getSystem();
+    System* getPhysicsSystem();
+    void loadScene(std::string sceneFilePath);
     void render(glm::mat4 view);
 
 };

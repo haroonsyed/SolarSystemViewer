@@ -4,6 +4,11 @@ void Light::setPosition(glm::vec3 position) {
   this->position = position;
 }
 
+void Light::setPosition(float x, float y, float z) {
+  glm::vec3 position = glm::vec3(x, y, z);
+  this->position = position;
+}
+
 glm::vec3 Light::getPosition() {
   return position;
 }

@@ -1,20 +1,12 @@
 // template based on material from learnopengl.com
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 
 #include <iostream>
-#include <stdlib.h>
 #include <chrono>
 #include <thread>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 // My Imports
-#include "./graphics/mesh/meshManager.h"
-#include "./graphics/shader/shaderManager.h"
 #include "./input/inputController.h"
 #include "config.h"
 #include "./scene/scene.h"
@@ -50,19 +42,8 @@ int main()
     glewInit();
 
     // Load scene
-    // Input must be mega meters and giga grams. (SI/1e6)
     Scene scene;
-    GravBody p1;
-    p1.setMass(6e24 / 1e6);
-    p1.setPosition(glm::vec3(0, 0, 0));
-    p1.setVelocity(glm::vec3(0, 0, 0));
-    scene.getSystem()->addBody(&p1);
-    GravBody p2;
-    p2.setMass(5e3 / 1e6);
-    p2.setPosition(glm::vec3(0, 36e6 / 1e6, 0));
-    p2.setVelocity(glm::vec3(-3139 / 1e6, 0, 0));
-    p2.setMesh("../assets/models/womanhead.obj");
-    scene.getSystem()->addBody(&p2);
+    scene.loadScene("../assets/scenes/testing.json");
 
     // render loop
     // -----------
@@ -89,7 +70,7 @@ int main()
         }
 
         // Simulation
-        scene.getSystem()->update();
+        scene.getPhysicsSystem()->update();
         scene.render(view);
         
 
