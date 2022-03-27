@@ -6,8 +6,8 @@
 #include <GL/glew.h>
 
 TextureManager* TextureManager::instance = nullptr;
-unsigned int TextureManager::boundShader = 0;
-std::unordered_map<std::string, unsigned int> TextureManager::shaderMap;
+unsigned int TextureManager::boundTexture = 0;
+std::unordered_map<std::string, unsigned int> TextureManager::textureMap;
 
 TextureManager::TextureManager() {};
 
@@ -29,7 +29,8 @@ void TextureManager::bindTexture(std::string textureFilePath) {
 
 		// Load the file
 		int width, height, nrChannels;
-		unsigned char* data = stbi_load(textureFilePath, &width, &height, &nrChannels, 0);
+		stbi_set_flip_vertically_on_load(true);
+		unsigned char* data = stbi_load(textureFilePath.c_str(), &width, &height, &nrChannels, 0);
 
 		unsigned int texture;
 		glGenTextures(1, &texture);

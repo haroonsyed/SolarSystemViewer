@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
+#include "GLFW/glfw3.h"
 #include "nlohmann/json.hpp"
 
 System* Scene::getPhysicsSystem() {
@@ -42,6 +43,7 @@ void Scene::loadScene(std::string sceneFilePath) {
       gravBodyJSON["vertexShaderPath"].get<std::string>(),
       gravBodyJSON["fragmentShaderPath"].get<std::string>()
     );
+    body->setImageTexture(gravBodyJSON["textureFilePath"].get<std::string>());
 
     physicsSystem.addBody(body);
 
@@ -97,8 +99,9 @@ void Scene::render(glm::mat4 view) {
 
     // Setup transform matrix for this obj
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, (obj->getPosition() / 50.0f));
+    model = glm::translate(model, (obj->getPosition() / 1.0f));
     model = glm::scale(model, glm::vec3(obj->getScale()));
+    model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     obj->bind();
 

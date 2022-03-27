@@ -1,6 +1,7 @@
 #include "object.h"
 #include "../mesh/meshManager.h"
 #include "../shader/shaderManager.h"
+#include "../texture/textureManager.h"
 
 Object::Object() {
   position = glm::vec3(0.0);
@@ -39,8 +40,8 @@ void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath
   this->fragShaderPath = fragShaderPath;
 }
 
-void Object::setTexture(std::string textureFilePath) {
-  this->textureFilePath = textureFilePath;
+void Object::setImageTexture(std::string imgTexFilePath) {
+  this->imgTexFilePath = imgTexFilePath;
 }
 
 void Object::bind() {
@@ -52,5 +53,9 @@ void Object::bind() {
   // Now bind geometry to buffer
   MeshManager* meshManager = MeshManager::getInstance();
   meshManager->bindMesh(meshFilePath);
+
+  // Now bind textures
+  TextureManager* textureManager = TextureManager::getInstance();
+  textureManager->bindTexture(imgTexFilePath);
 
 }
