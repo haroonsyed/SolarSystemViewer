@@ -39,16 +39,18 @@ void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath
   this->fragShaderPath = fragShaderPath;
 }
 
+void Object::setTexture(std::string textureFilePath) {
+  this->textureFilePath = textureFilePath;
+}
+
 void Object::bind() {
 
   // First bind the shader
-  // Implement a cache system to speed this up
   ShaderManager* shaderManager = ShaderManager::getInstance();
   shaderManager->bindShader(vertexShaderPath, fragShaderPath);
   
   // Now bind geometry to buffer
   MeshManager* meshManager = MeshManager::getInstance();
   meshManager->bindMesh(meshFilePath);
-
 
 }

@@ -30,7 +30,7 @@
                 "y": 0.0,
                 "z": 0.0
             },
-            "meshFilePath": "../assets/models/womanhead.obj",
+            "meshFilePath": "../assets/models/sphere.obj",
             "vertexShaderPath": "../assets/shaders/phong.vs",
             "fragmentShaderPath": "../assets/shaders/phong.fs"
         }

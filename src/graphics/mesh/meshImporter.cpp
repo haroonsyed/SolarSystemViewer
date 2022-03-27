@@ -12,14 +12,14 @@
 // PRIVATE FUNCTIONS
 /*********************/
 
-// Returns the triplet of float data from an index of vertex index (ex: x,y,z position for vertex #5)
-std::vector<float> MeshImporter::getIndexedPosition(std::vector<float> vIndex, int index)
+// Returns the n-let of float data from an index of vertex index (ex: x,y,z position for vertex #5)
+std::vector<float> MeshImporter::getIndexedData(std::vector<float> vIndex, int index, int vSize = 3)
 {
     std::vector<float> vertex;
-    // Get three vertices and return them 
-    vertex.push_back(vIndex[index * 3 + 0]);
-    vertex.push_back(vIndex[index * 3 + 1]);
-    vertex.push_back(vIndex[index * 3 + 2]);
+    // Get vertices and return them 
+    for (int i = 0; i < vSize; i++) {
+      vertex.push_back(vIndex[index * vSize + i]);
+    }
 
     return vertex;
 }
@@ -44,10 +44,10 @@ std::vector<type> MeshImporter::getAttributeIndex(std::string meshFilePath, std:
         // Build index
         if (delimited[0] == attribute) {
 
-            // Expects triplet of information
-            attributeIndex.push_back((type)std::stof(delimited[1]));
-            attributeIndex.push_back((type)std::stof(delimited[2]));
-            attributeIndex.push_back((type)std::stof(delimited[3]));
+          // Add information. Start at one to avoid identifier
+          for (int i = 1; i < delimited.size(); i++) {
+            attributeIndex.push_back((type)std::stof(delimited[i]));
+          }
 
         }
 
@@ -65,19 +65,13 @@ std::vector<unsigned int> MeshImporter::buildVertex(std::string line) {
     std::vector<unsigned int> vertexIndices;
     /*
     1. Position
-    2. Color/Texture
+    2. Texture
     3. Normal
     */
 
-   // HARDCODED FOR NOW, REMOVE AFETR TESTING
-   vertexIndices.push_back(std::stoul(delimited[0]) - 1); 
-   vertexIndices.push_back(0); // Color data, hard coded for now
-   vertexIndices.push_back(std::stoul(delimited[1]) - 1);
-
-   // Uncomment to go back to full obj compatiblity
-    // for (std::string indice : delimited) {
-    //     vertexIndices.push_back(std::stoul(indice) - 1); // -1 to account for obj index start at 1 instead of 0
-    // }
+   for (std::string indice : delimited) {
+       vertexIndices.push_back(std::stoul(indice) - 1); // -1 to account for obj index start at 1 instead of 0
+   }
 
     return vertexIndices;
 }
@@ -147,9 +141,9 @@ void MeshImporter::normalizeMesh(std::vector<float>& vIndex)
 // Returns an index of all the vertices in a mesh
 std::vector<float> MeshImporter::getPositionIndex(std::string meshFilePath)
 {
-    std::vector<float> vIndex = getAttributeIndex<float>(meshFilePath, "v");
+    std::vector<float> posIndex = getAttributeIndex<float>(meshFilePath, "v");
 
-    return vIndex;
+    return posIndex;
 }
 
 // Gets all normals corresponding to the vertices in the vIndex
@@ -159,12 +153,11 @@ std::vector<float> MeshImporter::getNormalIndex(std::string meshFilePath) {
     return normalIndex;
 }
 
-// Hard code to red for now
-std::vector<float> MeshImporter::getColorIndex(std::string meshFilePath) {
-    std::vector<float> colors;
-    auto color = { 1.0f,0.0f,0.0f };
-    colors.insert(colors.end(), color);
-    return colors;
+// Gets all uv coordinates for textures corresponding to vertices
+std::vector<float> MeshImporter::getTexIndex(std::string meshFilePath) {
+    std::vector<float> uvCoords = getAttributeIndex<float>(meshFilePath, "vt");
+
+    return uvCoords;
 }
 
 // Groundwork for index buffer object if implemented later
@@ -188,16 +181,15 @@ std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
 
     std::vector<float> posIndex = getPositionIndex(meshFilePath);
     std::vector<float> nIndex = getNormalIndex(meshFilePath);
-    std::vector<float> cIndex = getColorIndex(meshFilePath);
+    std::vector<float> texIndex = getTexIndex(meshFilePath);
     std::vector<std::vector<unsigned int>> mesh = buildMesh(meshFilePath);
     normalizeMesh(posIndex);
 
     std::vector<float> vertices;
 
-    if(posIndex.size() == 0 ||  nIndex.size() == 0) {
-        std::cout << "Missing index data!" << std::endl;
+    if(posIndex.size() == 0 ||  nIndex.size() == 0 || texIndex.size() == 0) {
+        std::cout << "Missing mesh data!" << std::endl;
     }
-
 
     // Go through the posIndex and fIndex and build a separate tri structure with color data
     // Vertex Format: x,y,z,nx,ny,nz,r,g,b
@@ -206,14 +198,14 @@ std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
     for (std::vector<unsigned int> vertex : mesh) {
 
         // Get coord data from index
-        auto pos = getIndexedPosition(posIndex, vertex[0]);
-        auto color = getIndexedPosition(cIndex, vertex[1]);
-        auto norm = getIndexedPosition(nIndex, vertex[2]); 
+        auto pos = getIndexedData(posIndex, vertex[0]);
+        auto tex = getIndexedData(texIndex, vertex[1], 2);
+        auto norm = getIndexedData(nIndex, vertex[2]); 
 
         //Insert into vertices, with color data
         vertices.insert(vertices.end(), pos.begin(), pos.end());
+        vertices.insert(vertices.end(), tex.begin(), tex.end());
         vertices.insert(vertices.end(), norm.begin(), norm.end());
-        vertices.insert(vertices.end(), color.begin(), color.end());
 
         vertexNumber++;
 

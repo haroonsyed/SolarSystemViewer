@@ -1,7 +1,7 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNorm;
-layout (location = 2) in vec3 aColor;
+layout (location = 1) in vec2 aTex;
+layout (location = 2) in vec3 aNorm;
 
 out vec4 vertexColor;
 out vec3 transformedPos;
@@ -18,5 +18,5 @@ void main()
    // Calculate Position
    gl_Position = view * vec4(transformedPos,1);
    
-   vertexColor = vec4(aColor, 1.0);
+   vertexColor = vec4(1.0, 0.0, 0.0, 1.0);
 };
