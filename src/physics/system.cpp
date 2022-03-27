@@ -8,7 +8,7 @@ System::System() {
   // Influenced by G constant, default is aesthetic/arbitrary
   // The physics is made framerate independent by dividing by framerate for deltaT
   // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
-  const double DEFAULT_TIME_FACTOR = 100;
+  const double DEFAULT_TIME_FACTOR = 200;
   timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / TARGET_FRAMERATE);
 }
 
