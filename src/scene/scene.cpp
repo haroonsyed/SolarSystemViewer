@@ -2,11 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <GL/glew.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
-#include "GLFW/glfw3.h"
 #include "nlohmann/json.hpp"
 
 System* Scene::getPhysicsSystem() {

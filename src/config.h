@@ -6,3 +6,4 @@
 static const unsigned int SCR_WIDTH = 800;
 static const unsigned int SCR_HEIGHT = 600;
 static const unsigned int TARGET_FRAMERATE = 60;
+static const unsigned int INPUT_POLL_RATE = 1000; // Default to 1000Hz (limited by fps so doesn't matter)

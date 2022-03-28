@@ -1,8 +1,6 @@
 #pragma once
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 class InputController {
 	private:
@@ -12,8 +10,6 @@ class InputController {
 		double timeAtLastInput = glfwGetTime(); //Used to separate input speed from framerate
 	public:
 		bool mousePressed;
-		double mouseX;
-		double mouseY;
 		InputController(GLFWwindow* window);
 		void processInput();
 		char getPressedKey();

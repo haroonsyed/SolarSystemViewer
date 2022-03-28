@@ -61,13 +61,6 @@ int main()
         // Input
         inputController.processInput();
         glm::mat4 view = inputController.getViewTransform();
-        if (inputController.mousePressed) {
-            int mouseX = inputController.mouseX;
-            int mouseY = inputController.mouseY;
-            // The negative one invert makes moving the model feel more natural in x direction
-            view = glm::rotate(view, (float)(mouseX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            view = glm::rotate(view, (float)(mouseY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }
 
         // Simulation
         scene.getPhysicsSystem()->update();
