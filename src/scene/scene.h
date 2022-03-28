@@ -11,6 +11,6 @@ class Scene {
   public:
     System* getPhysicsSystem();
     void loadScene(std::string sceneFilePath);
-    void render(glm::mat4 view);
+    void render(glm::mat4& view);
 
 };

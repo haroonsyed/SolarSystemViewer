@@ -9,7 +9,7 @@ System::System() {
   // The physics is made framerate independent by dividing by framerate for deltaT
   // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
   const double DEFAULT_TIME_FACTOR = 1000;
-  timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / TARGET_FRAMERATE);
+  timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate());
 }
 
 void System::addBody(GravBody* body) {
@@ -25,7 +25,7 @@ void System::update() {
   const double G = 6.67430e-11 * 1e-12; // 1e-6 is a scale factor to avoid float error
 
   // DEBUG, print every x seconds
-  if (std::fmod(glfwGetTime(),2) < (1.0/TARGET_FRAMERATE)) {
+  if (std::fmod(glfwGetTime(),2) < (1.0/Config::getInstance()->getTargetFramerate())) {
       for (int i = 0; i < bodies.size(); i++) {
           std::cout << "Body " << i << std::endl;
           bodies[i]->print();

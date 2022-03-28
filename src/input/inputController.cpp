@@ -14,28 +14,29 @@ InputController::InputController(GLFWwindow* window) {
 void InputController::processInput()
 {
 
+  // Get config data
+  Config* config = Config::getInstance();
+  unsigned int SCR_WIDTH = config->getScreenWidth();
+  unsigned int SCR_HEIGHT = config->getScreenHeight();
+  unsigned int INPUT_POLL_RATE = config->getInputPollRate();
+
   // CLOSE APPLICATION
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
   
-  // Can be used to reduce sensitivity
+  // Used to control sensitivity
   double timeSinceLastInput = glfwGetTime() - timeAtLastInput;
-
   if (timeSinceLastInput > 1.0/INPUT_POLL_RATE) { 
 
     // Reset time since last input
     timeAtLastInput = glfwGetTime();
 
-    // VIEW DIMENSIONS
-    int height, width;
-    glfwGetWindowSize(window, &width, &height);
-
     // SCALING VIEW
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-      viewTransform = glm::scale(viewTransform, glm::vec3(1.02,1.02,1.02)); // ZOOM IN
+      viewTransform = glm::translate(viewTransform, glm::vec3(0,0,-0.05)); // ZOOM IN
     }
     else if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-      viewTransform = glm::scale(viewTransform, glm::vec3(0.98, 0.98, 0.98)); // ZOOM IN
+      viewTransform = glm::translate(viewTransform, glm::vec3(0,0,0.05)); // ZOOM IN
     }
 
     // ROTATING VIEW
@@ -45,17 +46,17 @@ void InputController::processInput()
       // On change first set mouse to middle and hide cursor
       if (mousePressed == false) {
           glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-          glfwSetCursorPos(window, width/2, height/2);
+          glfwSetCursorPos(window, SCR_WIDTH/2, SCR_HEIGHT/2);
           mousePressed = true;
       }
 
       // Determine the amount and direction the mouse moved
       double deltaX, deltaY = 0;
       glfwGetCursorPos(window, &deltaX, &deltaY);
-      glfwSetCursorPos(window, width / 2, height / 2); // Reset position for next mouse input
+      glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2); // Reset position for next mouse input
       // Adjust for mouse being in middle
-      deltaX -= width / 2;
-      deltaY -= height / 2;
+      deltaX -= SCR_WIDTH / 2;
+      deltaY -= SCR_HEIGHT / 2;
       viewTransform = glm::rotate(viewTransform, (float)(deltaX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
       viewTransform = glm::rotate(viewTransform, (float)(deltaY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     }
