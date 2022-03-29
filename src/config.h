@@ -5,11 +5,11 @@ class Config {
 
 private:
 
-  static Config* instance;
-  unsigned int SCR_WIDTH;
-  unsigned int SCR_HEIGHT;
-  unsigned int TARGET_FRAMERATE = 60;
-  unsigned int INPUT_POLL_RATE = 1000; // Default to 1000Hz (limited by fps so doesn't matter)
+  static Config* m_instance;
+  unsigned int m_SCR_WIDTH;
+  unsigned int m_SCR_HEIGHT;
+  unsigned int m_TARGET_FRAMERATE = 60;
+  unsigned int m_INPUT_POLL_RATE = 1000; // Default to 1000Hz (limited by fps so doesn't matter)
 
   Config();
 

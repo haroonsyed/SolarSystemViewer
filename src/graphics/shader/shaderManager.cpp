@@ -4,9 +4,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-ShaderManager* ShaderManager::instance = nullptr;
-unsigned int ShaderManager::boundShader = 0;
-std::unordered_map<std::string, unsigned int> ShaderManager::shaderMap;
+ShaderManager* ShaderManager::m_instance = nullptr;
+unsigned int ShaderManager::m_boundShader = 0;
+std::unordered_map<std::string, unsigned int> ShaderManager::m_shaderMap;
 
 ShaderManager::ShaderManager() {};
 
@@ -20,14 +20,14 @@ std::string ShaderManager::readShader(std::string shaderFilePath) {
 }
 
 ShaderManager* ShaderManager::getInstance() {
-	if (instance == nullptr) {
-		instance = new ShaderManager();
+	if (m_instance == nullptr) {
+		m_instance = new ShaderManager();
 	}
-	return instance;
+	return m_instance;
 }
 
 unsigned int ShaderManager::getBoundShader() {
-	return boundShader;
+	return m_boundShader;
 }
 
 void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragShaderPath) {
@@ -35,7 +35,7 @@ void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragSha
 	// Shaders are cached so they aren't built every time
 	std::string shaderKey = vertexShaderPath + fragShaderPath;
 
-	if (shaderMap.count(shaderKey) == 0) {
+	if (m_shaderMap.count(shaderKey) == 0) {
 
 		std::string rawVertexShader = readShader(vertexShaderPath);
 		std::string rawFragShader = readShader(fragShaderPath);
@@ -87,13 +87,13 @@ void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragSha
 		glDeleteShader(fragmentShader);
 
 		// Add to map
-		shaderMap[shaderKey] = shaderProgram;
+		m_shaderMap[shaderKey] = shaderProgram;
 
 	}
 
 	// Bind the shaderProgram
-	unsigned int shaderProgram = shaderMap.at(shaderKey);
+	unsigned int shaderProgram = m_shaderMap.at(shaderKey);
 	glUseProgram(shaderProgram);
-	boundShader = shaderProgram;
+	m_boundShader = shaderProgram;
 
 }

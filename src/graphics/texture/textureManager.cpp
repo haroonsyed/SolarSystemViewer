@@ -5,27 +5,27 @@
 #include <iostream>
 #include <GL/glew.h>
 
-TextureManager* TextureManager::instance = nullptr;
-unsigned int TextureManager::boundTexture = 0;
-std::unordered_map<std::string, unsigned int> TextureManager::textureMap;
+TextureManager* TextureManager::m_instance = nullptr;
+unsigned int TextureManager::m_boundTexture = 0;
+std::unordered_map<std::string, unsigned int> TextureManager::m_textureMap;
 
 TextureManager::TextureManager() {};
 
 TextureManager* TextureManager::getInstance() {
-	if (instance == nullptr) {
-		instance = new TextureManager();
+	if (m_instance == nullptr) {
+		m_instance = new TextureManager();
 	}
-	return instance;
+	return m_instance;
 }
 
 unsigned int TextureManager::getBoundTexture() {
-	return boundTexture;
+	return m_boundTexture;
 }
 
 void TextureManager::bindTexture(std::string textureFilePath) {
 
 	// Textures are cached so they aren't built every time
-	if (textureMap.count(textureFilePath) == 0) {
+	if (m_textureMap.count(textureFilePath) == 0) {
 
 		// Load the file
 		int width, height, nrChannels;
@@ -47,7 +47,7 @@ void TextureManager::bindTexture(std::string textureFilePath) {
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		// Add to map
-		textureMap[textureFilePath] = texture;
+		m_textureMap[textureFilePath] = texture;
 
 		// Free memory from cpu
 		stbi_image_free(data);
@@ -55,7 +55,7 @@ void TextureManager::bindTexture(std::string textureFilePath) {
 	}
 
 	// Bind the texture
-	unsigned int texture = textureMap.at(textureFilePath);
+	unsigned int texture = m_textureMap.at(textureFilePath);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 }

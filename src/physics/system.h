@@ -5,8 +5,8 @@
 
 class System {
   private:
-    std::vector<GravBody*> bodies;
-    float timeFactor;
+    std::vector<GravBody*> m_bodies;
+    float m_timeFactor;
 
   public:
 	System();

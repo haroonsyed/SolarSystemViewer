@@ -7,9 +7,9 @@
 // NOT THREAD SAFE
 class TextureManager {
 private:
-  static TextureManager* instance;
-  static unsigned int boundTexture;
-  static std::unordered_map<std::string, unsigned int> textureMap; 
+  static TextureManager* m_instance;
+  static unsigned int m_boundTexture;
+  static std::unordered_map<std::string, unsigned int> m_textureMap; 
   TextureManager();
 
 public:

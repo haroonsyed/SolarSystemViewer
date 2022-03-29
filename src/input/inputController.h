@@ -4,12 +4,12 @@
 
 class InputController {
 	private:
-		char pressedKey = 0;
-		GLFWwindow* window = nullptr;
-		glm::mat4 viewTransform = glm::mat4(1.0f);
-		double timeAtLastInput = glfwGetTime(); //Used to separate input speed from framerate
+		char m_pressedKey = 0;
+		GLFWwindow* m_window = nullptr;
+		glm::mat4 m_viewTransform = glm::mat4(1.0f);
+		double m_timeAtLastInput = glfwGetTime(); //Used to separate input speed from framerate
+		bool m_mousePressed;
 	public:
-		bool mousePressed;
 		InputController(GLFWwindow* window);
 		void processInput();
 		char getPressedKey();

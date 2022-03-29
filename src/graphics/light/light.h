@@ -4,9 +4,9 @@
 
 class Light {
 private:
-	glm::vec3 position;
-	std::vector<float> color;
-	float intensity;
+	glm::vec3 m_position;
+	std::vector<float> m_color;
+	float m_intensity;
 
 public:
 	void setPosition(glm::vec3 position);
