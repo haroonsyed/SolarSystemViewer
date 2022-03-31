@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 // Singleton pattern (I think it's fine since this class takes over code in the main)
@@ -15,6 +16,6 @@ private:
 public:
     static MeshManager* getInstance();
     // Contains filename -> [vao, vbo, vertexCount]
-    std::vector<unsigned int> MeshManager::getBufferInfo();
+    std::vector<unsigned int> getBufferInfo();
     void bindMesh(std::string meshFilePath);
 };

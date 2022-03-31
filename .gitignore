@@ -367,3 +367,4 @@ build/*
 !build/.gitignore
 !assets/**
 README.pdf
+.vscode/*

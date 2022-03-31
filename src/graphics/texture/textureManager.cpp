@@ -1,7 +1,7 @@
 #include "textureManager.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../../../lib/std_image.h"
 #include <iostream>
 #include <GL/glew.h>
 
