@@ -30,7 +30,7 @@ unsigned int ShaderManager::getBoundShader() {
 	return boundShader;
 }
 
-void ShaderManager::useShader(std::string vertexShaderPath, std::string fragShaderPath) {
+void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragShaderPath) {
 
 	// Shaders are cached so they aren't built every time
 	std::string shaderKey = vertexShaderPath + fragShaderPath;

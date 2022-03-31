@@ -1,7 +1,7 @@
 #include "meshManager.h"
 #include <iostream>
 #include <GL/glew.h>
-#include "./mesh/meshImporter.h"
+#include "./meshImporter.h"
 
 MeshManager* MeshManager::instance = nullptr;
 std::vector<unsigned int> MeshManager::bufferInfo;
@@ -57,10 +57,8 @@ void MeshManager::bindMesh(std::string meshFilePath) {
 
     }
 
-    // Bind the shaderProgram
-
-    auto buffers = meshMap.at(meshKey);
-
-    bufferInfo = buffers;
+    // Bind the correct VAO
+    bufferInfo = meshMap.at(meshKey);
+    glBindVertexArray(bufferInfo[0]);
 
 }

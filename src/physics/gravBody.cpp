@@ -2,19 +2,8 @@
 #include <iostream>
 
 GravBody::GravBody() {
-  position = glm::vec3(1.0);
   velocity = glm::vec3(1.0);
   mass = 1.0;
-}
-
-glm::vec3 GravBody::getPosition() {
-  return position;
-}
-void GravBody::setPosition(float x, float y, float z) {
-  this->position = glm::vec3(x, y, z);
-}
-void GravBody::setPosition(glm::vec3 position) {
-  this->position = position;
 }
 glm::vec3 GravBody::getVelocity() {
   return velocity;
@@ -35,12 +24,10 @@ void GravBody::print() {
 	const float vx = velocity.x;
 	const float vy = velocity.y;
 	const float vz = velocity.z;
-	const float px = position.x;
-	const float py = position.y;
-	const float pz = position.z;
+	const float px = getPosition().x;
+	const float py = getPosition().y;
+	const float pz = getPosition().z;
 	std::cout << "Velocity: " << vx << " " << vy << " " << vz << std::endl;
 	std::cout << "Position: " << px << " " << py << " " << pz << std::endl;
 }
-Mesh* GravBody::getMesh() {
-  return &mesh;
-}
+

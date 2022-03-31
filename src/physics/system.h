@@ -5,13 +5,13 @@
 
 class System {
   private:
-    std::vector<GravBody> bodies;
+    std::vector<GravBody*> bodies;
     float timeFactor;
 
   public:
 	System();
-    void addBody(GravBody& body);
-    std::vector<GravBody> getBodies();
+    void addBody(GravBody* body);
+    std::vector<GravBody*> getBodies();
     void update();
 
 };

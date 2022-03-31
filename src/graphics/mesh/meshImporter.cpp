@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <iostream>
-#include "../util.h"
+#include "../../util.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
