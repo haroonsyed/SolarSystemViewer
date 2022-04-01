@@ -14,26 +14,11 @@
                 "z": 0.0
             },
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs"
-        },
-        {
-            "name": "Satellite",
-            "mass": 5e3,
-            "position": {
-                "x": 0.0,
-                "y": 36e6,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": -3139,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "meshFilePath": "../assets/models/womanhead.obj",
+            "textureFilePath": "../assets/textures/earth.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
             "fragmentShaderPath": "../assets/shaders/phong.fs"
         }
+        
     ],
     "Lights": [
         {
