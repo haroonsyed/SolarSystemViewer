@@ -26,8 +26,6 @@ void System::update() {
 
   // DEBUG, print every x seconds
   if (std::fmod(glfwGetTime(),2) < (1.0/Config::getInstance()->getTargetFramerate())) {
-      auto bodies = getBodies();
-      auto bodies = getBodies();
       for (int i = 0; i < bodies.size(); i++) {
           std::cout << "Body " << i << std::endl;
           bodies[i]->print();
