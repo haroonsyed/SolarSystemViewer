@@ -26,6 +26,12 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+    // Get the config
+    Config* config = Config::getInstance();
+    unsigned int SCR_WIDTH = config->getScreenWidth();
+    unsigned int SCR_HEIGHT = config->getScreenHeight();
+    unsigned int TARGET_FRAMERATE = config->getTargetFramerate();
+
     // glfw window creation
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "viewGL", NULL, NULL);
@@ -61,13 +67,6 @@ int main()
         // Input
         inputController.processInput();
         glm::mat4 view = inputController.getViewTransform();
-        if (inputController.mousePressed) {
-            int mouseX = inputController.mouseX;
-            int mouseY = inputController.mouseY;
-            // The negative one invert makes moving the model feel more natural in x direction
-            view = glm::rotate(view, (float)(mouseX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            view = glm::rotate(view, (float)(mouseY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        }
 
         // Simulation
         scene.getPhysicsSystem()->update();
@@ -98,7 +97,10 @@ int main()
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+  // make sure the viewport matches the new window dimensions; note that width and 
+  // height will be significantly larger than specified on retina displays.
+  Config* config = Config::getInstance();
+  config->setScreenWidth(width);
+  config->setScreenHeight(height);
+  glViewport(0, 0, width, height);
 }
