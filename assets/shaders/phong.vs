@@ -7,18 +7,16 @@ out vec3 transformedPos;
 out vec2 uvCoord;
 out vec3 transformedNorm;
 
-uniform mat4 scale;
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 projection;
 
 void main()
 {
-   transformedPos = vec3(model * scale * vec4(aPos,1));
-   transformedNorm = vec3(model * scale * vec4(aNorm,0.0));
+   transformedPos = vec3(model * vec4(aPos,1));
+   transformedNorm = vec3(model * vec4(aNorm,0.0));
    uvCoord = aTex;
 
    // Calculate Position
-   gl_Position = projection * view * vec4(transformedPos,1);
+   gl_Position = view * vec4(transformedPos,1);
 
 };
