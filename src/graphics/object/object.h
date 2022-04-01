@@ -7,7 +7,6 @@ class Object {
     std::string meshFilePath;
     std::string vertexShaderPath;
     std::string fragShaderPath;
-    std::string imgTexFilePath;
     glm::vec3 position;
     float scale;
 
@@ -20,7 +19,6 @@ class Object {
     void setScale(float scale);
     void setMesh(std::string meshFilePath);
     void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
-    void setImageTexture(std::string textureFilePath);
     void bind();
 
 };
