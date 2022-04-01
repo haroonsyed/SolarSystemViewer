@@ -99,9 +99,9 @@ void Scene::render(glm::mat4 view) {
 
     // Setup transform matrix for this obj
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, (obj->getPosition() / 1.0f));
+    model = glm::translate(model, (obj->getPosition() / 4000e3f));
     model = glm::scale(model, glm::vec3(obj->getScale()));
-    model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     obj->bind();
 

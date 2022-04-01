@@ -1,0 +1,200 @@
+{
+    "GravBodies": [
+        {
+            "name": "Sun",
+            "mass": 1.99e30,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/sun.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Mercury",
+            "mass": 3.29e23,
+            "position": {
+                "x": 69.8e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 38.86e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/mercury.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Venus",
+            "mass": 4.87e24,
+            "position": {
+                "x": 108.9e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 34.79e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/venus.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Earth",
+            "mass": 6e24,
+            "position": {
+                "x": 152.1e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 29.29e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/earth.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Moon",
+            "mass": 0.073e24,
+            "position": {
+                "x": 152.506e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 30.260e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/moon.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Mars",
+            "mass": 0.642e24,
+            "position": {
+                "x": 249.3e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 21.97e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/mars.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Jupiter",
+            "mass": 1898.13e24,
+            "position": {
+                "x": 816.363e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 12.44e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/jupiter.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Saturn",
+            "mass": 568e24,
+            "position": {
+                "x": 1506.5e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 9.09e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/saturn.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Uranus",
+            "mass": 86.8e24,
+            "position": {
+                "x": 3001.4e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 6.49e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/uranus.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        },
+        {
+            "name": "Neptune",
+            "mass": 86.8e24,
+            "position": {
+                "x": 4558.9e9,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 5.37e3,
+                "z": 0.0
+            },
+            "meshFilePath": "../assets/models/sphere.obj",
+            "textureFilePath": "../assets/textures/neptune.jpg",
+            "vertexShaderPath": "../assets/shaders/phong.vs",
+            "fragmentShaderPath": "../assets/shaders/phong.fs"
+        }
+
+    ],
+    "Lights": [
+        {
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "color": {
+                "red": 1.0,
+                "green": 1.0,
+                "blue": 1.0
+            },
+            "intensity": 1.0
+        }
+    ]
+}

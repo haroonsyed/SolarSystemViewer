@@ -43,7 +43,7 @@ int main()
 
     // Load scene
     Scene scene;
-    scene.loadScene("../assets/scenes/testing.json");
+    scene.loadScene("../assets/scenes/sol.json");
 
     // render loop
     // -----------
