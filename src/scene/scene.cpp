@@ -43,10 +43,7 @@ void Scene::loadScene(std::string sceneFilePath) {
       gravBodyJSON["vertexShaderPath"].get<std::string>(),
       gravBodyJSON["fragmentShaderPath"].get<std::string>()
     );
-<<<<<<< HEAD
     body->setImageTexture(gravBodyJSON["textureFilePath"].get<std::string>());
-=======
->>>>>>> e0b989944324540ad97aa18c017a90b007475a7b
 
     physicsSystem.addBody(body);
 
@@ -102,14 +99,9 @@ void Scene::render(glm::mat4 view) {
 
     // Setup transform matrix for this obj
     glm::mat4 model = glm::mat4(1.0f);
-<<<<<<< HEAD
     model = glm::translate(model, (obj->getPosition() / 1.0f));
     model = glm::scale(model, glm::vec3(obj->getScale()));
     model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-=======
-    model = glm::translate(model, (obj->getPosition() / 50.0f));
-    model = glm::scale(model, glm::vec3(obj->getScale()));
->>>>>>> e0b989944324540ad97aa18c017a90b007475a7b
 
     obj->bind();
 
