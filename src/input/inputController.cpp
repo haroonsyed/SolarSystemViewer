@@ -5,8 +5,8 @@
 #include "../config.h"
 
 InputController::InputController(GLFWwindow* window) {
-  mousePressed = false;
-  this->window = window;
+  m_mousePressed = false;
+  m_window = window;
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -21,50 +21,50 @@ void InputController::processInput()
   unsigned int INPUT_POLL_RATE = config->getInputPollRate();
 
   // CLOSE APPLICATION
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
+  if (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(m_window, true);
   
   // Used to control sensitivity
-  double timeSinceLastInput = glfwGetTime() - timeAtLastInput;
+  double timeSinceLastInput = glfwGetTime() - m_timeAtLastInput;
   if (timeSinceLastInput > 1.0/INPUT_POLL_RATE) { 
 
     // Reset time since last input
-    timeAtLastInput = glfwGetTime();
+    m_timeAtLastInput = glfwGetTime();
 
     // SCALING VIEW
-    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-      viewTransform = glm::translate(viewTransform, glm::vec3(0,0,-0.05)); // ZOOM IN
+    if (glfwGetKey(m_window, GLFW_KEY_Z) == GLFW_PRESS) {
+      m_viewTransform = glm::translate(m_viewTransform, glm::vec3(0,0,-0.05)); // ZOOM IN
     }
-    else if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-      viewTransform = glm::translate(viewTransform, glm::vec3(0,0,0.05)); // ZOOM IN
+    else if (glfwGetKey(m_window, GLFW_KEY_X) == GLFW_PRESS) {
+      m_viewTransform = glm::translate(m_viewTransform, glm::vec3(0,0,0.05)); // ZOOM IN
     }
 
     // ROTATING VIEW
     //Get if mouse is pressed, and grab coordinates (will be relative to zero so easy).
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+    if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
 
       // On change first set mouse to middle and hide cursor
-      if (mousePressed == false) {
-          glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-          glfwSetCursorPos(window, SCR_WIDTH/2, SCR_HEIGHT/2);
-          mousePressed = true;
+      if (m_mousePressed == false) {
+          glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+          glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
+          m_mousePressed = true;
       }
 
       // Determine the amount and direction the mouse moved
       double deltaX, deltaY = 0;
-      glfwGetCursorPos(window, &deltaX, &deltaY);
-      glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2); // Reset position for next mouse input
+      glfwGetCursorPos(m_window, &deltaX, &deltaY);
+      glfwSetCursorPos(m_window, SCR_WIDTH / 2, SCR_HEIGHT / 2); // Reset position for next mouse input
       // Adjust for mouse being in middle
       deltaX -= SCR_WIDTH / 2;
       deltaY -= SCR_HEIGHT / 2;
-      viewTransform = glm::rotate(viewTransform, (float)(deltaX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      viewTransform = glm::rotate(viewTransform, (float)(deltaY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      m_viewTransform = glm::rotate(m_viewTransform, (float)(deltaX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+      m_viewTransform = glm::rotate(m_viewTransform, (float)(deltaY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     }
     //Show mouse cursor and stop locking its position for next press. 
     //Only on change to not pressed anymore.
     else {
-      glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      mousePressed = false;
+      glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+      m_mousePressed = false;
     }
 
   }
@@ -73,10 +73,10 @@ void InputController::processInput()
 
 char InputController::getPressedKey()
 {
-    return pressedKey;
+    return m_pressedKey;
 }
 
 glm::mat4 InputController::getViewTransform() {
-  return viewTransform;
+  return m_viewTransform;
 }
 

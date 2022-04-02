@@ -3,21 +3,21 @@
 #include <GL/glew.h>
 #include "./meshImporter.h"
 
-MeshManager* MeshManager::instance = nullptr;
-std::vector<unsigned int> MeshManager::bufferInfo;
-std::unordered_map<std::string, std::vector<unsigned int>> MeshManager::meshMap;
+MeshManager* MeshManager::m_instance = nullptr;
+std::vector<unsigned int> MeshManager::m_bufferInfo;
+std::unordered_map<std::string, std::vector<unsigned int>> MeshManager::m_meshMap;
 
 MeshManager::MeshManager() {};
 
 MeshManager* MeshManager::getInstance() {
-    if (instance == nullptr) {
-        instance = new MeshManager();
+    if (m_instance == nullptr) {
+        m_instance = new MeshManager();
     }
-    return instance;
+    return m_instance;
 }
 
 std::vector<unsigned int> MeshManager::getBufferInfo() {
-    return bufferInfo;
+    return m_bufferInfo;
 }
 
 void MeshManager::bindMesh(std::string meshFilePath) {
@@ -25,7 +25,7 @@ void MeshManager::bindMesh(std::string meshFilePath) {
     // Shaders are cached so they aren't built every time
     std::string meshKey = meshFilePath;
 
-    if (meshMap.count(meshKey) == 0) {
+    if (m_meshMap.count(meshKey) == 0) {
 
         MeshImporter importer;
         std::vector<float> meshData = importer.readSepTriMesh(meshFilePath);
@@ -53,12 +53,12 @@ void MeshManager::bindMesh(std::string meshFilePath) {
         glEnableVertexAttribArray(2);
 
         // Add to map
-        meshMap[meshKey] = std::vector<unsigned int>{ VAO, VBO, numVertices };
+        m_meshMap[meshKey] = std::vector<unsigned int>{ VAO, VBO, numVertices };
 
     }
 
     // Bind the correct VAO
-    bufferInfo = meshMap.at(meshKey);
-    glBindVertexArray(bufferInfo[0]);
+    m_bufferInfo = m_meshMap.at(meshKey);
+    glBindVertexArray(m_bufferInfo[0]);
 
 }

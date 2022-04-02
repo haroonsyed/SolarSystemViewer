@@ -7,9 +7,9 @@
 // NOT THREAD SAFE
 class ShaderManager {
 private:
-    static ShaderManager* instance;
-    static unsigned int boundShader;
-    static std::unordered_map<std::string, unsigned int> shaderMap;
+    static ShaderManager* m_instance;
+    static unsigned int m_boundShader;
+    static std::unordered_map<std::string, unsigned int> m_shaderMap;
     std::string readShader(std::string shaderFilePath);
     ShaderManager();
 

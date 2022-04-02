@@ -10,7 +10,7 @@
 #include "../config.h"
 
 System* Scene::getPhysicsSystem() {
-  return &physicsSystem;
+  return &m_physicsSystem;
 }
 
 void Scene::loadScene(std::string sceneFilePath) {
@@ -27,6 +27,7 @@ void Scene::loadScene(std::string sceneFilePath) {
   for (auto gravBodyJSON : jScene["GravBodies"]) {
     GravBody* body = new GravBody();
 
+    body->setName(gravBodyJSON["name"].get<std::string>());
     body->setMass(gravBodyJSON["mass"].get<float>() / 1e6);
     body->setPosition(
       gravBodyJSON["position"]["x"].get<float>()/1e6, 
@@ -45,7 +46,7 @@ void Scene::loadScene(std::string sceneFilePath) {
     );
     body->setImageTexture(gravBodyJSON["textureFilePath"].get<std::string>());
 
-    physicsSystem.addBody(body);
+    m_physicsSystem.addBody(body);
 
   }
 
@@ -66,7 +67,7 @@ void Scene::loadScene(std::string sceneFilePath) {
 
     light.setIntensity(lightJSON["intensity"].get<float>());
 
-    lights.push_back(light);
+    m_lights.push_back(light);
 
   }
 
@@ -88,7 +89,7 @@ void Scene::render(glm::mat4& view) {
 
   // Setup light data
   std::vector<glm::vec3> lightPositions;
-  for (Light &light : lights) {
+  for (Light &light : m_lights) {
     lightPositions.push_back(light.getPosition());
   }
 
@@ -98,7 +99,7 @@ void Scene::render(glm::mat4& view) {
   lightPos *= 10000;
 
   std::vector<Object*> objects;
-  for (Object* bodyPtr : physicsSystem.getBodies()) {
+  for (Object* bodyPtr : m_physicsSystem.getBodies()) {
     objects.push_back((Object*)bodyPtr);
   }
 

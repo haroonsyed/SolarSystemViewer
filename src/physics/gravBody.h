@@ -4,8 +4,8 @@
 
 class GravBody : public Object {
 	private:
-	  glm::vec3 velocity;
-	  float mass;
+	  glm::vec3 m_velocity;
+	  float m_mass;
 
 	public:
 	  GravBody();

@@ -5,8 +5,8 @@
 
 class Scene {
   private:
-    std::vector<Light> lights;
-    System physicsSystem;
+    std::vector<Light> m_lights;
+    System m_physicsSystem;
 
   public:
     System* getPhysicsSystem();

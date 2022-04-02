@@ -4,15 +4,18 @@
 
 class Object {
   private:
-    std::string meshFilePath;
-    std::string vertexShaderPath;
-    std::string fragShaderPath;
-    std::string imgTexFilePath;
-    glm::vec3 position;
-    float scale;
+    std::string m_meshFilePath;
+    std::string m_vertexShaderPath;
+    std::string m_fragShaderPath;
+    std::string m_imgTexFilePath;
+    std::string m_name;
+    glm::vec3 m_position;
+    float m_scale;
 
   public:
     Object();
+    void setName(std::string name);
+    std::string getName();
     glm::vec3 getPosition();
     void setPosition(float x, float y, float z);
     void setPosition(glm::vec3 position);
