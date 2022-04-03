@@ -5,6 +5,7 @@
 #include "../config.h"
 
 InputController::InputController(GLFWwindow* window) {
+  // glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
   m_window = window;
 }
 
@@ -30,6 +31,8 @@ void InputController::processInput()
     // Reset time since last input
     m_timeAtLastInput = glfwGetTime();
 
+    m_pressedKeys.clear();
+
     // Get the relevant keys that are pressed
     if (glfwGetKey(m_window, GLFW_KEY_Z) == GLFW_PRESS) {
       m_pressedKeys.insert(GLFW_KEY_Z);
@@ -43,17 +46,17 @@ void InputController::processInput()
 
     // Get the amount the mouse has moved
     glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-    glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
     glfwGetCursorPos(m_window, &deltaX, &deltaY);
     deltaX -= SCR_WIDTH / 2;
     deltaY -= SCR_HEIGHT / 2;
+    // glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
 
   }
 
 }
 
-std::unordered_set<unsigned int> InputController::getPressedKeys()
+std::unordered_set<unsigned int>* InputController::getPressedKeys()
 {
-    return m_pressedKeys;
+    return &m_pressedKeys;
 }
 

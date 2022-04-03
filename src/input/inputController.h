@@ -12,6 +12,6 @@ class InputController {
 	public:
 		InputController(GLFWwindow* window);
 		void processInput();
-		std::unordered_set<unsigned int> getPressedKeys();
+		std::unordered_set<unsigned int>* getPressedKeys();
 };
 
