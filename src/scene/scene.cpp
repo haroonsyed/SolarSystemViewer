@@ -23,21 +23,28 @@ void Scene::loadScene(std::string sceneFilePath) {
   std::getline(file, scene, '\0');
   json jScene = json::parse(scene);
 
+  float physicsDistanceFactor = jScene["PhysicsDistanceFactor"].get<float>();
+  float physicsMassFactor = jScene["PhysicsMassFactor"].get<float>();
+  m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
+  m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
+  m_physicsSystem.setPhysicsMassFactor(physicsMassFactor);
+
   // Construct scene. In units of MegaMeter and GigaGram
   for (auto gravBodyJSON : jScene["GravBodies"]) {
     GravBody* body = new GravBody();
 
     body->setName(gravBodyJSON["name"].get<std::string>());
-    body->setMass(gravBodyJSON["mass"].get<float>() / 1e6);
+    body->setScale(gravBodyJSON["radius"].get<float>() / physicsDistanceFactor);
+    body->setMass(gravBodyJSON["mass"].get<float>() / physicsMassFactor);
     body->setPosition(
-      gravBodyJSON["position"]["x"].get<float>()/1e6, 
-      gravBodyJSON["position"]["y"].get<float>()/1e6,
-      gravBodyJSON["position"]["z"].get<float>()/1e6
+      gravBodyJSON["position"]["x"].get<float>()/physicsDistanceFactor, 
+      gravBodyJSON["position"]["y"].get<float>()/physicsDistanceFactor,
+      gravBodyJSON["position"]["z"].get<float>()/physicsDistanceFactor
     );
     body->setVelocity(
-      gravBodyJSON["velocity"]["x"].get<float>()/1e6,
-      gravBodyJSON["velocity"]["y"].get<float>()/1e6,
-      gravBodyJSON["velocity"]["z"].get<float>()/1e6
+      gravBodyJSON["velocity"]["x"].get<float>()/physicsDistanceFactor,
+      gravBodyJSON["velocity"]["y"].get<float>()/physicsDistanceFactor,
+      gravBodyJSON["velocity"]["z"].get<float>()/physicsDistanceFactor
     );
     body->setMesh(gravBodyJSON["meshFilePath"].get<std::string>());
     body->setShaders(
@@ -54,9 +61,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>()/1e6,
-      lightJSON["position"]["y"].get<float>()/1e6,
-      lightJSON["position"]["z"].get<float>()/1e6
+      lightJSON["position"]["x"].get<float>()/physicsDistanceFactor,
+      lightJSON["position"]["y"].get<float>()/physicsDistanceFactor,
+      lightJSON["position"]["z"].get<float>()/physicsDistanceFactor
     );
 
     light.setColor(
@@ -102,15 +109,13 @@ void Scene::render(glm::mat4& view) {
     objects.push_back((Object*)bodyPtr);
   }
 
-  float universeScaleFactor = 100; // This applies to model distances, ontop of 1e6 already
-
   for (Object* obj : objects) {
 
     // Setup transform matrix for this obj
     glm::mat4 scale = glm::mat4(1.0);
     scale = glm::scale(scale, glm::vec3(obj->getScale()));
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, obj->getPosition()/universeScaleFactor);
+    model = glm::translate(model, obj->getPosition()/m_universeScaleFactor);
 
     obj->bind();
 
