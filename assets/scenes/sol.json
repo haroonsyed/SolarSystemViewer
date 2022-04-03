@@ -2,6 +2,7 @@
     "GravBodies": [
         {
             "name": "Sun",
+            "radius":  696000e3,
             "mass": 1.99e30,
             "position": {
                 "x": 0.0,
@@ -20,6 +21,7 @@
         },
         {
             "name": "Mercury",
+            "radius": 2439.5e3,
             "mass": 3.29e23,
             "position": {
                 "x": 69.8e9,
@@ -38,6 +40,7 @@
         },
         {
             "name": "Venus",
+            "radius":  6052e3,
             "mass": 4.87e24,
             "position": {
                 "x": 108.9e9,
@@ -56,6 +59,7 @@
         },
         {
             "name": "Earth",
+            "radius": 6378e3,
             "mass": 6e24,
             "position": {
                 "x": 152.1e9,
@@ -74,6 +78,7 @@
         },
         {
             "name": "Moon",
+            "radius":  1737.5e3,
             "mass": 0.073e24,
             "position": {
                 "x": 152.506e9,
@@ -92,6 +97,7 @@
         },
         {
             "name": "Mars",
+            "radius":  3396e3,
             "mass": 0.642e24,
             "position": {
                 "x": 249.3e9,
@@ -110,6 +116,7 @@
         },
         {
             "name": "Jupiter",
+            "radius":  71492e3,
             "mass": 1898.13e24,
             "position": {
                 "x": 816.363e9,
@@ -128,6 +135,7 @@
         },
         {
             "name": "Saturn",
+            "radius":  60268e3,
             "mass": 568e24,
             "position": {
                 "x": 1506.5e9,
@@ -146,6 +154,7 @@
         },
         {
             "name": "Uranus",
+            "radius":  25559e3,
             "mass": 86.8e24,
             "position": {
                 "x": 3001.4e9,
@@ -164,6 +173,7 @@
         },
         {
             "name": "Neptune",
+            "radius":  24764e3,
             "mass": 86.8e24,
             "position": {
                 "x": 4558.9e9,

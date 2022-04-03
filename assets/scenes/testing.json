@@ -2,6 +2,7 @@
     "GravBodies": [
         {
             "name": "Earth",
+            "radius": 6378e3,
             "mass": 6e24,
             "position": {
                 "x": 0.0,
