@@ -1,4 +1,7 @@
 {
+    "PhysicsDistanceFactor": 1e6,
+    "PhysicsMassFactor": 1e6,
+    "UniverseScaleFactor": 400,
     "GravBodies": [
         {
             "name": "Earth",
@@ -19,7 +22,7 @@
             "vertexShaderPath": "../assets/shaders/phong.vs",
             "fragmentShaderPath": "../assets/shaders/phong.fs"
         }
-        
+
     ],
     "Lights": [
         {
@@ -31,7 +34,7 @@
             "color": {
                 "red": 1.0,
                 "green": 1.0,
-                "blue":  1.0
+                "blue": 1.0
             },
             "intensity": 1.0
         }

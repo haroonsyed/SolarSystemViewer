@@ -10,6 +10,16 @@ System::System() {
   // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
   const double DEFAULT_TIME_FACTOR = 1000;
   m_timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate());
+  m_physicsDistanceFactor = 1.0f;
+  m_physicsMassFactor = 1.0f;
+}
+
+void System::setPhysicsDistanceFactor(float physicsDistanceFactor) {
+  m_physicsDistanceFactor = physicsDistanceFactor;
+}
+
+void System::setPhysicsMassFactor(float physicsMassFactor) {
+  m_physicsMassFactor = physicsMassFactor;
 }
 
 void System::addBody(GravBody* body) {
@@ -22,7 +32,8 @@ std::vector<GravBody*> System::getBodies() {
 
 void System::update() {
   
-  const double G = 6.67430e-11 * 1e-12; // 1e-6 is a scale factor to avoid float error
+  // The scaleing factors are needed to avoid float errors with using just SI units.
+  const double G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
 
   // DEBUG, print every x seconds
   if (std::fmod(glfwGetTime(),2) < (1.0/Config::getInstance()->getTargetFramerate())) {
