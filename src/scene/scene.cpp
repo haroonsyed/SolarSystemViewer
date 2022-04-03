@@ -84,8 +84,7 @@ void Scene::render(glm::mat4& view) {
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-  view = glm::translate(view, glm::vec3(0, 0, -2));
+  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
 
   // Setup light data
   std::vector<glm::vec3> lightPositions;
@@ -103,13 +102,15 @@ void Scene::render(glm::mat4& view) {
     objects.push_back((Object*)bodyPtr);
   }
 
+  float universeScaleFactor = 100; // This applies to model distances, ontop of 1e6 already
+
   for (Object* obj : objects) {
 
     // Setup transform matrix for this obj
     glm::mat4 scale = glm::mat4(1.0);
     scale = glm::scale(scale, glm::vec3(obj->getScale()));
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, (obj->getPosition() / 400e3f));
+    model = glm::translate(model, obj->getPosition()/universeScaleFactor);
 
     obj->bind();
 
