@@ -18,7 +18,7 @@ void main()
   vec3 normal = normalize(transformedNorm);
   vec3 viewDir = normalize(transformedPos);
   vec3 toLight = normalize(lightPos-transformedPos);
-  vec3 h = normalize((viewDir) + toLight);
+  vec3 h = normalize((-1*viewDir) + toLight);
 
   float ambient = 0.1;
   float specularStrength = 1;
