@@ -5,7 +5,7 @@
 
 Object::Object() {
   m_position = glm::vec3(0.0);
-  m_scale = 0.05;
+  m_scale = 70e3/1e3;
   m_meshFilePath = "../assets/models/sphere.obj";
   m_vertexShaderPath = "../shaders/phong.vs";
   m_fragShaderPath = "../shaders/phong.fs";

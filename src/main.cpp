@@ -7,6 +7,7 @@
 #include <thread>
 
 // My Imports
+#include "./camera/camera.h"
 #include "./input/inputController.h"
 #include "config.h"
 #include "./scene/scene.h"
@@ -54,6 +55,7 @@ int main()
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
+    Camera camera;
     InputController inputController(window);
     unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
@@ -66,7 +68,8 @@ int main()
 
         // Input
         inputController.processInput();
-        glm::mat4 view = inputController.getViewTransform();
+        camera.update(inputController.getPressedKeys());
+        glm::mat4 view = camera.getViewTransform();
 
         // Simulation
         scene.getPhysicsSystem()->update();

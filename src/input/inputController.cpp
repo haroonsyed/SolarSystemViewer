@@ -5,7 +5,7 @@
 #include "../config.h"
 
 InputController::InputController(GLFWwindow* window) {
-  m_mousePressed = false;
+  // glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
   m_window = window;
 }
 
@@ -31,52 +31,32 @@ void InputController::processInput()
     // Reset time since last input
     m_timeAtLastInput = glfwGetTime();
 
-    // SCALING VIEW
+    m_pressedKeys.clear();
+
+    // Get the relevant keys that are pressed
     if (glfwGetKey(m_window, GLFW_KEY_Z) == GLFW_PRESS) {
-      m_viewTransform = glm::translate(m_viewTransform, glm::vec3(0,0,-0.05)); // ZOOM IN
+      m_pressedKeys.insert(GLFW_KEY_Z);
     }
-    else if (glfwGetKey(m_window, GLFW_KEY_X) == GLFW_PRESS) {
-      m_viewTransform = glm::translate(m_viewTransform, glm::vec3(0,0,0.05)); // ZOOM IN
+    if (glfwGetKey(m_window, GLFW_KEY_X) == GLFW_PRESS) {
+      m_pressedKeys.insert(GLFW_KEY_X);
     }
-
-    // ROTATING VIEW
-    //Get if mouse is pressed, and grab coordinates (will be relative to zero so easy).
     if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-
-      // On change first set mouse to middle and hide cursor
-      if (m_mousePressed == false) {
-          glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-          glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
-          m_mousePressed = true;
-      }
-
-      // Determine the amount and direction the mouse moved
-      double deltaX, deltaY = 0;
-      glfwGetCursorPos(m_window, &deltaX, &deltaY);
-      glfwSetCursorPos(m_window, SCR_WIDTH / 2, SCR_HEIGHT / 2); // Reset position for next mouse input
-      // Adjust for mouse being in middle
-      deltaX -= SCR_WIDTH / 2;
-      deltaY -= SCR_HEIGHT / 2;
-      m_viewTransform = glm::rotate(m_viewTransform, (float)(deltaX)*glm::radians(-1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-      m_viewTransform = glm::rotate(m_viewTransform, (float)(deltaY)*glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+      m_pressedKeys.insert(GLFW_MOUSE_BUTTON_LEFT);
     }
-    //Show mouse cursor and stop locking its position for next press. 
-    //Only on change to not pressed anymore.
-    else {
-      glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-      m_mousePressed = false;
-    }
+
+    // Get the amount the mouse has moved
+    glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    glfwGetCursorPos(m_window, &deltaX, &deltaY);
+    deltaX -= SCR_WIDTH / 2;
+    deltaY -= SCR_HEIGHT / 2;
+    // glfwSetCursorPos(m_window, SCR_WIDTH/2, SCR_HEIGHT/2);
 
   }
 
 }
 
-char InputController::getPressedKey()
+std::unordered_set<unsigned int>* InputController::getPressedKeys()
 {
-    return m_pressedKey;
-}
-
-glm::mat4 InputController::getViewTransform() {
-  return m_viewTransform;
+    return &m_pressedKeys;
 }
 

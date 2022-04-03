@@ -19,6 +19,6 @@ void main()
    uvCoord = aTex;
 
    // Calculate Position
-   gl_Position = projection * view * vec4(transformedPos,1);
+   gl_Position = projection * view * model * scale * vec4(aPos,1);
 
 };
