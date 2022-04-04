@@ -2,6 +2,11 @@
     "PhysicsDistanceFactor": 1e6,
     "PhysicsMassFactor": 1e6,
     "UniverseScaleFactor": 400.0,
+    "CameraPosition":{
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1e3
+    },
     "GravBodies": [
         {
             "name": "Sun",

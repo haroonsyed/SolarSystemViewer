@@ -1,13 +1,16 @@
+#include <GL/glew.h>
 #include "scene.h"
 #include <iostream>
 #include <fstream>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "nlohmann/json.hpp"
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
 #include "../config.h"
+
+Scene::Scene(GLFWwindow* window) : m_inputController(window) {
+ m_universeScaleFactor = 1.0f;
+}
 
 System* Scene::getPhysicsSystem() {
   return &m_physicsSystem;
@@ -23,13 +26,23 @@ void Scene::loadScene(std::string sceneFilePath) {
   std::getline(file, scene, '\0');
   json jScene = json::parse(scene);
 
+  // Setup camera
+  m_camera.setCameraPosition(
+    glm::vec3(
+      jScene["CameraPosition"]["x"].get<float>(),
+      jScene["CameraPosition"]["y"].get<float>(),
+      jScene["CameraPosition"]["z"].get<float>()
+    )
+  );
+
+  // Setup physics
   float physicsDistanceFactor = jScene["PhysicsDistanceFactor"].get<float>();
   float physicsMassFactor = jScene["PhysicsMassFactor"].get<float>();
   m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
   m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
   m_physicsSystem.setPhysicsMassFactor(physicsMassFactor);
 
-  // Construct scene. In units of MegaMeter and GigaGram
+  // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
     GravBody* body = new GravBody();
 
@@ -57,6 +70,7 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   }
 
+  // Construct lights
   for (auto lightJSON : jScene["Lights"]) {
     Light light;
 
@@ -80,12 +94,28 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 }
 
-void Scene::render(glm::mat4& view) {
+void Scene::update() {
+
+  // Input
+  m_inputController.processInput();
+
+  // Simulation
+  m_physicsSystem.update();
+
+  // Camera
+  m_camera.update(m_inputController.getPressedKeys());
+
+}
+
+void Scene::render() {
 
   // Get shaderProgram
   ShaderManager* shaderManager = ShaderManager::getInstance();
   MeshManager* meshManager = MeshManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
+
+  // Get view projection for the entire draw call
+  glm::mat4 view = m_camera.getViewTransform();
 
   // Setup projection matrix for entire draw call
   Config* config = Config::getInstance();

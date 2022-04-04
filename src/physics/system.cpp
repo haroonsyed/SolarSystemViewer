@@ -91,6 +91,9 @@ void System::update() {
     m_bodies[i]->setVelocity(map[i].first);
     m_bodies[i]->setPosition(map[i].second);
 
+    // Rotation
+     m_bodies[i]->setRotation(glfwGetTime(), glm::vec3(0.0,1.0,0.0));
+
   }
 
 }

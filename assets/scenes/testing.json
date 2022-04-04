@@ -1,7 +1,12 @@
 {
     "PhysicsDistanceFactor": 1e6,
     "PhysicsMassFactor": 1e6,
-    "UniverseScaleFactor": 400,
+    "UniverseScaleFactor": 1,
+    "CameraPosition":{
+        "x": 0.0,
+        "y": 0.0,
+        "z": 20
+    },
     "GravBodies": [
         {
             "name": "Earth",

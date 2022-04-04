@@ -364,6 +364,7 @@ FodyWeavers.xsd
 
 # Build files
 build/*
+build-linux/*
 !build/.gitignore
 !assets/**
 README.pdf

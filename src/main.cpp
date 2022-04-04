@@ -7,13 +7,10 @@
 #include <thread>
 
 // My Imports
-#include "./camera/camera.h"
-#include "./input/inputController.h"
 #include "config.h"
 #include "./scene/scene.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
 int main()
 {
     // glfw: initialize and configure
@@ -49,14 +46,12 @@ int main()
     glewInit();
 
     // Load scene
-    Scene scene;
-    scene.loadScene("../assets/scenes/sol.json");
+    Scene scene(window);
+    scene.loadScene("../assets/scenes/testing.json");
 
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
-    Camera camera;
-    InputController inputController(window);
     unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
     {
@@ -66,15 +61,8 @@ int main()
 
         double startTime = glfwGetTime();
 
-        // Input
-        inputController.processInput();
-        camera.update(inputController.getPressedKeys());
-        glm::mat4 view = camera.getViewTransform();
-
-        // Simulation
-        scene.getPhysicsSystem()->update();
-        scene.render(view);
-        
+        scene.update();
+        scene.render();
 
         double endTime = glfwGetTime();
         int frameTime = (1000.0 * (endTime - startTime));
