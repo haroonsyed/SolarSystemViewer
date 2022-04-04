@@ -23,6 +23,7 @@ class Object {
     void setPosition(float x, float y, float z);
     void setPosition(glm::vec3 position);
     void setRotation(float angle, glm::vec3 axis);
+    void rotate(glm::quat quat);
     glm::mat4 getRotationMat();
     float getScale();
     void setScale(float scale);

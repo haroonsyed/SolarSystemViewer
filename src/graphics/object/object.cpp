@@ -37,6 +37,10 @@ void Object::setRotation(float angle, glm::vec3 axis) {
   m_rotation = glm::angleAxis(angle, glm::normalize(axis));
 }
 
+void Object::rotate(glm::quat rotation) {
+  m_rotation = m_rotation * rotation;
+}
+
 glm::mat4 Object::getRotationMat() {
   return glm::toMat4(m_rotation);
 }
