@@ -9,7 +9,7 @@
 #include "../config.h"
 
 Scene::Scene(GLFWwindow* window) : m_inputController(window) {
- m_universeScaleFactor = 1.0f;
+  m_universeScaleFactor = 1.0f;
 }
 
 System* Scene::getPhysicsSystem() {
@@ -18,7 +18,7 @@ System* Scene::getPhysicsSystem() {
 
 void Scene::loadScene(std::string sceneFilePath) {
 
-  using namespace nlohmann; // Testing lib namespace
+  using namespace nlohmann; // json lib namespace
 
   // Load scene from json file
   std::ifstream file(sceneFilePath);
@@ -44,30 +44,8 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
-    GravBody* body = new GravBody();
-
-    body->setName(gravBodyJSON["name"].get<std::string>());
-    body->setScale(gravBodyJSON["radius"].get<float>() / physicsDistanceFactor);
-    body->setMass(gravBodyJSON["mass"].get<float>() / physicsMassFactor);
-    body->setPosition(
-      gravBodyJSON["position"]["x"].get<float>()/physicsDistanceFactor, 
-      gravBodyJSON["position"]["y"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["position"]["z"].get<float>()/physicsDistanceFactor
-    );
-    body->setVelocity(
-      gravBodyJSON["velocity"]["x"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["velocity"]["y"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["velocity"]["z"].get<float>()/physicsDistanceFactor
-    );
-    body->setMesh(gravBodyJSON["meshFilePath"].get<std::string>());
-    body->setShaders(
-      gravBodyJSON["vertexShaderPath"].get<std::string>(),
-      gravBodyJSON["fragmentShaderPath"].get<std::string>()
-    );
-    body->setImageTexture(gravBodyJSON["textureFilePath"].get<std::string>());
-
+    GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
     m_physicsSystem.addBody(body);
-
   }
 
   // Construct lights
@@ -131,7 +109,7 @@ void Scene::render() {
 
   //unsigned int lightLocs = glGetUniformLocation(shaderProgram, "lightPositions");
   //glUniform3fv(lightLocs, lightPositions.size(), glm::value_ptr(&lightPositions[0]));
-  glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
+  glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 1.0f);
   lightPos *= 10000;
 
   std::vector<Object*> objects;

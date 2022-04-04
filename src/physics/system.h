@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <glm/glm.hpp>
 #include "gravBody.h"
 
 class System {

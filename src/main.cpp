@@ -55,27 +55,40 @@ int main()
     unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
     {
-        // Clear previous frame
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // Clear previous frame
+      glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        double startTime = glfwGetTime();
+      double startTime = glfwGetTime();
 
-        scene.update();
-        scene.render();
+      scene.update();
+      scene.render();
 
-        double endTime = glfwGetTime();
-        int frameTime = (1000.0 * (endTime - startTime));
-        int targetFrameTime = 1000.0 / TARGET_FRAMERATE;
-        if (frameTime < targetFrameTime) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(targetFrameTime));
-        }
-        frameCounter++;
+      // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+      // -------------------------------------------------------------------------------
+      glfwSwapBuffers(window);
+      glfwPollEvents();
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+      double endTime = glfwGetTime();
+      double frameTimeMS = 1000.0 * (endTime - startTime);
+      double frameTime = endTime - startTime;
+      double targetFrameTime = 1.0 / TARGET_FRAMERATE;
+
+      // Spinlock cpu to stabalize fps to target
+      while (frameTime < targetFrameTime) {
+        frameTime = glfwGetTime() - startTime;
+      }
+      frameCounter++;
+
+
+      if (endTime - startTime > targetFrameTime) {
+        std::cout << "Framerate struggling to keep up!" << std::endl;
+      }
+
+      // Print FPS every n seconds
+      if (std::fmod(glfwGetTime(), 5) < (1.0 / config->getTargetFramerate())) {
+        std::cout << "\nOverall Average framerate: " << frameCounter / glfwGetTime() << " fps.\n" << std::endl;
+      }
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.

@@ -5,11 +5,10 @@
 #include "../config.h"
 
 System::System() {
-  // Influenced by G constant, default is aesthetic/arbitrary
   // The physics is made framerate independent by dividing by framerate for deltaT
   // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
-  const double DEFAULT_TIME_FACTOR = 1000;
-  m_timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate());
+  const double DEFAULT_TIME_FACTOR = 60 * 60 * 23.9345; // Once earth day per update()
+  m_timeFactor = DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate();
   m_physicsDistanceFactor = 1.0f;
   m_physicsMassFactor = 1.0f;
 }
@@ -31,12 +30,14 @@ std::vector<GravBody*> System::getBodies() {
 }
 
 void System::update() {
+
+  float targetFrameRate = Config::getInstance()->getTargetFramerate();
   
   // The scaleing factors are needed to avoid float errors with using just SI units.
   const double G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
 
   // DEBUG, print every x seconds
-  if (std::fmod(glfwGetTime(),2) < (1.0/Config::getInstance()->getTargetFramerate())) {
+  if (std::fmod(glfwGetTime(),2) < (1.0/ targetFrameRate)) {
     for (auto body : m_bodies) {
       body->print();
     }
@@ -87,13 +88,18 @@ void System::update() {
 
   // Update position and velocity
   for(int i=0; i<m_bodies.size(); i++) {
+
+    GravBody* body = m_bodies[i];
+
+    float period = (2 * 3.14159265f) / body->getRotationSpeed();
+    float rotSpeed = body->getRotationSpeed() * period;
     
-    m_bodies[i]->setVelocity(map[i].first);
-    m_bodies[i]->setPosition(map[i].second);
-
-    // Rotation
-     m_bodies[i]->setRotation(glfwGetTime(), glm::vec3(0.0,1.0,0.0));
-
+    body->setVelocity(map[i].first);
+    body->setPosition(map[i].second);
+    body->rotate(glm::angleAxis(
+      body->getRotationSpeed() * m_timeFactor,
+      body->getAxis()
+    ));
   }
 
 }
