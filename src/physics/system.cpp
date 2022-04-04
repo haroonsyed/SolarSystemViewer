@@ -7,7 +7,7 @@
 System::System() {
   // The physics is made framerate independent by dividing by framerate for deltaT
   // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
-  const double DEFAULT_TIME_FACTOR = 60 * 60 * 23.9345; // Once earth day per update()
+  const double DEFAULT_TIME_FACTOR = 60 * 60 * 23.9345; // Once earth day per second
   m_timeFactor = DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate();
   m_physicsDistanceFactor = 1.0f;
   m_physicsMassFactor = 1.0f;
