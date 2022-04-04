@@ -11,6 +11,10 @@ Object::Object() {
   m_meshFilePath = "../assets/models/sphere.obj";
   m_vertexShaderPath = "../shaders/phong.vs";
   m_fragShaderPath = "../shaders/phong.fs";
+  m_imgTexFilePath = "";
+  m_normalMapFilePath = "";
+  m_specularMap = "";
+  m_emissiveMapFilePath = "";
 }
 
 void Object::setName(std::string name) {
@@ -64,6 +68,18 @@ void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath
 
 void Object::setImageTexture(std::string imgTexFilePath) {
   m_imgTexFilePath = imgTexFilePath;
+}
+
+void Object::setNormalMap(std::string normalMapFilePath) {
+  m_normalMapFilePath = normalMapFilePath;
+}
+
+void Object::setSpecularMap(std::string specularMapFilePath) {
+  m_specularMapFilePath = specularMapFilePath;
+}
+
+void Object::setEmissiveMap(std::string emissiveMapFilePath) {
+  m_emissiveMapFilePath = emissiveMapFilePath;
 }
 
 void Object::bind() {
