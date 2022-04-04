@@ -3,6 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../config.h"
 
+void Camera::setCameraPosition(glm::vec3 position) {
+  m_cameraPos = position;
+}
+
 void Camera::update(std::unordered_set<unsigned int>* pressedKeys) {
 
   // Zoom

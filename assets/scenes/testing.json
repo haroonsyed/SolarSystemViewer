@@ -1,7 +1,12 @@
 {
     "PhysicsDistanceFactor": 1e6,
     "PhysicsMassFactor": 1e6,
-    "UniverseScaleFactor": 400,
+    "UniverseScaleFactor": 1,
+    "CameraPosition":{
+        "x": 0.0,
+        "y": 0.0,
+        "z": 20
+    },
     "GravBodies": [
         {
             "name": "Earth",
@@ -17,6 +22,8 @@
                 "y": 0.0,
                 "z": 0.0
             },
+            "tilt": 23.44,
+            "rotationPeriod": 23.9345,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/earth.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",

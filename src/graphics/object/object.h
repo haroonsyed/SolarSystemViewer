@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Object {
   private:
@@ -9,7 +10,9 @@ class Object {
     std::string m_fragShaderPath;
     std::string m_imgTexFilePath;
     std::string m_name;
+
     glm::vec3 m_position;
+    glm::quat m_rotation;
     float m_scale;
 
   public:
@@ -19,6 +22,9 @@ class Object {
     glm::vec3 getPosition();
     void setPosition(float x, float y, float z);
     void setPosition(glm::vec3 position);
+    void setRotation(float angle, glm::vec3 axis);
+    void rotate(glm::quat quat);
+    glm::mat4 getRotationMat();
     float getScale();
     void setScale(float scale);
     void setMesh(std::string meshFilePath);

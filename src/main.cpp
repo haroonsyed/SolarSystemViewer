@@ -7,13 +7,10 @@
 #include <thread>
 
 // My Imports
-#include "./camera/camera.h"
-#include "./input/inputController.h"
 #include "config.h"
 #include "./scene/scene.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-
 int main()
 {
     // glfw: initialize and configure
@@ -49,45 +46,49 @@ int main()
     glewInit();
 
     // Load scene
-    Scene scene;
+    Scene scene(window);
     scene.loadScene("../assets/scenes/sol.json");
 
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
-    Camera camera;
-    InputController inputController(window);
     unsigned long frameCounter = 0;
     while (!glfwWindowShouldClose(window))
     {
-        // Clear previous frame
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // Clear previous frame
+      glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        double startTime = glfwGetTime();
+      double startTime = glfwGetTime();
 
-        // Input
-        inputController.processInput();
-        camera.update(inputController.getPressedKeys());
-        glm::mat4 view = camera.getViewTransform();
+      scene.update();
+      scene.render();
 
-        // Simulation
-        scene.getPhysicsSystem()->update();
-        scene.render(view);
-        
+      // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+      // -------------------------------------------------------------------------------
+      glfwSwapBuffers(window);
+      glfwPollEvents();
 
-        double endTime = glfwGetTime();
-        int frameTime = (1000.0 * (endTime - startTime));
-        int targetFrameTime = 1000.0 / TARGET_FRAMERATE;
-        if (frameTime < targetFrameTime) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(targetFrameTime));
-        }
-        frameCounter++;
+      double endTime = glfwGetTime();
+      double frameTimeMS = 1000.0 * (endTime - startTime);
+      double frameTime = endTime - startTime;
+      double targetFrameTime = 1.0 / TARGET_FRAMERATE;
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+      // Spinlock cpu to stabalize fps to target
+      while (frameTime < targetFrameTime) {
+        frameTime = glfwGetTime() - startTime;
+      }
+      frameCounter++;
+
+
+      if (endTime - startTime > targetFrameTime) {
+        std::cout << "Framerate struggling to keep up!" << std::endl;
+      }
+
+      // Print FPS every n seconds
+      if (std::fmod(glfwGetTime(), 5) < (1.0 / config->getTargetFramerate())) {
+        std::cout << "\nOverall Average framerate: " << frameCounter / glfwGetTime() << " fps.\n" << std::endl;
+      }
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.

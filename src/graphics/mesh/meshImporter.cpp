@@ -103,7 +103,6 @@ std::vector<std::vector<unsigned int>> MeshImporter::buildFace(std::string line)
 std::vector<std::vector<unsigned int>> MeshImporter::buildMesh(std::string meshFilePath) {
 
     std::ifstream file(meshFilePath);
-    StringUtil sutil;
     std::vector<std::vector<unsigned int>> meshData;
     std::string line;
 

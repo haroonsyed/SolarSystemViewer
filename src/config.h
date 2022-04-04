@@ -8,8 +8,8 @@ private:
   static Config* m_instance;
   unsigned int m_SCR_WIDTH;
   unsigned int m_SCR_HEIGHT;
-  unsigned int m_TARGET_FRAMERATE = 60;
-  unsigned int m_INPUT_POLL_RATE = 1000; // Default to 1000Hz (limited by fps so doesn't matter)
+  unsigned int m_TARGET_FRAMERATE;
+  unsigned int m_INPUT_POLL_RATE; // Default to 1000Hz (limited by fps so doesn't matter)
 
   Config();
 
