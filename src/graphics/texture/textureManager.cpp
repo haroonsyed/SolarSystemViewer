@@ -46,16 +46,12 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 		std::string path = textureFilePaths[i];
 		unsigned int existsLoc = glGetUniformLocation(shaderID, (getMapFromUniformLocation(i) + "Exists").c_str());
-		unsigned int exists = 0;
+		unsigned int exists = !path.empty();
+		glUniform1i(existsLoc, exists);
 
-		if (path.empty()) {
-			// No texture for this unit, set uniform indicating so
-			glUniform1i(existsLoc, exists);
+		if (!exists) {
+			// No texture, continue to next one
 			continue; 
-		}
-		else {
-			exists = 1;
-			glUniform1i(existsLoc, exists);
 		}
 	
 		// Textures are cached so they aren't built every time
