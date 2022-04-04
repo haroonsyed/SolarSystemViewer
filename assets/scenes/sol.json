@@ -22,6 +22,8 @@
                 "y": 0.0,
                 "z": 0.0
             },
+            "tilt": 7.0,
+            "rotationPeriod": 648,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/sun.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -41,6 +43,8 @@
                 "y": 38.86e3,
                 "z": 0.0
             },
+            "tilt": 0.034,
+            "rotationPeriod": 1407.6,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/mercury.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -60,6 +64,8 @@
                 "y": 34.79e3,
                 "z": 0.0
             },
+            "tilt": 177.4,
+            "rotationPeriod": -5832.5,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/venus.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -79,6 +85,8 @@
                 "y": 29.29e3,
                 "z": 0.0
             },
+            "tilt": 23.44,
+            "rotationPeriod": 23.9345,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/earth.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -98,6 +106,8 @@
                 "y": 30.260e3,
                 "z": 0.0
             },
+            "tilt": 6.7,
+            "rotationPeriod": 655.7,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/moon.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -117,6 +127,8 @@
                 "y": 21.97e3,
                 "z": 0.0
             },
+            "tilt": 25.2,
+            "rotationPeriod": 24.6,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/mars.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -136,6 +148,8 @@
                 "y": 12.44e3,
                 "z": 0.0
             },
+            "tilt": 3.1,
+            "rotationPeriod": 9.9,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/jupiter.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -155,6 +169,8 @@
                 "y": 9.09e3,
                 "z": 0.0
             },
+            "tilt": 26.7,
+            "rotationPeriod": 10.7,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/saturn.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -174,6 +190,8 @@
                 "y": 6.49e3,
                 "z": 0.0
             },
+            "tilt": 97.8,
+            "rotationPeriod": -17.2,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/uranus.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
@@ -193,6 +211,8 @@
                 "y": 5.37e3,
                 "z": 0.0
             },
+            "tilt": 28.3,
+            "rotationPeriod": 16.1,
             "meshFilePath": "../assets/models/sphere.obj",
             "textureFilePath": "../assets/textures/neptune.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
