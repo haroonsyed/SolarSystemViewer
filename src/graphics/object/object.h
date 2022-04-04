@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -8,9 +9,13 @@ class Object {
     std::string m_meshFilePath;
     std::string m_vertexShaderPath;
     std::string m_fragShaderPath;
-    std::string m_imgTexFilePath;
-    std::string m_name;
+    std::string m_diffuseMapFilePath;
+    std::string m_normalMapFilePath;
+    std::string m_specularMapFilePath;
+    std::string m_emissiveMapFilePath;
 
+
+    std::string m_name;
     glm::vec3 m_position;
     glm::quat m_rotation;
     float m_scale;
@@ -29,7 +34,11 @@ class Object {
     void setScale(float scale);
     void setMesh(std::string meshFilePath);
     void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
-    void setImageTexture(std::string textureFilePath);
+    void setDiffuseMap(std::string diffuseMapFilePath);
+    void setNormalMap(std::string normalMapFilePath);
+    void setSpecularMap(std::string specularMapFilePath);
+    void setEmissiveMap(std::string emissiveMapFilePath);
+    std::vector<std::string> getTextures();
     void bind();
 
 };

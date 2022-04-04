@@ -33,7 +33,18 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
     jsonData["vertexShaderPath"].get<std::string>(),
     jsonData["fragmentShaderPath"].get<std::string>()
   );
-  setImageTexture(jsonData["textureFilePath"].get<std::string>());
+  if (jsonData.contains("diffuseMap")) {
+    setDiffuseMap(jsonData["diffuseMap"].get<std::string>());
+  }
+  if (jsonData.contains("normalMap")) {
+    setNormalMap(jsonData["normalMap"].get<std::string>());
+  }
+  if (jsonData.contains("specularMap")) {
+    setSpecularMap(jsonData["specularMap"].get<std::string>());
+  }
+  if (jsonData.contains("emissiveMap")) {
+    setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
+  }
 }
 glm::vec3 GravBody::getVelocity() {
   return m_velocity;

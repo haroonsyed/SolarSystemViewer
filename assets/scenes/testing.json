@@ -23,11 +23,12 @@
                 "z": 0.0
             },
             "tilt": 23.44,
-            "rotationPeriod": 23.9345,
+            "rotationPeriod": 23.9345e2,
             "meshFilePath": "../assets/models/sphere.obj",
-            "textureFilePath": "../assets/textures/earth.jpg",
             "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs"
+            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "diffuseMap": "../assets/textures/earth.jpg",
+            "specularMap": "../assets/textures/earth_specular.jpg"
         }
 
     ],

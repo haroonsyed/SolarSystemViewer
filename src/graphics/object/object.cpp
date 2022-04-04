@@ -11,6 +11,10 @@ Object::Object() {
   m_meshFilePath = "../assets/models/sphere.obj";
   m_vertexShaderPath = "../shaders/phong.vs";
   m_fragShaderPath = "../shaders/phong.fs";
+  m_diffuseMapFilePath = "";
+  m_normalMapFilePath = "";
+  m_specularMapFilePath = "";
+  m_emissiveMapFilePath = "";
 }
 
 void Object::setName(std::string name) {
@@ -62,8 +66,30 @@ void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath
   m_fragShaderPath = fragShaderPath;
 }
 
-void Object::setImageTexture(std::string imgTexFilePath) {
-  m_imgTexFilePath = imgTexFilePath;
+void Object::setDiffuseMap(std::string diffuseMapFilePath) {
+  m_diffuseMapFilePath = diffuseMapFilePath;
+}
+
+void Object::setNormalMap(std::string normalMapFilePath) {
+  m_normalMapFilePath = normalMapFilePath;
+}
+
+void Object::setSpecularMap(std::string specularMapFilePath) {
+  m_specularMapFilePath = specularMapFilePath;
+}
+
+void Object::setEmissiveMap(std::string emissiveMapFilePath) {
+  m_emissiveMapFilePath = emissiveMapFilePath;
+}
+
+std::vector<std::string> Object::getTextures() {
+  return
+  {
+    m_diffuseMapFilePath,
+    m_normalMapFilePath,
+    m_specularMapFilePath,
+    m_emissiveMapFilePath
+  };
 }
 
 void Object::bind() {
@@ -78,6 +104,6 @@ void Object::bind() {
 
   // Now bind textures
   TextureManager* textureManager = TextureManager::getInstance();
-  textureManager->bindTexture(m_imgTexFilePath);
+  textureManager->bindTextures(getTextures());
 
 }
