@@ -1,10 +1,12 @@
 #include "object.h"
+#include <glm/gtx/quaternion.hpp>
 #include "../mesh/meshManager.h"
 #include "../shader/shaderManager.h"
 #include "../texture/textureManager.h"
 
 Object::Object() {
   m_position = glm::vec3(0.0);
+  m_rotation = glm::angleAxis(0.0f, glm::vec3(0.0, 1.0, 0.0));
   m_scale = 70e3/1e3;
   m_meshFilePath = "../assets/models/sphere.obj";
   m_vertexShaderPath = "../shaders/phong.vs";
@@ -29,6 +31,14 @@ void Object::setPosition(float x, float y, float z) {
 
 void Object::setPosition(glm::vec3 position) {
   m_position = position;
+}
+
+void Object::setRotation(float angle, glm::vec3 axis) {
+  m_rotation = glm::angleAxis(angle, glm::normalize(axis));
+}
+
+glm::mat4 Object::getRotationMat() {
+  return glm::toMat4(m_rotation);
 }
 
 float Object::getScale() {

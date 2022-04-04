@@ -111,18 +111,19 @@ void Scene::render(glm::mat4& view) {
 
   for (Object* obj : objects) {
 
-    // Setup transform matrix for this obj
+    // Setup model matrix for this obj
     glm::mat4 scale = glm::mat4(1.0);
     scale = glm::scale(scale, glm::vec3(obj->getScale()));
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, obj->getPosition()/m_universeScaleFactor);
+    glm::mat4 rotation = obj -> getRotationMat();
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation = glm::translate(translation, obj->getPosition()/m_universeScaleFactor);
+
+    glm::mat4 model = translation * rotation * scale;
 
     obj->bind();
 
     //Pass to gpu
     unsigned int shaderProgram = shaderManager->getBoundShader();
-    unsigned int scaleLoc = glGetUniformLocation(shaderProgram, "scale");
-    glUniformMatrix4fv(scaleLoc, 1, GL_FALSE, glm::value_ptr(scale));
     unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
