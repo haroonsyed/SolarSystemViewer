@@ -90,7 +90,7 @@
             "meshFilePath": "../assets/models/sphere.obj",
             "vertexShaderPath": "../assets/shaders/phong.vs",
             "fragmentShaderPath": "../assets/shaders/phong.fs",
-            "diffuseMap": "../assets/textures/earth.jpg",
+            "diffuseMap": "../assets/textures/earth.jpg"
         },
         {
             "name": "Moon",
