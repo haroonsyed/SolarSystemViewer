@@ -47,7 +47,7 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/sol.json");
+    scene.loadScene("../assets/scenes/testing.json");
 
     // render loop
     // -----------
