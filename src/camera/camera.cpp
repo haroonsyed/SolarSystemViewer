@@ -3,6 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../config.h"
 
+glm::vec3 Camera::getCameraPosition() {
+  return m_cameraPos;
+}
+
 void Camera::setCameraPosition(glm::vec3 position) {
   m_cameraPos = position;
 }

@@ -5,7 +5,7 @@
     "CameraPosition":{
         "x": 0.0,
         "y": 0.0,
-        "z": 1e3
+        "z": 1e9
     },
     "GravBodies": [
         {
@@ -90,7 +90,8 @@
             "meshFilePath": "../assets/models/sphere.obj",
             "vertexShaderPath": "../assets/shaders/phong.vs",
             "fragmentShaderPath": "../assets/shaders/phong.fs",
-            "diffuseMap": "../assets/textures/earth.jpg"
+            "diffuseMap": "../assets/textures/earth.jpg",
+            "specularMap": "../assets/textures/earth_specular.jpg"
         },
         {
             "name": "Moon",

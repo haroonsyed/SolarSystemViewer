@@ -104,6 +104,7 @@ void Object::bind() {
 
   // Now bind textures
   TextureManager* textureManager = TextureManager::getInstance();
-  textureManager->bindTextures(getTextures());
+  std::vector<std::string > textures = getTextures();
+  textureManager->bindTextures(textures);
 
 }
