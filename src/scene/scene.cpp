@@ -74,13 +74,13 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 }
 
-void Scene::update() {
+void Scene::update(float deltaT) {
 
   // Input
   m_inputController.processInput();
 
   // Simulation
-  m_physicsSystem.update();
+  m_physicsSystem.update(deltaT);
 
   // Camera
   m_camera.update(m_inputController.getPressedKeys());

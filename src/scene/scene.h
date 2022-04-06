@@ -18,7 +18,7 @@ class Scene {
     Scene(GLFWwindow* window);
     System* getPhysicsSystem();
     void loadScene(std::string sceneFilePath);
-    void update();
+    void update(float deltaT);
     void render();
 
 };
