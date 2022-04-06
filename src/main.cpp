@@ -53,6 +53,8 @@ int main()
     // -----------
     glEnable(GL_DEPTH_TEST);
     unsigned long frameCounter = 0;
+    double frameTime = 1e-9; // Initialize very small so object don't move on first frame
+    double timeAtLastDebug = 0.0;
     while (!glfwWindowShouldClose(window))
     {
       // Clear previous frame
@@ -61,7 +63,7 @@ int main()
 
       double startTime = glfwGetTime();
 
-      scene.update();
+      scene.update((float)frameTime);
       scene.render();
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -70,24 +72,24 @@ int main()
       glfwPollEvents();
 
       double endTime = glfwGetTime();
-      double frameTimeMS = 1000.0 * (endTime - startTime);
-      double frameTime = endTime - startTime;
+      frameTime = endTime - startTime;
       double targetFrameTime = 1.0 / TARGET_FRAMERATE;
 
       // Spinlock cpu to stabalize fps to target
-      while (frameTime < targetFrameTime) {
+      /*while (frameTime < targetFrameTime) {
         frameTime = glfwGetTime() - startTime;
-      }
+      }*/
       frameCounter++;
 
-
-      if (endTime - startTime > targetFrameTime) {
+      // 5 percent error acceptance
+      if (frameTime > targetFrameTime*1.05) {
         std::cout << "Framerate struggling to keep up!" << std::endl;
       }
 
       // Print FPS every n seconds
-      if (std::fmod(glfwGetTime(), 5) < (1.0 / config->getTargetFramerate())) {
-        std::cout << "\nOverall Average framerate: " << frameCounter / glfwGetTime() << " fps.\n" << std::endl;
+      if (endTime - timeAtLastDebug > 5) {
+        timeAtLastDebug = endTime;
+        std::cout << "\nOverall Average framerate: " << frameCounter / endTime << " fps.\n" << std::endl;
       }
     }
 
