@@ -28,7 +28,8 @@
             "vertexShaderPath": "../assets/shaders/testing.vs",
             "fragmentShaderPath": "../assets/shaders/testing.fs",
             "diffuseMap": "../assets/textures/earth.jpg",
-            "specularMap": "../assets/textures/earth_specular.jpg"
+            "specularMap": "../assets/textures/earth_specular.jpg",
+            "normalMap":  "../assets/textures/earth_normal.jpg"
         },
         {
             "name": "Moon",

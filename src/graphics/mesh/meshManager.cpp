@@ -31,7 +31,7 @@ void MeshManager::bindMesh(std::string meshFilePath) {
         std::vector<float> meshData = importer.readSepTriMesh(meshFilePath);
         float* vertices = &meshData[0];
 
-        unsigned int numDataPoints = 8; // Each vertex has pos(3), tex(2), norm(3)
+        unsigned int numDataPoints = 11; // Each vertex has pos(3), tex(2), norm(3), tan(3)
         unsigned int numVertices = meshData.size() / numDataPoints;
 
         // Setup buffers for data
@@ -46,11 +46,13 @@ void MeshManager::bindMesh(std::string meshFilePath) {
 
         // Add attribute data
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)0); // Position Data
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(3 * sizeof(float))); // Tex data
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(3 * sizeof(float))); // Texture data
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(5 * sizeof(float))); // Normal data
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(8 * sizeof(float))); // Tangent data
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
 
         // Add to map
         m_meshMap[meshKey] = std::vector<unsigned int>{ VAO, VBO, numVertices };

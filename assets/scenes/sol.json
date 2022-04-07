@@ -25,8 +25,8 @@
             "tilt": 7.0,
             "rotationPeriod": 648,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/sun.jpg"
         },
         {
@@ -46,8 +46,8 @@
             "tilt": 0.034,
             "rotationPeriod": 1407.6,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/mercury.jpg"
         },
         {
@@ -67,8 +67,8 @@
             "tilt": 177.4,
             "rotationPeriod": -5832.5,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/venus.jpg"
         },
         {
@@ -88,8 +88,8 @@
             "tilt": 23.44,
             "rotationPeriod": 23.9345,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/earth.jpg",
             "specularMap": "../assets/textures/earth_specular.jpg"
         },
@@ -110,8 +110,8 @@
             "tilt": 6.7,
             "rotationPeriod": 655.7,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/moon.jpg"
         },
         {
@@ -131,8 +131,8 @@
             "tilt": 25.2,
             "rotationPeriod": 24.6,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/mars.jpg"
         },
         {
@@ -152,8 +152,8 @@
             "tilt": 3.1,
             "rotationPeriod": 9.9,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/jupiter.jpg"
         },
         {
@@ -173,8 +173,8 @@
             "tilt": 26.7,
             "rotationPeriod": 10.7,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/saturn.jpg"
         },
         {
@@ -194,8 +194,8 @@
             "tilt": 97.8,
             "rotationPeriod": -17.2,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/uranus.jpg"
         },
         {
@@ -215,8 +215,8 @@
             "tilt": 28.3,
             "rotationPeriod": 16.1,
             "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs",
+            "vertexShaderPath": "../assets/shaders/default.vs",
+            "fragmentShaderPath": "../assets/shaders/default.fs",
             "diffuseMap": "../assets/textures/neptune.jpg"
         }
 

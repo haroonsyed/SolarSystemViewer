@@ -99,7 +99,7 @@ std::vector<std::vector<unsigned int>> MeshImporter::buildFace(std::string line)
     return face;
 }
 
-// [vertex][position texture normal] 
+// [vertex][position uv normal] 
 std::vector<std::vector<unsigned int>> MeshImporter::buildMesh(std::string meshFilePath) {
 
     std::ifstream file(meshFilePath);
@@ -133,6 +133,38 @@ void MeshImporter::normalizeMesh(std::vector<float>& vIndex)
     }
 }
 
+std::vector<float> MeshImporter::calculateTangent(std::vector<std::vector<float>> vertices, std::vector<std::vector<float>> UVs) {
+
+  std::vector<float> tangent;
+  int x = 0;
+  int y = 1;
+  int z = 2;
+
+  glm::vec3 v1(vertices[0][x], vertices[0][y], vertices[0][z]);
+  glm::vec3 v2(vertices[1][x], vertices[1][y], vertices[1][z]);
+  glm::vec3 v3(vertices[2][x], vertices[2][y], vertices[2][z]);
+
+  glm::vec2 uv1(UVs[0][x], UVs[0][y]);
+  glm::vec2 uv2(UVs[1][x], UVs[1][y]);
+  glm::vec2 uv3(UVs[2][x], UVs[2][y]);
+
+  glm::vec3 edge1 = v2 - v1;
+  glm::vec3 edge2 = v3 - v1;
+
+  glm::vec2 deltaUV1 = uv2 - uv1;
+  glm::vec2 deltaUV2 = uv3 - uv1;
+
+
+  float determinant = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+  tangent.push_back( determinant * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x) );
+  tangent.push_back( determinant * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y) );
+  tangent.push_back( determinant * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z) );
+
+  return tangent;
+}
+
+
 /*********************/
 // PUBLIC FUNCTIONS
 /*********************/
@@ -153,11 +185,12 @@ std::vector<float> MeshImporter::getNormalIndex(std::string meshFilePath) {
 }
 
 // Gets all uv coordinates for textures corresponding to vertices
-std::vector<float> MeshImporter::getTexIndex(std::string meshFilePath) {
+std::vector<float> MeshImporter::getUVIndex(std::string meshFilePath) {
     std::vector<float> uvCoords = getAttributeIndex<float>(meshFilePath, "vt");
 
     return uvCoords;
 }
+
 
 // Groundwork for index buffer object if implemented later
 // std::vector<unsigned int> MeshImporter::getMesh(std::string meshFilePath) {
@@ -180,33 +213,48 @@ std::vector<float> MeshImporter::readSepTriMesh(std::string meshFilePath)
 
     std::vector<float> posIndex = getPositionIndex(meshFilePath);
     std::vector<float> nIndex = getNormalIndex(meshFilePath);
-    std::vector<float> texIndex = getTexIndex(meshFilePath);
+    std::vector<float> uvIndex = getUVIndex(meshFilePath);
     std::vector<std::vector<unsigned int>> mesh = buildMesh(meshFilePath);
     normalizeMesh(posIndex);
 
     std::vector<float> vertices;
 
-    if(posIndex.size() == 0 ||  nIndex.size() == 0 || texIndex.size() == 0) {
+    if(posIndex.size() == 0 ||  nIndex.size() == 0 || uvIndex.size() == 0) {
         std::cout << "Missing mesh data!" << std::endl;
     }
 
     // Go through the posIndex and fIndex and build a separate tri structure with color data
     // Vertex Format: x,y,z,nx,ny,nz,r,g,b
 
-    int vertexNumber = 0;
-    for (std::vector<unsigned int> vertex : mesh) {
+    std::vector<float> tangent;
+    for (int i = 0; i < mesh.size(); i++) {
 
-        // Get coord data from index
-        auto pos = getIndexedData(posIndex, vertex[0]);
-        auto tex = getIndexedData(texIndex, vertex[1], 2);
-        auto norm = getIndexedData(nIndex, vertex[2]); 
+      auto vertex = mesh[i];
 
-        //Insert into vertices, with color data
-        vertices.insert(vertices.end(), pos.begin(), pos.end());
-        vertices.insert(vertices.end(), tex.begin(), tex.end());
-        vertices.insert(vertices.end(), norm.begin(), norm.end());
+      // Get coord data from index
+      auto pos = getIndexedData(posIndex, vertex[0]);
+      auto uv = getIndexedData(uvIndex, vertex[1], 2);
+      auto norm = getIndexedData(nIndex, vertex[2]); 
 
-        vertexNumber++;
+      if (i % 3 == 0) {
+        std::vector<std::vector<float>> facePositions;
+        facePositions.push_back(pos);
+        facePositions.push_back(getIndexedData(posIndex, mesh[i + 1][0]));
+        facePositions.push_back(getIndexedData(posIndex, mesh[i + 2][0]));
+
+        std::vector<std::vector<float>> faceUVs;
+        faceUVs.push_back(uv);
+        faceUVs.push_back(getIndexedData(uvIndex, mesh[i + 1][1], 2));
+        faceUVs.push_back(getIndexedData(uvIndex, mesh[i + 2][1], 2));
+
+        tangent = calculateTangent(facePositions, faceUVs);
+      }
+
+      //Insert into vertices, with color data
+      vertices.insert(vertices.end(), pos.begin(), pos.end());
+      vertices.insert(vertices.end(), uv.begin(), uv.end());
+      vertices.insert(vertices.end(), norm.begin(), norm.end());
+      vertices.insert(vertices.end(), tangent.begin(), tangent.end());
 
     }
 
