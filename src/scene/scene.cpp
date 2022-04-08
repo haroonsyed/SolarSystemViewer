@@ -4,10 +4,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <math.h>
 #include "nlohmann/json.hpp"
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
 #include "../config.h"
+
+#define PI 3.14159265
 
 System* Scene::getPhysicsSystem() {
   return &m_physicsSystem;
@@ -36,6 +39,7 @@ void Scene::loadScene(std::string sceneFilePath) {
     body->setName(gravBodyJSON["name"].get<std::string>());
     body->setScale(gravBodyJSON["radius"].get<float>() / physicsDistanceFactor);
     body->setMass(gravBodyJSON["mass"].get<float>() / physicsMassFactor);
+    body->setAxis(gravBodyJSON["axis"].get<float>());
     body->setPosition(
       gravBodyJSON["position"]["x"].get<float>()/physicsDistanceFactor, 
       gravBodyJSON["position"]["y"].get<float>()/physicsDistanceFactor,
@@ -109,6 +113,8 @@ void Scene::render(glm::mat4& view) {
     objects.push_back((Object*)bodyPtr);
   }
 
+  std::cout << objects[0]->getAxis() << std::endl;
+
   for (Object* obj : objects) {
 
     // Setup transform matrix for this obj
@@ -116,6 +122,9 @@ void Scene::render(glm::mat4& view) {
     scale = glm::scale(scale, glm::vec3(obj->getScale()));
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, obj->getPosition()/m_universeScaleFactor);
+    float y_axis = sin(obj->getAxis()*PI/180);
+    float z_axis = cos(obj->getAxis()*PI/180);
+    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0, y_axis, z_axis));
 
     obj->bind();
 

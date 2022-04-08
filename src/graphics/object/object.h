@@ -11,6 +11,7 @@ class Object {
     std::string m_name;
     glm::vec3 m_position;
     float m_scale;
+    float m_axis;
 
   public:
     Object();
@@ -21,6 +22,8 @@ class Object {
     void setPosition(glm::vec3 position);
     float getScale();
     void setScale(float scale);
+    float getAxis();
+    void setAxis(float axis);
     void setMesh(std::string meshFilePath);
     void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
     void setImageTexture(std::string textureFilePath);

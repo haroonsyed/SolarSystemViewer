@@ -5,14 +5,17 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <map>
 
-// My Imports
+// My Imports   
 #include "./camera/camera.h"
 #include "./input/inputController.h"
 #include "config.h"
 #include "./scene/scene.h"
+#include "./graphics/gui/gui.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
 
 int main()
 {
@@ -52,6 +55,26 @@ int main()
     Scene scene;
     scene.loadScene("../assets/scenes/sol.json");
 
+    // Load Gui
+    Gui GUI;
+
+    System* sol = scene.getPhysicsSystem();
+    std::vector<GravBody*> objects = sol->getBodies();
+    int index = 0;
+    for (int i = 0; i < objects.size(); i++)
+    {
+        if (objects[i]->getName() == "Jupiter")
+        {
+            index = i;
+        }
+    }
+
+
+
+
+    
+
+
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
@@ -68,13 +91,14 @@ int main()
 
         // Input
         inputController.processInput();
-        camera.update(inputController.getPressedKeys());
+        glm::vec3 position = objects[index]->getPosition();
+        camera.update(inputController.getPressedKeys(), inputController.getXOffset(), inputController.getYOffset(), position);
         glm::mat4 view = camera.getViewTransform();
 
         // Simulation
+        GUI.render(inputController.getPressedKeys());
         scene.getPhysicsSystem()->update();
         scene.render(view);
-        
 
         double endTime = glfwGetTime();
         int frameTime = (1000.0 * (endTime - startTime));

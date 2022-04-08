@@ -6,6 +6,7 @@ class GravBody : public Object {
 	private:
 	  glm::vec3 m_velocity;
 	  float m_mass;
+	  float m_axis;
 
 	public:
 	  GravBody();
@@ -14,6 +15,8 @@ class GravBody : public Object {
 	  void setVelocity(glm::vec3 velocity);
 	  float getMass();
 	  void setMass(float mass);
+	  void setAxis(float axis);
+	  float getAxis();
 	  void print();
 
 };

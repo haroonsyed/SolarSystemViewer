@@ -39,6 +39,16 @@ void Object::setScale(float scale) {
   m_scale = scale;
 }
 
+float Object::getAxis()
+{
+	return m_axis;
+}
+
+void Object::setAxis(float axis)
+{
+	m_axis = axis;
+}
+
 void Object::setMesh(std::string meshFilePath) {
   m_meshFilePath = meshFilePath;
 }

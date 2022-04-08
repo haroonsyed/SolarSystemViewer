@@ -20,6 +20,12 @@ float GravBody::getMass() {
 void GravBody::setMass(float mass) {
   m_mass = mass;
 }
+void GravBody::setAxis(float axis) {
+  m_axis = axis;
+}
+float GravBody::getAxis() {
+  return m_axis;
+}
 void GravBody::print() {
 	const float vx = m_velocity.x;
 	const float vy = m_velocity.y;
@@ -27,9 +33,5 @@ void GravBody::print() {
 	const float px = getPosition().x;
 	const float py = getPosition().y;
 	const float pz = getPosition().z;
-	std::cout << "Body: " << getName() << std::endl;
-	std::cout << "Velocity: " << vx << " " << vy << " " << vz << std::endl;
-	std::cout << "Position: " << px << " " << py << " " << pz << std::endl;
-	std::cout << "" << std::endl;
 }
 
