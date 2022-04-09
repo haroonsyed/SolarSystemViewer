@@ -83,7 +83,7 @@ void Scene::update(float deltaT) {
   m_physicsSystem.update(deltaT);
 
   // Camera
-  m_camera.update(m_inputController.getPressedKeys());
+  m_camera.update(deltaT, m_inputController);
 
 }
 

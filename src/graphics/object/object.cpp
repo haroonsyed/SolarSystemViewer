@@ -42,7 +42,7 @@ void Object::setRotation(float angle, glm::vec3 axis) {
 }
 
 void Object::rotate(glm::quat rotation) {
-  m_rotation = m_rotation * rotation;
+  m_rotation = rotation * m_rotation;
 }
 
 glm::mat4 Object::getRotationMat() {

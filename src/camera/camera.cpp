@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "../config.h"
 #include <iostream>
+#include <math.h>
 
 glm::vec3 Camera::getCameraPosition() {
   return m_cameraPos;
@@ -12,61 +13,40 @@ void Camera::setCameraPosition(glm::vec3 position) {
   m_cameraPos = position;
 }
 
-void Camera::update(std::unordered_set<unsigned int>* pressedKeys) {
-  
-}
-void Camera::update(std::unordered_set<unsigned int>* pressedKeys, float xOffset, float yOffset, glm::vec3 position) {
+void Camera::update(float deltaT, InputController& input) {
+
+  std::unordered_set<unsigned int>* pressedKeys = input.getPressedKeys();
+  glm::vec3 viewDir = m_cameraTarget - m_cameraPos;
 
   // Buttons
   if (pressedKeys->count(GLFW_KEY_W))
   {
-      m_cameraPos += cameraSpeed * m_cameraTarget;
+    m_cameraPos += deltaT * viewDir;
   }
   else if (pressedKeys->count(GLFW_KEY_A))
   {
-      m_cameraPos -= cameraSpeed * glm::normalize(glm::cross(m_cameraTarget,m_up));
+    m_cameraPos -= deltaT * glm::cross(viewDir, m_up);
+    m_cameraTarget -= deltaT * glm::cross(viewDir, m_up);
   }
   else if (pressedKeys->count(GLFW_KEY_S))
   {
-      m_cameraPos -= cameraSpeed * m_cameraTarget;
+    m_cameraPos -= deltaT * viewDir;
   }
   else if (pressedKeys->count(GLFW_KEY_D))
   {
-      m_cameraPos += cameraSpeed * glm::normalize(glm::cross(m_cameraTarget, m_up));
+    m_cameraPos += deltaT * glm::cross(viewDir, m_up);
+    m_cameraTarget += deltaT * glm::cross(viewDir, m_up);
   }
   else if (pressedKeys->count(GLFW_MOUSE_BUTTON_MIDDLE))
   {
-      if (rotateToggle) 
-      {
-          rotateToggle = false;
-      }
-      else
-      {
-          rotateToggle = true;
-      }
-      
+    float adjustedDeltaX = deltaT * input.getMouseDeltaX();
+    float adjustedDeltaY = deltaT * input.getMouseDeltaY();
+    float defaultRotationAmountRadians = 1.0;
+    m_cameraRot = glm::angleAxis(deltaT, glm::vec3(adjustedDeltaX, adjustedDeltaY, 0.0)) * m_cameraRot;
   }
 
-  // Mouse
-
-  if (rotateToggle)
-  {
-     yaw += xOffset;
-     pitch += yOffset;
-
-     // make sure that when pitch is out of bounds, screen doesn't get flipped
-     if (pitch > 89.0f)
-         pitch = 89.0f;
-     if (pitch < -89.0f)
-         pitch = -89.0f;
-
-     glm::vec3 front;
-     front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-     front.y = sin(glm::radians(pitch));
-     front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-     m_cameraTarget = glm::normalize(front);
-  }
+}
 
 glm::mat4 Camera::getViewTransform() {
-  return glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
+  return glm::toMat4(m_cameraRot) * glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
 }
