@@ -5,21 +5,19 @@
 #include "../config.h"
 
 System::System() {
-  // Influenced by G constant, default is aesthetic/arbitrary
-  // The physics is made framerate independent by dividing by framerate for deltaT
-  // Note that very low TargetFramerate (not lag though!) will cause physics to behave incorrectly
-  const double DEFAULT_TIME_FACTOR = 1000;
-  m_timeFactor = 1 * DEFAULT_TIME_FACTOR * (DEFAULT_TIME_FACTOR / Config::getInstance()->getTargetFramerate());
+  m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
   m_physicsDistanceFactor = 1.0f;
   m_physicsMassFactor = 1.0f;
 }
 
 void System::setPhysicsDistanceFactor(float physicsDistanceFactor) {
   m_physicsDistanceFactor = physicsDistanceFactor;
+  G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
 }
 
 void System::setPhysicsMassFactor(float physicsMassFactor) {
   m_physicsMassFactor = physicsMassFactor;
+  G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
 }
 
 void System::addBody(GravBody* body) {
@@ -30,19 +28,12 @@ std::vector<GravBody*> System::getBodies() {
   return m_bodies;
 }
 
-void System::update() {
-  
-  // The scaleing factors are needed to avoid float errors with using just SI units.
-  const double G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
+void System::update(float deltaT) {
 
-  // DEBUG, print every x seconds
-  if (std::fmod(glfwGetTime(),2) < (1.0/Config::getInstance()->getTargetFramerate())) {
-    for (auto body : m_bodies) {
-      body->print();
-    }
-  }
+  // The physics is made framerate independent by dividing by framerate for deltaT
+  float adjustedTimeFactor = m_timeFactor * deltaT;
 
-  // Possible to half time in future by storing force between bodies instead
+  // Possible to optimize with dynamic programming/multithreading
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
 
@@ -78,19 +69,27 @@ void System::update() {
     // vf=vi+a*t where a=F/bodies
 
     glm::vec3 acceleration = force / M1;
-    glm::vec3 velocity = m_bodies[i]->getVelocity() + (m_timeFactor * acceleration);
-    glm::vec3 position = m_bodies[i]->getPosition() + (m_timeFactor * velocity);
+    glm::vec3 velocity = m_bodies[i]->getVelocity() + (adjustedTimeFactor * acceleration);
+    glm::vec3 position = m_bodies[i]->getPosition() + (adjustedTimeFactor * velocity);
     map[i] = std::make_pair(velocity, position);
 
   }
 
 
   // Update position and velocity
-  for(int i=0; i<m_bodies.size(); i++) {
-    
-    m_bodies[i]->setVelocity(map[i].first);
-    m_bodies[i]->setPosition(map[i].second);
+  for (int i = 0; i < m_bodies.size(); i++) {
 
+    GravBody* body = m_bodies[i];
+
+    float period = (2 * 3.14159265f) / body->getRotationSpeed();
+    float rotSpeed = body->getRotationSpeed() * period;
+
+    body->setVelocity(map[i].first);
+    body->setPosition(map[i].second);
+    body->rotate(glm::angleAxis(
+      body->getRotationSpeed() * adjustedTimeFactor,
+      body->getAxis()
+    ));
   }
 
 }

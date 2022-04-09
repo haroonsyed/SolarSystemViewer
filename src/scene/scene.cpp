@@ -1,16 +1,16 @@
+#include <GL/glew.h>
 #include "scene.h"
 #include <iostream>
 #include <fstream>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <math.h>
 #include "nlohmann/json.hpp"
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
 #include "../config.h"
 
-#define PI 3.14159265
+Scene::Scene(GLFWwindow* window) : m_inputController(window) {
+  m_universeScaleFactor = 1.0f;
+}
 
 System* Scene::getPhysicsSystem() {
   return &m_physicsSystem;
@@ -18,7 +18,7 @@ System* Scene::getPhysicsSystem() {
 
 void Scene::loadScene(std::string sceneFilePath) {
 
-  using namespace nlohmann; // Testing lib namespace
+  using namespace nlohmann; // json lib namespace
 
   // Load scene from json file
   std::ifstream file(sceneFilePath);
@@ -26,48 +26,38 @@ void Scene::loadScene(std::string sceneFilePath) {
   std::getline(file, scene, '\0');
   json jScene = json::parse(scene);
 
+  // Get units
+  m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
   float physicsDistanceFactor = jScene["PhysicsDistanceFactor"].get<float>();
   float physicsMassFactor = jScene["PhysicsMassFactor"].get<float>();
-  m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
+
+  // Setup camera
+  m_camera.setCameraPosition(
+    glm::vec3(
+      jScene["CameraPosition"]["x"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
+      jScene["CameraPosition"]["y"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
+      jScene["CameraPosition"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
+    )
+  );
+
+  // Setup physics
   m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
   m_physicsSystem.setPhysicsMassFactor(physicsMassFactor);
 
-  // Construct scene. In units of MegaMeter and GigaGram
+  // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
-    GravBody* body = new GravBody();
-
-    body->setName(gravBodyJSON["name"].get<std::string>());
-    body->setScale(gravBodyJSON["radius"].get<float>() / physicsDistanceFactor);
-    body->setMass(gravBodyJSON["mass"].get<float>() / physicsMassFactor);
-    body->setAxis(gravBodyJSON["axis"].get<float>());
-    body->setPosition(
-      gravBodyJSON["position"]["x"].get<float>()/physicsDistanceFactor, 
-      gravBodyJSON["position"]["y"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["position"]["z"].get<float>()/physicsDistanceFactor
-    );
-    body->setVelocity(
-      gravBodyJSON["velocity"]["x"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["velocity"]["y"].get<float>()/physicsDistanceFactor,
-      gravBodyJSON["velocity"]["z"].get<float>()/physicsDistanceFactor
-    );
-    body->setMesh(gravBodyJSON["meshFilePath"].get<std::string>());
-    body->setShaders(
-      gravBodyJSON["vertexShaderPath"].get<std::string>(),
-      gravBodyJSON["fragmentShaderPath"].get<std::string>()
-    );
-    body->setImageTexture(gravBodyJSON["textureFilePath"].get<std::string>());
-
+    GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
     m_physicsSystem.addBody(body);
-
   }
 
+  // Construct lights
   for (auto lightJSON : jScene["Lights"]) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>()/physicsDistanceFactor,
-      lightJSON["position"]["y"].get<float>()/physicsDistanceFactor,
-      lightJSON["position"]["z"].get<float>()/physicsDistanceFactor
+      lightJSON["position"]["x"].get<float>()/physicsDistanceFactor / m_universeScaleFactor,
+      lightJSON["position"]["y"].get<float>()/physicsDistanceFactor / m_universeScaleFactor,
+      lightJSON["position"]["z"].get<float>()/physicsDistanceFactor / m_universeScaleFactor
     );
 
     light.setColor(
@@ -84,12 +74,28 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 }
 
-void Scene::render(glm::mat4& view) {
+void Scene::update(float deltaT) {
+
+  // Input
+  m_inputController.processInput();
+
+  // Simulation
+  m_physicsSystem.update(deltaT);
+
+  // Camera
+  m_camera.update(m_inputController.getPressedKeys());
+
+}
+
+void Scene::render() {
 
   // Get shaderProgram
   ShaderManager* shaderManager = ShaderManager::getInstance();
   MeshManager* meshManager = MeshManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
+
+  // Get view projection for the entire draw call
+  glm::mat4 view = m_camera.getViewTransform() * m_universeScaleFactor;
 
   // Setup projection matrix for entire draw call
   Config* config = Config::getInstance();
@@ -105,37 +111,31 @@ void Scene::render(glm::mat4& view) {
 
   //unsigned int lightLocs = glGetUniformLocation(shaderProgram, "lightPositions");
   //glUniform3fv(lightLocs, lightPositions.size(), glm::value_ptr(&lightPositions[0]));
-  glm::vec3 lightPos = glm::vec3(-1.0f, 0.0f, 0.0f);
-  lightPos *= 10000;
+  glm::vec3 lightPos = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f));
+  lightPos *= 1e6 / m_universeScaleFactor;
 
   std::vector<Object*> objects;
   for (Object* bodyPtr : m_physicsSystem.getBodies()) {
     objects.push_back((Object*)bodyPtr);
   }
 
-  std::cout << objects[0]->getAxis() << std::endl;
-
   for (Object* obj : objects) {
 
-    // Setup transform matrix for this obj
+    // Setup model matrix for this obj
     glm::mat4 scale = glm::mat4(1.0);
     scale = glm::scale(scale, glm::vec3(obj->getScale()));
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, obj->getPosition()/m_universeScaleFactor);
-    float y_axis = sin(obj->getAxis()*PI/180);
-    float z_axis = cos(obj->getAxis()*PI/180);
-    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0, y_axis, z_axis));
+    glm::mat4 rotation = obj -> getRotationMat();
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation = glm::translate(translation, obj->getPosition()/m_universeScaleFactor);
+
+    glm::mat4 modelView = view * translation * rotation * scale;
 
     obj->bind();
 
     //Pass to gpu
     unsigned int shaderProgram = shaderManager->getBoundShader();
-    unsigned int scaleLoc = glGetUniformLocation(shaderProgram, "scale");
-    glUniformMatrix4fv(scaleLoc, 1, GL_FALSE, glm::value_ptr(scale));
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "modelView");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelView));
     unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 

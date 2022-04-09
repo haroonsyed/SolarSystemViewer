@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 // Singleton pattern (I think it's fine since this class takes over code in the main)
@@ -15,5 +16,6 @@ private:
 public:
   static TextureManager* getInstance();
   unsigned int getBoundTexture();
-  void bindTexture(std::string textureFilePath);
+  std::string getMapFromUniformLocation(int location);
+  void bindTextures(std::vector<std::string>& textureFilePaths);
 };

@@ -4,6 +4,17 @@
 #include "../config.h"
 #include <iostream>
 
+glm::vec3 Camera::getCameraPosition() {
+  return m_cameraPos;
+}
+
+void Camera::setCameraPosition(glm::vec3 position) {
+  m_cameraPos = position;
+}
+
+void Camera::update(std::unordered_set<unsigned int>* pressedKeys) {
+  
+}
 void Camera::update(std::unordered_set<unsigned int>* pressedKeys, float xOffset, float yOffset, glm::vec3 position) {
 
   // Buttons
@@ -36,7 +47,6 @@ void Camera::update(std::unordered_set<unsigned int>* pressedKeys, float xOffset
       
   }
 
-
   // Mouse
 
   if (rotateToggle)
@@ -57,15 +67,6 @@ void Camera::update(std::unordered_set<unsigned int>* pressedKeys, float xOffset
      m_cameraTarget = glm::normalize(front);
   }
 
-  /*m_cameraPos.x = 1000;
-  m_cameraPos.y = position.y/1000;
-  m_cameraPos.z = position.z;*/
-  //m_cameraTarget = position;
-  //planet inspector
-
-
-}
-
 glm::mat4 Camera::getViewTransform() {
-  return glm::lookAt(m_cameraPos, m_cameraPos + m_cameraTarget, m_up);
+  return glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
 }

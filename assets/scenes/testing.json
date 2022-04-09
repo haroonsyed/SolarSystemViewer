@@ -1,7 +1,12 @@
 {
     "PhysicsDistanceFactor": 1e6,
     "PhysicsMassFactor": 1e6,
-    "UniverseScaleFactor": 400,
+    "UniverseScaleFactor": 20,
+    "CameraPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1e9
+    },
     "GravBodies": [
         {
             "name": "Earth",
@@ -17,10 +22,34 @@
                 "y": 0.0,
                 "z": 0.0
             },
+            "tilt": 23.44,
+            "rotationPeriod": 23.9345,
             "meshFilePath": "../assets/models/sphere.obj",
-            "textureFilePath": "../assets/textures/earth.jpg",
-            "vertexShaderPath": "../assets/shaders/phong.vs",
-            "fragmentShaderPath": "../assets/shaders/phong.fs"
+            "vertexShaderPath": "../assets/shaders/testing.vs",
+            "fragmentShaderPath": "../assets/shaders/testing.fs",
+            "diffuseMap": "../assets/textures/earth.jpg",
+            "specularMap": "../assets/textures/earth_specular.jpg"
+        },
+        {
+            "name": "Moon",
+            "radius": 1737.5e3,
+            "mass": 0.073e24,
+            "position": {
+                "x": 384e6,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "velocity": {
+                "x": 0.0,
+                "y": 0.97e3,
+                "z": 0.0
+            },
+            "tilt": 6.7,
+            "rotationPeriod": 655.7,
+            "meshFilePath": "../assets/models/sphere.obj",
+            "vertexShaderPath": "../assets/shaders/testing.vs",
+            "fragmentShaderPath": "../assets/shaders/testing.fs",
+            "diffuseMap": "../assets/textures/moon.jpg"
         }
 
     ],
