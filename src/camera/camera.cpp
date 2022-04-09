@@ -23,21 +23,21 @@ void Camera::update(float deltaT, InputController& input) {
   {
     m_cameraPos += deltaT * viewDir;
   }
-  else if (pressedKeys->count(GLFW_KEY_A))
+  if (pressedKeys->count(GLFW_KEY_A))
   {
     m_cameraPos -= deltaT * glm::cross(viewDir, m_up);
     m_cameraTarget -= deltaT * glm::cross(viewDir, m_up);
   }
-  else if (pressedKeys->count(GLFW_KEY_S))
+  if (pressedKeys->count(GLFW_KEY_S))
   {
     m_cameraPos -= deltaT * viewDir;
   }
-  else if (pressedKeys->count(GLFW_KEY_D))
+  if (pressedKeys->count(GLFW_KEY_D))
   {
     m_cameraPos += deltaT * glm::cross(viewDir, m_up);
     m_cameraTarget += deltaT * glm::cross(viewDir, m_up);
   }
-  else if (pressedKeys->count(GLFW_MOUSE_BUTTON_MIDDLE))
+  if (pressedKeys->count(GLFW_MOUSE_BUTTON_MIDDLE))
   {
     float adjustedDeltaX = deltaT * input.getMouseDeltaX();
     float adjustedDeltaY = deltaT * input.getMouseDeltaY();

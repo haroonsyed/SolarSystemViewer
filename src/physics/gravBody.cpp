@@ -65,7 +65,7 @@ void GravBody::setTilt(float degrees) {
   // Assuming degrees are from normal (earth north pole) from earth's orbital plane around sun (defined as 0)
   double tiltRadians = glm::radians(degrees);
   glm::vec3 axis(
-    glm::sin(tiltRadians),
+    -glm::sin(tiltRadians),
     glm::cos(tiltRadians),
     0.0
   );
