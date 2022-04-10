@@ -5,7 +5,7 @@
     "CameraPosition":{
         "x": 0.0,
         "y": 0.0,
-        "z": 1e9
+        "z": 3e11
     },
     "GravBodies": [
         {

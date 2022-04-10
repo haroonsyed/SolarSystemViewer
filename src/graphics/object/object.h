@@ -19,6 +19,7 @@ class Object {
     glm::vec3 m_position;
     glm::quat m_rotation;
     float m_scale;
+    float m_axis;
 
   public:
     Object();
@@ -32,6 +33,8 @@ class Object {
     glm::mat4 getRotationMat();
     float getScale();
     void setScale(float scale);
+    float getAxis();
+    void setAxis(float axis);
     void setMesh(std::string meshFilePath);
     void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
     void setDiffuseMap(std::string diffuseMapFilePath);

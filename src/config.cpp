@@ -6,7 +6,7 @@ Config::Config() {
   m_SCR_WIDTH = 800;
   m_SCR_HEIGHT = 600;
   m_TARGET_FRAMERATE = 60;
-  m_INPUT_POLL_RATE = 1000; // Default to 1000Hz (limited by fps so doesn't matter)
+  m_MOUSE_SENSITIVITY = 0.8;
 }
 
 Config* Config::getInstance() {
@@ -30,6 +30,6 @@ void Config::setScreenHeight(unsigned int height) {
 unsigned int Config::getTargetFramerate() {
   return m_TARGET_FRAMERATE;
 }
-unsigned int Config::getInputPollRate() {
-  return m_INPUT_POLL_RATE;
+double Config::getMouseSensitivity() {
+  return m_MOUSE_SENSITIVITY;
 }

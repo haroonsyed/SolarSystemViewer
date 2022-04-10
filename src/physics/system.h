@@ -15,7 +15,9 @@ class System {
 
   public:
 	  System();
+    float getPhysicsDistanceFactor();
     void setPhysicsDistanceFactor(float physicsDistanceFactor);
+    float getPhysicsMassFactor();
     void setPhysicsMassFactor(float physicsMassFactor);
     void addBody(GravBody* body);
     std::vector<GravBody*> getBodies();

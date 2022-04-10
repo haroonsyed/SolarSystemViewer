@@ -8,7 +8,7 @@
 
 // My Imports
 #include "config.h"
-#include "./scene/scene.h"
+#include "./game/gameController.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 int main()
@@ -47,7 +47,10 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/testing.json");
+    scene.loadScene("../assets/scenes/sol.json");
+
+    // Load scene into gameController
+    GameController* game = GameController::getInstance(window, &scene);
 
     // render loop
     // -----------
@@ -63,8 +66,8 @@ int main()
 
       double startTime = glfwGetTime();
 
-      scene.update((float)frameTime);
-      scene.render();
+      game->update((float) frameTime);
+      game->render();
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       // -------------------------------------------------------------------------------
@@ -75,10 +78,6 @@ int main()
       frameTime = endTime - startTime;
       double targetFrameTime = 1.0 / TARGET_FRAMERATE;
 
-      // Spinlock cpu to stabalize fps to target
-      /*while (frameTime < targetFrameTime) {
-        frameTime = glfwGetTime() - startTime;
-      }*/
       frameCounter++;
 
       // 5 percent error acceptance
