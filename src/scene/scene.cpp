@@ -9,12 +9,19 @@
 #include "../config.h"
 
 Scene::Scene(GLFWwindow* window) {
-  m_inputController = InputController::getInstance(window);
   m_universeScaleFactor = 1.0f;
 }
 
 System* Scene::getPhysicsSystem() {
   return &m_physicsSystem;
+}
+
+Camera* Scene::getCamera() {
+  return &m_camera;
+}
+
+float Scene::getUniverseScaleFactor() {
+  return m_universeScaleFactor;
 }
 
 void Scene::loadScene(std::string sceneFilePath) {
@@ -75,16 +82,6 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 }
 
-void Scene::update(float deltaT) {
-
-  // Simulation
-  m_physicsSystem.update(deltaT);
-
-  // Camera
-  m_camera.update(deltaT, *m_inputController);
-
-}
-
 void Scene::render() {
 
   // Get shaderProgram
@@ -93,13 +90,13 @@ void Scene::render() {
   unsigned int shaderProgram = shaderManager->getBoundShader();
 
   // Get view projection for the entire draw call
-  glm::mat4 view = m_camera.getViewTransform() * m_universeScaleFactor;
+  glm::mat4 view = m_camera.getViewTransform();
 
   // Setup projection matrix for entire draw call
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov()/2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
 
   // Setup light data
   std::vector<glm::vec3> lightPositions;

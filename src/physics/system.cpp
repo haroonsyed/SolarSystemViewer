@@ -10,9 +10,17 @@ System::System() {
   m_physicsMassFactor = 1.0f;
 }
 
+float System::getPhysicsDistanceFactor() {
+  return m_physicsDistanceFactor;
+}
+
 void System::setPhysicsDistanceFactor(float physicsDistanceFactor) {
   m_physicsDistanceFactor = physicsDistanceFactor;
   G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
+}
+
+float System::getPhysicsMassFactor() {
+  return m_physicsMassFactor;
 }
 
 void System::setPhysicsMassFactor(float physicsMassFactor) {

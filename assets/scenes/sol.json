@@ -12,7 +12,6 @@
             "name": "Sun",
             "radius": 100000e3,
             "mass": 1.99e30,
-		"axis": 7.25,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -34,7 +33,6 @@
             "name": "Mercury",
             "radius": 2439.5e3,
             "mass": 3.29e23,
-		"axis": 0.03,
             "position": {
                 "x": 69.8e9,
                 "y": 0.0,
@@ -56,7 +54,6 @@
             "name": "Venus",
             "radius": 6052e3,
             "mass": 4.87e24,
-		"axis": 2.64,
             "position": {
                 "x": 108.9e9,
                 "y": 0.0,
@@ -78,7 +75,6 @@
             "name": "Earth",
             "radius": 6378e3,
             "mass": 6e24,
-		"axis": 23.44,
             "position": {
                 "x": 152.1e9,
                 "y": 0.0,
@@ -101,7 +97,6 @@
             "name": "Moon",
             "radius": 1737.5e3,
             "mass": 0.073e24,
-		"axis": 6.68,
             "position": {
                 "x": 152.506e9,
                 "y": 0.0,
@@ -123,7 +118,6 @@
             "name": "Mars",
             "radius": 3396e3,
             "mass": 0.642e24,
-		"axis": 25.19,
             "position": {
                 "x": 249.3e9,
                 "y": 0.0,
@@ -145,7 +139,6 @@
             "name": "Jupiter",
             "radius": 71492e3,
             "mass": 1898.13e24,
-		"axis": 3.13,
             "position": {
                 "x": 816.363e9,
                 "y": 0.0,
@@ -167,7 +160,6 @@
             "name": "Saturn",
             "radius": 60268e3,
             "mass": 568e24,
-		"axis": 26.73,
             "position": {
                 "x": 1506.5e9,
                 "y": 0.0,
@@ -189,7 +181,6 @@
             "name": "Uranus",
             "radius": 25559e3,
             "mass": 86.8e24,
-		"axis": 82.23,
             "position": {
                 "x": 3001.4e9,
                 "y": 0.0,
@@ -211,7 +202,6 @@
             "name": "Neptune",
             "radius": 24764e3,
             "mass": 86.8e24,
-		"axis": 28.32,
             "position": {
                 "x": 4558.9e9,
                 "y": 0.0,
