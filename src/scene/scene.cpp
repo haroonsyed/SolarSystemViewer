@@ -8,7 +8,8 @@
 #include "../graphics/mesh/meshManager.h"
 #include "../config.h"
 
-Scene::Scene(GLFWwindow* window) : m_inputController(window) {
+Scene::Scene(GLFWwindow* window) {
+  m_inputController = InputController::getInstance(window);
   m_universeScaleFactor = 1.0f;
 }
 
@@ -76,14 +77,11 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 void Scene::update(float deltaT) {
 
-  // Input
-  m_inputController.processInput();
-
   // Simulation
   m_physicsSystem.update(deltaT);
 
   // Camera
-  m_camera.update(deltaT, m_inputController);
+  m_camera.update(deltaT, *m_inputController);
 
 }
 

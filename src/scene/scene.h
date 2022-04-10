@@ -8,7 +8,7 @@
 class Scene {
   private:
     Camera m_camera;
-    InputController m_inputController;
+    InputController* m_inputController;
     std::vector<Light> m_lights;
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.

@@ -9,7 +9,7 @@ private:
   unsigned int m_SCR_WIDTH;
   unsigned int m_SCR_HEIGHT;
   unsigned int m_TARGET_FRAMERATE;
-  unsigned int m_INPUT_POLL_RATE; // Default to 1000Hz (limited by fps so doesn't matter)
+  double m_MOUSE_SENSITIVITY;
 
   Config();
 
@@ -20,6 +20,6 @@ public:
   void setScreenHeight(unsigned int height);
   unsigned int getScreenHeight();
   unsigned int getTargetFramerate();
-  unsigned int getInputPollRate();
+  double getMouseSensitivity();
 
 };

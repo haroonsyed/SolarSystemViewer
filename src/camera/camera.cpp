@@ -15,38 +15,36 @@ void Camera::setCameraPosition(glm::vec3 position) {
 
 void Camera::update(float deltaT, InputController& input) {
 
-  std::unordered_set<unsigned int>* pressedKeys = input.getPressedKeys();
-  glm::vec3 viewDir = m_cameraTarget - m_cameraPos;
+  Config* config = Config::getInstance();
 
-  // Buttons
-  if (pressedKeys->count(GLFW_KEY_W))
-  {
-    m_cameraPos += deltaT * viewDir;
+  std::unordered_set<unsigned int>* pressedKeys = input.getPressedKeys();
+  float deltaDistance = deltaT * glm::distance(m_cameraPos, m_cameraTarget);
+  glm::vec3 viewDir = glm::normalize(m_cameraTarget - m_cameraPos);
+
+  // Use mouse + LF to move camera. Use Scroll / X,Z to zoom
+  if (pressedKeys->count(GLFW_MOUSE_BUTTON_LEFT)) {
+
+    double sensitivity = config->getMouseSensitivity();
+    float adjustedDeltaX = sensitivity * deltaDistance * input.getMouseDeltaX();
+    float adjustedDeltaY = sensitivity * deltaDistance * input.getMouseDeltaY();
+    glm::vec3 left = glm::vec3(-1.0, 0.0, 0.0);
+
+    m_cameraPos += adjustedDeltaY * m_up;
+    m_cameraTarget += adjustedDeltaY * m_up;
+    m_cameraPos += adjustedDeltaX * left;
+    m_cameraTarget += adjustedDeltaX * left;
+
   }
-  if (pressedKeys->count(GLFW_KEY_A))
-  {
-    m_cameraPos -= deltaT * glm::cross(viewDir, m_up);
-    m_cameraTarget -= deltaT * glm::cross(viewDir, m_up);
+
+  if (pressedKeys->count(GLFW_KEY_Z)) {
+    m_cameraPos += deltaDistance * viewDir;
   }
-  if (pressedKeys->count(GLFW_KEY_S))
-  {
-    m_cameraPos -= deltaT * viewDir;
-  }
-  if (pressedKeys->count(GLFW_KEY_D))
-  {
-    m_cameraPos += deltaT * glm::cross(viewDir, m_up);
-    m_cameraTarget += deltaT * glm::cross(viewDir, m_up);
-  }
-  if (pressedKeys->count(GLFW_MOUSE_BUTTON_MIDDLE))
-  {
-    float adjustedDeltaX = deltaT * input.getMouseDeltaX();
-    float adjustedDeltaY = deltaT * input.getMouseDeltaY();
-    float defaultRotationAmountRadians = 1.0;
-    m_cameraRot = glm::angleAxis(deltaT, glm::vec3(adjustedDeltaX, adjustedDeltaY, 0.0)) * m_cameraRot;
+  else if (pressedKeys->count(GLFW_KEY_X)) {
+    m_cameraPos -= deltaDistance * viewDir;
   }
 
 }
 
 glm::mat4 Camera::getViewTransform() {
-  return glm::toMat4(m_cameraRot) * glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
+  return glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
 }
