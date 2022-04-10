@@ -8,7 +8,7 @@
 
 // My Imports
 #include "config.h"
-#include "./scene/scene.h"
+#include "./game/gameController.h"
 
 // Prototypes
 GLFWwindow* createWindow();
@@ -45,12 +45,17 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/testing.json");
+    scene.loadScene("../assets/scenes/sol.json");
+
+    // Load scene into gameController
+    GameController* game = GameController::getInstance(window, &scene);
 
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
     unsigned long frameCounter = 0;
+    double frameTime = 1e-9; // Initialize very small so object don't move on first frame
+    double timeAtLastDebug = 0.0;
     while (!glfwWindowShouldClose(window))
     {
       // Clear previous frame
@@ -59,8 +64,8 @@ int main()
 
       double startTime = glfwGetTime();
 
-      scene.update();
-      scene.render();
+      game->update((float) frameTime);
+      game->render();
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       // -------------------------------------------------------------------------------
@@ -69,24 +74,20 @@ int main()
 
       // Measure performance
       double endTime = glfwGetTime();
-      double frameTimeMS = 1000.0 * (endTime - startTime);
-      double frameTime = endTime - startTime;
+      frameTime = endTime - startTime;
       double targetFrameTime = 1.0 / TARGET_FRAMERATE;
 
-      // Spinlock cpu to stabalize fps to target
-      while (frameTime < targetFrameTime) {
-        frameTime = glfwGetTime() - startTime;
-      }
       frameCounter++;
 
-
-      if (endTime - startTime > targetFrameTime) {
+      // 5 percent error acceptance
+      if (frameTime > targetFrameTime*1.05) {
         std::cout << "Framerate struggling to keep up!" << std::endl;
       }
 
       // Print FPS every n seconds
-      if (std::fmod(glfwGetTime(), 5) < (1.0 / config->getTargetFramerate())) {
-        std::cout << "\nOverall Average framerate: " << frameCounter / glfwGetTime() << " fps.\n" << std::endl;
+      if (endTime - timeAtLastDebug > 5) {
+        timeAtLastDebug = endTime;
+        std::cout << "\nOverall Average framerate: " << frameCounter / endTime << " fps.\n" << std::endl;
       }
     }
 

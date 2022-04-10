@@ -42,7 +42,7 @@ void Object::setRotation(float angle, glm::vec3 axis) {
 }
 
 void Object::rotate(glm::quat rotation) {
-  m_rotation = m_rotation * rotation;
+  m_rotation = rotation * m_rotation;
 }
 
 glm::mat4 Object::getRotationMat() {
@@ -55,6 +55,16 @@ float Object::getScale() {
 
 void Object::setScale(float scale) {
   m_scale = scale;
+}
+
+float Object::getAxis()
+{
+	return m_axis;
+}
+
+void Object::setAxis(float axis)
+{
+	m_axis = axis;
 }
 
 void Object::setMesh(std::string meshFilePath) {

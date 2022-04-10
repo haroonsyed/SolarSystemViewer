@@ -2,6 +2,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "../config.h"
+#include <iostream>
+#include <math.h>
 
 glm::vec3 Camera::getCameraPosition() {
   return m_cameraPos;
@@ -11,20 +13,26 @@ void Camera::setCameraPosition(glm::vec3 position) {
   m_cameraPos = position;
 }
 
-void Camera::update(std::unordered_set<unsigned int>* pressedKeys) {
+glm::vec3 Camera::getCameraTarget() {
+  return m_cameraTarget;
+}
 
-  // Zoom
-  if(pressedKeys->count(GLFW_KEY_Z)) {
-    m_cameraPos = m_cameraPos*glm::vec3(0.0,0.0,0.99);
-  }
-  else if(pressedKeys->count(GLFW_KEY_X)) {
-    m_cameraPos = m_cameraPos*glm::vec3(0.0,0.0,1.01);
-  }
-
-  // Mouse
-
+void Camera::setCameraTarget(glm::vec3 target) {
+  m_cameraTarget = target;
 }
 
 glm::mat4 Camera::getViewTransform() {
   return glm::lookAt(m_cameraPos, m_cameraTarget, m_up);
+}
+
+float Camera::getFov() {
+  return m_fov;
+}
+
+void Camera::setFov(float fov) {
+  m_fov = fov;
+}
+
+glm::vec3 Camera::getUp() {
+  return m_up;
 }

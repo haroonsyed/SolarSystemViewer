@@ -3,12 +3,11 @@
 #include "../physics/system.h"
 #include "../graphics/light/light.h"
 #include "../camera/camera.h"
-#include "../input/inputController.h"
+#include "GLFW/glfw3.h"
 
 class Scene {
   private:
     Camera m_camera;
-    InputController m_inputController;
     std::vector<Light> m_lights;
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
@@ -17,8 +16,9 @@ class Scene {
   public:
     Scene(GLFWwindow* window);
     System* getPhysicsSystem();
+    Camera* getCamera();
+    float getUniverseScaleFactor();
     void loadScene(std::string sceneFilePath);
-    void update();
     void render();
 
 };
