@@ -1,0 +1,16 @@
+{
+  "name": "topotonormal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "topoToNormal.js",
+  "scripts": {
+    "start": "node topoToNormal.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "haroonsyed",
+  "license": "ISC",
+  "dependencies": {
+    "jimp": "^0.16.1"
+  },
+  "type": "module"
+}
