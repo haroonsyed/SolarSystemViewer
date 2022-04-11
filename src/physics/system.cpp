@@ -5,7 +5,7 @@
 #include "../config.h"
 
 System::System() {
-  m_timeFactor = 60 * 60 * 23.9345 / 24; // Default Once earth day per second;
+  m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
   m_physicsDistanceFactor = 1.0f;
   m_physicsMassFactor = 1.0f;
 }
@@ -38,7 +38,7 @@ std::vector<GravBody*> System::getBodies() {
 
 void System::update(float deltaT) {
 
-  if (deltaT > 0.5f) {
+  if (deltaT > 0.1f) {
     // Don't calculate physics when deltaT is large, introduces error into calculation
     return;
   }
