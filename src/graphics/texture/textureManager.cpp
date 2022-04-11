@@ -51,6 +51,7 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 		if (!exists) {
 			// No texture, continue to next one
+			std::cout << "Could not find texture: " << path << std::endl;
 			continue; 
 		}
 	

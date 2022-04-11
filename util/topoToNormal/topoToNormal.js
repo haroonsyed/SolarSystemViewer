@@ -5,8 +5,8 @@ import Jimp from "jimp";
 //            https://en.wikipedia.org/wiki/Sobel_operator
 
 let inputFolderPath = "./input/";
-let fileToConvert = "mercury_topo.png";
-let outputName = "mercury_normal.png";
+let fileToConvert = "mars_topo.jpg";
+let outputName = "mars_normal.png";
 let filePath = inputFolderPath + fileToConvert;
 
 function getHeightValue(i, j, img) {
@@ -25,7 +25,7 @@ Jimp.read(filePath)
     let resized = img.clone().resize(2048, Jimp.AUTO);
     let result = resized.clone();
 
-    let strength = 1.0;
+    let strength = 1.2;
 
     for (let i = 0; i < resized.getHeight(); i++) {
       for (let j = 0; j < resized.getWidth(); j++) {
@@ -48,6 +48,7 @@ Jimp.read(filePath)
         // Y kernel : [-1, -2, -1], [0, 0, 0], [1, 2, 1]
         let red = tl + 2 * l + bl - (tr + 2 * r + br);
         let green = tl + 2 * t + tr - (bl + 2 * b + br);
+        let blue = 1.0 / strength;
 
         let maxMag = 4.1;
 
@@ -58,7 +59,6 @@ Jimp.read(filePath)
         // Map from to 0-1
         red = (red + maxMag) / (2 * maxMag);
         green = (green + maxMag) / (2 * maxMag);
-        let blue = 1.0 / strength;
 
         // Normalize color
         let magnitude = Math.sqrt(red * red + green * green + blue * blue);

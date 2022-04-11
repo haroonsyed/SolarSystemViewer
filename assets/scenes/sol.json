@@ -1,7 +1,7 @@
 {
   "PhysicsDistanceFactor": 1e6,
   "PhysicsMassFactor": 1e6,
-  "UniverseScaleFactor": 200.0,
+  "UniverseScaleFactor": 100.0,
   "CameraPosition": {
     "x": 0.0,
     "y": 0.0,
@@ -70,7 +70,8 @@
       "meshFilePath": "../assets/models/sphere.obj",
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
-      "diffuseMap": "../assets/textures/venus.jpg"
+      "diffuseMap": "../assets/textures/venus.jpg",
+      "normalMap":  "../assets/textures/venus_normal.png"
     },
     {
       "name": "Earth",
@@ -136,7 +137,8 @@
       "meshFilePath": "../assets/models/sphere.obj",
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
-      "diffuseMap": "../assets/textures/mars.jpg"
+      "diffuseMap": "../assets/textures/mars.jpg",
+      "normalMap":  "../assets/textures/mars_normal_john.png"
     },
     {
       "name": "Jupiter",
