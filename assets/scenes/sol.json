@@ -48,7 +48,8 @@
       "meshFilePath": "../assets/models/sphere.obj",
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
-      "diffuseMap": "../assets/textures/mercury.jpg"
+      "diffuseMap": "../assets/textures/mercury.jpg",
+      "normalMap":  "../assets/textures/mercury_normal.png"
     },
     {
       "name": "Venus",
