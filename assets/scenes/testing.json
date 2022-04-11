@@ -1,71 +1,73 @@
 {
-    "PhysicsDistanceFactor": 1e6,
-    "PhysicsMassFactor": 1e6,
-    "UniverseScaleFactor": 20,
-    "CameraPosition": {
+  "PhysicsDistanceFactor": 1e6,
+  "PhysicsMassFactor": 1e6,
+  "UniverseScaleFactor": 10,
+  "CameraPosition": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 3.35e8
+  },
+  "GravBodies": [
+    {
+      "name": "Earth",
+      "radius": 6378e3,
+      "mass": 6e24,
+      "position": {
         "x": 0.0,
         "y": 0.0,
-        "z": 3.35e8
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "tilt": 23.44,
+      "rotationPeriod": 23.9345,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/testing.vs",
+      "fragmentShaderPath": "../assets/shaders/testing.fs",
+      "diffuseMap": "../assets/textures/earth_diffuse_day.jpg",
+      "specularMap": "../assets/textures/earth_specular.jpg",
+      "normalMap": "../assets/textures/earth_normal.png"
     },
-    "GravBodies": [
-        {
-            "name": "Earth",
-            "radius": 6378e3,
-            "mass": 6e24,
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "tilt": 23.44,
-            "rotationPeriod": 23.9345,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/testing.vs",
-            "fragmentShaderPath": "../assets/shaders/testing.fs",
-            "diffuseMap": "../assets/textures/earth.jpg",
-            "specularMap": "../assets/textures/earth_specular.jpg"
-        },
-        {
-            "name": "Moon",
-            "radius": 1737.5e3,
-            "mass": 0.073e24,
-            "position": {
-                "x": 384e6,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 0.97e3,
-                "z": 0.0
-            },
-            "tilt": 6.7,
-            "rotationPeriod": 655.7,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/testing.vs",
-            "fragmentShaderPath": "../assets/shaders/testing.fs",
-            "diffuseMap": "../assets/textures/moon.jpg"
-        }
+    {
+      "name": "Moon",
+      "radius": 1737.5e3,
+      "mass": 0.073e24,
+      "position": {
+        "x": 363.3e6,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 0.0e3,
+        "z": -1.082e3
+      },
+      "tilt": 6.7,
+      "rotationPeriod": 655.7,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/testing.vs",
+      "fragmentShaderPath": "../assets/shaders/testing.fs",
+      "diffuseMap": "../assets/textures/moon.jpg",
+      "normalMap": "../assets/textures/moon_normal.jpg"
+    }
 
-    ],
-    "Lights": [
-        {
-            "position": {
-                "x": -10000.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "color": {
-                "red": 1.0,
-                "green": 1.0,
-                "blue": 1.0
-            },
-            "intensity": 1.0
-        }
-    ]
+  ],
+  "Lights": [
+    {
+      "position": {
+        "x": -10000.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "color": {
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0
+      },
+      "intensity": 1.0
+    }
+  ]
 }

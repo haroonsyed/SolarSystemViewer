@@ -10,7 +10,11 @@
 #include "config.h"
 #include "./game/gameController.h"
 
+// Prototypes
+GLFWwindow* createWindow();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+
+
 int main()
 {
     // glfw: initialize and configure
@@ -19,28 +23,22 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
 
     // Get the config
     Config* config = Config::getInstance();
-    unsigned int SCR_WIDTH = config->getScreenWidth();
-    unsigned int SCR_HEIGHT = config->getScreenHeight();
     unsigned int TARGET_FRAMERATE = config->getTargetFramerate();
 
-    // glfw window creation
-    // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "viewGL", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
+
+    // Make window 
+    GLFWwindow* window = createWindow();
+    if (!window) {
+      std::cout << "Failed to create GLFW window" << std::endl;
+      glfwTerminate();
+      return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // // glew: load all OpenGL function pointers
     glewInit();
@@ -74,6 +72,7 @@ int main()
       glfwSwapBuffers(window);
       glfwPollEvents();
 
+      // Measure performance
       double endTime = glfwGetTime();
       frameTime = endTime - startTime;
       double targetFrameTime = 1.0 / TARGET_FRAMERATE;
@@ -96,6 +95,23 @@ int main()
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
+}
+
+GLFWwindow* createWindow() {
+
+  // Get the config
+  Config* config = Config::getInstance();
+  unsigned int SCR_WIDTH = config->getScreenWidth();
+  unsigned int SCR_HEIGHT = config->getScreenHeight();
+  unsigned int TARGET_FRAMERATE = config->getTargetFramerate();
+
+  // glfw window creation
+  // --------------------
+  GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "viewGL", NULL, NULL);
+  glfwMakeContextCurrent(window);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  return window;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

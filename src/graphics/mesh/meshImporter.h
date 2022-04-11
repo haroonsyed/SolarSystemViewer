@@ -10,9 +10,10 @@ class MeshImporter {
     std::vector<std::vector<unsigned int>> buildFace(std::string line);
     std::vector<std::vector<unsigned int>> buildMesh(std::string meshFilePath);
     void normalizeMesh(std::vector<float>& vertexIndex);
+    std::vector<float> calculateTangent(std::vector<std::vector<float>> vertices, std::vector<std::vector<float>> UVs);
   public:
     std::vector<float> getPositionIndex(std::string meshFilePath);
     std::vector<float> getNormalIndex(std::string meshFilePath);
-    std::vector<float> getTexIndex(std::string meshFilePath);
+    std::vector<float> getUVIndex(std::string meshFilePath);
     std::vector<float> readSepTriMesh(std::string meshFilePath);
 };

@@ -106,7 +106,7 @@ void Scene::render() {
 
   //unsigned int lightLocs = glGetUniformLocation(shaderProgram, "lightPositions");
   //glUniform3fv(lightLocs, lightPositions.size(), glm::value_ptr(&lightPositions[0]));
-  glm::vec3 lightPos = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f));
+  glm::vec3 lightPos = glm::normalize(glm::vec3(-1.0f, 0.0f, 1.0f));
   lightPos *= 1e6 / m_universeScaleFactor;
 
   std::vector<Object*> objects;

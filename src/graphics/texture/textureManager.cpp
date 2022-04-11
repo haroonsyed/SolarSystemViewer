@@ -58,9 +58,14 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 		if (m_textureMap.count(path) == 0) {
 
 			// Load the file
-			int width, height, nrChannels;
+			int width, height = -1;
+			int nrChannels;
 			stbi_set_flip_vertically_on_load(true);
 			unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, STBI_rgb_alpha);
+
+			if (height == -1) {
+				std::cout << "Could not find load image: " << path << std::endl;
+			}
 
 			unsigned int texture;
 			glGenTextures(1, &texture);

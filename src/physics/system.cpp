@@ -38,6 +38,11 @@ std::vector<GravBody*> System::getBodies() {
 
 void System::update(float deltaT) {
 
+  if (deltaT > 0.1f) {
+    // Don't calculate physics when deltaT is large, introduces error into calculation
+    return;
+  }
+
   // The physics is made framerate independent by dividing by framerate for deltaT
   float adjustedTimeFactor = m_timeFactor * deltaT;
 
