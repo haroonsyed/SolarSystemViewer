@@ -69,7 +69,7 @@ void GravBody::setTilt(float degrees) {
     glm::cos(tiltRadians),
     0.0
   );
-  m_axis = axis;
+  m_axis = glm::normalize(axis);
 }
 float GravBody::getRotationSpeed() {
   return m_rotationSpeed;

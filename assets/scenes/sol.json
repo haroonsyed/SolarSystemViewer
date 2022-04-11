@@ -1,239 +1,241 @@
 {
-    "PhysicsDistanceFactor": 1e6,
-    "PhysicsMassFactor": 1e6,
-    "UniverseScaleFactor": 400.0,
-    "CameraPosition":{
+  "PhysicsDistanceFactor": 1e6,
+  "PhysicsMassFactor": 1e6,
+  "UniverseScaleFactor": 200.0,
+  "CameraPosition": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 3e11
+  },
+  "GravBodies": [
+    {
+      "name": "Sun",
+      "radius": 100000e3,
+      "mass": 1.99e30,
+      "position": {
         "x": 0.0,
         "y": 0.0,
-        "z": 3e11
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "tilt": 7.0,
+      "rotationPeriod": 648,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/sun.jpg"
     },
-    "GravBodies": [
-        {
-            "name": "Sun",
-            "radius": 100000e3,
-            "mass": 1.99e30,
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "tilt": 7.0,
-            "rotationPeriod": 648,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/sun.jpg"
-        },
-        {
-            "name": "Mercury",
-            "radius": 2439.5e3,
-            "mass": 3.29e23,
-            "position": {
-                "x": 69.8e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 38.86e3,
-                "z": 0.0
-            },
-            "tilt": 0.034,
-            "rotationPeriod": 1407.6,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/mercury.jpg"
-        },
-        {
-            "name": "Venus",
-            "radius": 6052e3,
-            "mass": 4.87e24,
-            "position": {
-                "x": 108.9e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 34.79e3,
-                "z": 0.0
-            },
-            "tilt": 177.4,
-            "rotationPeriod": -5832.5,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/venus.jpg"
-        },
-        {
-            "name": "Earth",
-            "radius": 6378e3,
-            "mass": 6e24,
-            "position": {
-                "x": 152.1e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 29.29e3,
-                "z": 0.0
-            },
-            "tilt": 23.44,
-            "rotationPeriod": 23.9345,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/earth.jpg",
-            "specularMap": "../assets/textures/earth_specular.jpg"
-        },
-        {
-            "name": "Moon",
-            "radius": 1737.5e3,
-            "mass": 0.073e24,
-            "position": {
-                "x": 152.506e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 30.260e3,
-                "z": 0.0
-            },
-            "tilt": 6.7,
-            "rotationPeriod": 655.7,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/moon.jpg"
-        },
-        {
-            "name": "Mars",
-            "radius": 3396e3,
-            "mass": 0.642e24,
-            "position": {
-                "x": 249.3e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 21.97e3,
-                "z": 0.0
-            },
-            "tilt": 25.2,
-            "rotationPeriod": 24.6,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/mars.jpg"
-        },
-        {
-            "name": "Jupiter",
-            "radius": 71492e3,
-            "mass": 1898.13e24,
-            "position": {
-                "x": 816.363e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 12.44e3,
-                "z": 0.0
-            },
-            "tilt": 3.1,
-            "rotationPeriod": 9.9,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/jupiter.jpg"
-        },
-        {
-            "name": "Saturn",
-            "radius": 60268e3,
-            "mass": 568e24,
-            "position": {
-                "x": 1506.5e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 9.09e3,
-                "z": 0.0
-            },
-            "tilt": 26.7,
-            "rotationPeriod": 10.7,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/saturn.jpg"
-        },
-        {
-            "name": "Uranus",
-            "radius": 25559e3,
-            "mass": 86.8e24,
-            "position": {
-                "x": 3001.4e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 6.49e3,
-                "z": 0.0
-            },
-            "tilt": 97.8,
-            "rotationPeriod": -17.2,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/uranus.jpg"
-        },
-        {
-            "name": "Neptune",
-            "radius": 24764e3,
-            "mass": 86.8e24,
-            "position": {
-                "x": 4558.9e9,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "velocity": {
-                "x": 0.0,
-                "y": 5.37e3,
-                "z": 0.0
-            },
-            "tilt": 28.3,
-            "rotationPeriod": 16.1,
-            "meshFilePath": "../assets/models/sphere.obj",
-            "vertexShaderPath": "../assets/shaders/default.vs",
-            "fragmentShaderPath": "../assets/shaders/default.fs",
-            "diffuseMap": "../assets/textures/neptune.jpg"
-        }
+    {
+      "name": "Mercury",
+      "radius": 2439.5e3,
+      "mass": 3.29e23,
+      "position": {
+        "x": 69.8e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 38.86e3,
+        "z": 0.0
+      },
+      "tilt": 0.034,
+      "rotationPeriod": 1407.6,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/mercury.jpg"
+    },
+    {
+      "name": "Venus",
+      "radius": 6052e3,
+      "mass": 4.87e24,
+      "position": {
+        "x": 108.9e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 34.79e3,
+        "z": 0.0
+      },
+      "tilt": 177.4,
+      "rotationPeriod": -5832.5,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/venus.jpg"
+    },
+    {
+      "name": "Earth",
+      "radius": 6378e3,
+      "mass": 6e24,
+      "position": {
+        "x": 152.1e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 29.29e3,
+        "z": 0.0
+      },
+      "tilt": 23.44,
+      "rotationPeriod": 23.9345,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/earth_diffuse_day.jpg",
+      "specularMap": "../assets/textures/earth_specular.jpg",
+      "normalMap": "../assets/textures/earth_normal.png"
+    },
+    {
+      "name": "Moon",
+      "radius": 1737.5e3,
+      "mass": 0.073e24,
+      "position": {
+        "x": 152.4633e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 29.29e3,
+        "z": -1.082e3
+      },
+      "tilt": 6.7,
+      "rotationPeriod": 655.7,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/moon.jpg",
+      "normalMap": "../assets/textures/moon_normal.jpg"
+    },
+    {
+      "name": "Mars",
+      "radius": 3396e3,
+      "mass": 0.642e24,
+      "position": {
+        "x": 249.3e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 21.97e3,
+        "z": 0.0
+      },
+      "tilt": 25.2,
+      "rotationPeriod": 24.6,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/mars.jpg"
+    },
+    {
+      "name": "Jupiter",
+      "radius": 71492e3,
+      "mass": 1898.13e24,
+      "position": {
+        "x": 816.363e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 12.44e3,
+        "z": 0.0
+      },
+      "tilt": 3.1,
+      "rotationPeriod": 9.9,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/jupiter.jpg"
+    },
+    {
+      "name": "Saturn",
+      "radius": 60268e3,
+      "mass": 568e24,
+      "position": {
+        "x": 1506.5e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 9.09e3,
+        "z": 0.0
+      },
+      "tilt": 26.7,
+      "rotationPeriod": 10.7,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/saturn.jpg"
+    },
+    {
+      "name": "Uranus",
+      "radius": 25559e3,
+      "mass": 86.8e24,
+      "position": {
+        "x": 3001.4e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 6.49e3,
+        "z": 0.0
+      },
+      "tilt": 97.8,
+      "rotationPeriod": -17.2,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/uranus.jpg"
+    },
+    {
+      "name": "Neptune",
+      "radius": 24764e3,
+      "mass": 86.8e24,
+      "position": {
+        "x": 4558.9e9,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "velocity": {
+        "x": 0.0,
+        "y": 5.37e3,
+        "z": 0.0
+      },
+      "tilt": 28.3,
+      "rotationPeriod": 16.1,
+      "meshFilePath": "../assets/models/sphere.obj",
+      "vertexShaderPath": "../assets/shaders/default.vs",
+      "fragmentShaderPath": "../assets/shaders/default.fs",
+      "diffuseMap": "../assets/textures/neptune.jpg"
+    }
 
-    ],
-    "Lights": [
-        {
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "color": {
-                "red": 1.0,
-                "green": 1.0,
-                "blue": 1.0
-            },
-            "intensity": 1.0
-        }
-    ]
+  ],
+  "Lights": [
+    {
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "color": {
+        "red": 1.0,
+        "green": 1.0,
+        "blue": 1.0
+      },
+      "intensity": 1.0
+    }
+  ]
 }
