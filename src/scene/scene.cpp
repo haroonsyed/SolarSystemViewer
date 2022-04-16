@@ -99,15 +99,19 @@ void Scene::render() {
   glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov()/2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
 
   // Setup light data
-  std::vector<glm::vec3> lightPositions;
+  // x,y,z,type(point/spotlight),r,g,b,strength
+  std::vector<float> lightData;
   for (Light &light : m_lights) {
-    lightPositions.push_back(light.getPosition());
+    glm::vec3 lightPos = light.getPosition() / m_universeScaleFactor;
+    lightPos = view * glm::vec4(lightPos, 1.0);
+    lightData.push_back(lightPos.x);
+    lightData.push_back(lightPos.y);
+    lightData.push_back(lightPos.z);
+    lightData.push_back(0.0f);
+    auto lightColor = light.getColor();
+    lightData.insert(lightData.end(), lightColor.begin(), lightColor.end());
+    lightData.push_back(light.getIntensity());
   }
-
-  //unsigned int lightLocs = glGetUniformLocation(shaderProgram, "lightPositions");
-  //glUniform3fv(lightLocs, lightPositions.size(), glm::value_ptr(&lightPositions[0]));
-  glm::vec3 lightPos = glm::normalize(glm::vec3(-1.0f, 0.0f, 1.0f));
-  lightPos *= 1e6 / m_universeScaleFactor;
 
   std::vector<Object*> objects;
   for (Object* bodyPtr : m_physicsSystem.getBodies()) {
@@ -133,9 +137,12 @@ void Scene::render() {
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelView));
     unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    
+    unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
+    glUniform1i(lightCountLoc, m_lights.size());
 
-    unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lightPos");
-    glUniform3fv(lightLoc, 1, glm::value_ptr(lightPos));
+    unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
+    glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
 
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
     const unsigned int numVertices = bufferInfo[2];
