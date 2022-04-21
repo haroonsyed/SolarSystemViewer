@@ -55,7 +55,8 @@ void Scene::loadScene(std::string sceneFilePath) {
   // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
     GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
-    m_physicsSystem.addBody(body);
+    m_physicsSystem.addBody(body); // Add gravBody to physics system
+    m_objects.push_back(body); // Add gravBody mesh to scene
   }
 
   // Construct lights
@@ -113,12 +114,7 @@ void Scene::render() {
     lightData.push_back(light.getIntensity());
   }
 
-  std::vector<Object*> objects;
-  for (Object* bodyPtr : m_physicsSystem.getBodies()) {
-    objects.push_back((Object*)bodyPtr);
-  }
-
-  for (Object* obj : objects) {
+  for (Object* obj : m_objects) {
 
     // Setup model matrix for this obj
     glm::mat4 scale = glm::mat4(1.0);
