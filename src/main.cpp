@@ -9,6 +9,8 @@
 // My Imports
 #include "config.h"
 #include "./game/gameController.h"
+#include "./graphics/shader/shaderManager.h"
+#include "./graphics/mesh/meshManager.h"
 
 // Prototypes
 GLFWwindow* createWindow();
@@ -43,6 +45,63 @@ int main()
     // // glew: load all OpenGL function pointers
     glewInit();
 
+    // Create quad vao (used as surface rendered image will be put on)
+    float quadVertices[] = {
+      // positions        // texCoords 
+      -1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 
+      -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 
+       1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 
+                                      
+      -1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 
+       1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 
+       1.0f,  1.0f, 0.0f,  1.0f, 1.0f 
+    };
+    unsigned int numDataPoints = 5; // Each vertex has pos(3), tex(2)
+    unsigned int numVertices = 6;
+
+    // Setup buffers for data
+    unsigned int VBO, quadVAO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &VBO);
+    // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
+    glBindVertexArray(quadVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numDataPoints * numVertices, quadVertices, GL_STATIC_DRAW);
+
+    // Add attribute data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)0); // Position Data
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(3 * sizeof(float))); // Texture data
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+
+
+    // Create the frame buffer
+    unsigned int hdrFBO;
+    glGenFramebuffers(1, &hdrFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+
+    // Add color texture to fbo
+    unsigned int width = config->getScreenWidth();
+    unsigned int height = config->getScreenHeight();
+    unsigned int fboTexture;
+    glGenTextures(1, &fboTexture);
+    glBindTexture(GL_TEXTURE_2D, fboTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexture, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create render buffer for depth and stencil data
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
     // Load scene
     Scene scene(window);
     scene.loadScene("../assets/scenes/testing.json");
@@ -52,20 +111,38 @@ int main()
 
     // render loop
     // -----------
-    glEnable(GL_DEPTH_TEST);
     unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
     double timeAtLastDebug = 0.0;
     while (!glfwWindowShouldClose(window))
     {
       // Clear previous frame
+      glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
       glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glEnable(GL_DEPTH_TEST);
 
       double startTime = glfwGetTime();
 
       game->update((float) frameTime);
       game->render();
+
+      // Bind back the default fbo and perform image processing
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      // Switch to post-processing shader
+      
+      ShaderManager* shaderManager = ShaderManager::getInstance();
+      shaderManager->bindShader("../assets/shaders/postProcessing.vs", "../assets/shaders/postProcessing.fs");
+
+      // Render to quad
+      glBindVertexArray(quadVAO);
+      glDisable(GL_DEPTH_TEST);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, fboTexture);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       // -------------------------------------------------------------------------------
