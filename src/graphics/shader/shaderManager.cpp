@@ -93,7 +93,9 @@ void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragSha
 
 	// Bind the shaderProgram
 	unsigned int shaderProgram = m_shaderMap.at(shaderKey);
-	glUseProgram(shaderProgram);
-	m_boundShader = shaderProgram;
+	if (shaderProgram != m_boundShader) { // Driver probably caches, but just in case
+		glUseProgram(shaderProgram); 
+		m_boundShader = shaderProgram;
+	}
 
 }

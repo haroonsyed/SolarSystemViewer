@@ -57,17 +57,30 @@
   ],
   "Lights": [
     {
-      "position": {
-        "x": -10000.0,
-        "y": 0.0,
-        "z": 0.0
-      },
-      "color": {
-        "red": 1.0,
-        "green": 1.0,
-        "blue": 1.0
-      },
-      "intensity": 1.0
+        "position": {
+            "x": -10e15,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "color": {
+            "red": 0.0,
+            "green": 1.0,
+            "blue": 0.0
+        },
+        "intensity": 1.0
+    },
+    {
+        "position": {
+            "x": 10e15,
+            "y": 0.0,
+            "z": 0.0
+        },
+        "color": {
+            "red": 0.0,
+            "green": 1.0,
+            "blue": 0.0
+        },
+        "intensity": 1.0
     }
   ]
 }

@@ -6,7 +6,11 @@ in mat3 TBN;
 
 out vec4 FragColor;
 
-uniform vec3 lightPos;
+// x,y,z,type(point/spotlight),r,g,b,strength
+const int numLightAttr = 8;
+const int maxNumLights = 20;
+uniform float lights[numLightAttr*maxNumLights]; // Each light has 8 attributes, max of 20 lights
+uniform int lightCount; // How many lights to render for this frame
 
 uniform bool diffuseMapExists;
 uniform bool normalMapExists;
@@ -33,18 +37,32 @@ void main()
 	normal = normalMapData * 2.0 - 1.0; // Make range between -1 and 1 for normal map
 	normal = normalize(TBN * normal);
   }
-  vec3 toLight = normalize(lightPos-transformedPos);
-  vec3 viewDir = normalize(transformedPos);
-  vec3 h = normalize((-1*viewDir) + toLight);
 
-  float ambient = 0.1;
-  float specularStrength = 0.5f;
-  float phongExp = 100.0f;
+  // Iterate through the lights and add each result to the FragColor
+  FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  for (int i=0; i<lightCount; i++) {
 
-  float diffuse = max(dot(normal,toLight),0);
-  float specular = pow(max(dot(normal,h), 0),phongExp);
+	int lightIndex = numLightAttr * i;
 
-  vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
-  
-  FragColor = (ambient + diffuse) * diffuseColor + specularStrength * specular * specularColor;
+	// x,y,z,type(point/spotlight),r,g,b,strength
+	vec3 lightPos = vec3(lights[lightIndex], lights[lightIndex+1], lights[lightIndex+2]);
+	vec3 lightColor = vec3(lights[lightIndex+4], lights[lightIndex+5], lights[lightIndex+6]);
+	float lightStrength = lights[lightIndex+7];
+
+	vec3 toLight = normalize(lightPos-transformedPos);
+	vec3 viewDir = normalize(transformedPos);
+	vec3 h = normalize((-1*viewDir) + toLight);
+
+	float ambient = 0.1;
+	float specularStrength = 0.5f;
+	float phongExp = 50.0f;
+
+	float diffuse = max(dot(normal,toLight),0);
+	float specular = pow(max(dot(normal,h), 0),phongExp);
+
+	vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
+	
+	FragColor += (ambient + diffuse) * diffuseColor + specularStrength * specular * specularColor;
+  }
+
 };
