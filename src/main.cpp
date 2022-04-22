@@ -44,9 +44,6 @@ int main()
     // // glew: load all OpenGL function pointers
     glewInit();
 
-    // Create framebuffer and setup screen to render to
-    ScreenManager* screenManager = ScreenManager::getInstance();
-
     // Load scene
     Scene scene(window);
     scene.loadScene("../assets/scenes/testing.json");
@@ -61,24 +58,13 @@ int main()
     double timeAtLastDebug = 0.0;
     while (!glfwWindowShouldClose(window))
     {
-      // Clear previous frame
-      screenManager->bindSceneBuffer();
-      glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      glEnable(GL_DEPTH_TEST);
 
       double startTime = glfwGetTime();
 
       game->update((float) frameTime);
       game->render();
 
-      // Bind back the default fbo and perform post processing
-      screenManager->bindDefaultBuffer();
-      screenManager->render();
-
-
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-      // -------------------------------------------------------------------------------
       glfwSwapBuffers(window);
       glfwPollEvents();
 

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../graphics/screen/screenManager.h"
 #include "../config.h"
 
 GameController* GameController::m_instance = nullptr;
@@ -246,5 +247,20 @@ void GameController::update(float deltaT) {
 }
 
 void GameController::render() {
+
+  // Create framebuffer and setup screen to render to
+  ScreenManager* screenManager = ScreenManager::getInstance();
+
+  // Clear previous frame
+  screenManager->bindSceneBuffer();
+  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
+
   m_boundScene->render();
+
+  // Bind back the default fbo and perform post processing
+  screenManager->bindDefaultBuffer();
+  screenManager->render();
+
 }
