@@ -107,8 +107,8 @@
       },
       "velocity": {
         "x": 0.0,
-        "y": 29.29e3,
-        "z": -1.082e3
+        "y": 30.372e3,
+        "z": 0.0
       },
       "tilt": 6.7,
       "rotationPeriod": 655.7,
@@ -238,7 +238,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 1.0
+      "intensity": 1e2
     }
   ]
 }

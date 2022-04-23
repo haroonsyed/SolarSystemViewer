@@ -10,6 +10,7 @@ private:
   Object m_screenQuad;
   unsigned int m_sceneFBO;
   unsigned int m_sceneFBOTexture;
+  float m_prevExposure;
   ScreenManager();
 
 public:

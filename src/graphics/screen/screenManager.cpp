@@ -1,6 +1,9 @@
 #include <GL/glew.h>
+#include <iostream>
 #include "screenManager.h"
+#include "../shader/shaderManager.h"
 #include "../../config.h"
+#include <math.h>
 
 ScreenManager* ScreenManager::m_instance = nullptr;
 
@@ -17,6 +20,8 @@ ScreenManager::ScreenManager() {
   m_screenQuad.setShaders("../assets/shaders/postProcessing.vs", "../assets/shaders/postProcessing.fs");
 
   generateFrameBuffers();
+
+  m_prevExposure = 1.0f;
 
 }
 
@@ -63,6 +68,38 @@ void ScreenManager::render() {
   m_screenQuad.bind();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, m_sceneFBOTexture);
+
+  // Used to find avg luminance
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glGenerateMipmap(GL_TEXTURE_2D); 
+
+  // Crude, switch to a compute shader with histogram for median brightness
+  GLfloat* pixels = new GLfloat[4];
+  Config* config = Config::getInstance();
+  auto width = config->getScreenWidth();
+  auto height = config->getScreenHeight();
+
+  unsigned int baseMMLevel = ceil(log2(std::max(width, height))) - 1;
+  glGetTexImage(GL_TEXTURE_2D, baseMMLevel, GL_RGBA, GL_FLOAT, pixels);
+
+  //Calculate Luminance
+  float luminance = (pixels[0] + pixels[1] + pixels[2]);
+  float exposure = 0.5f / luminance;
+  exposure = std::max(exposure, 0.3f); // Limit so bright object look bright
+  exposure = std::min(exposure, 1e5f); // Don't let exposure go to infinity
+  
+  // Interpolate between this luminance and previous luminance
+  // Should probably be based on deltaT
+  exposure = glm::mix(m_prevExposure, exposure, 0.01f);
+  m_prevExposure = exposure;
+
+  //std::cout << "Luminance: " << luminance << " Exposure: " << exposure << std::endl;
+  ShaderManager* shaderManager = ShaderManager::getInstance();
+  unsigned int shaderProgram = shaderManager->getBoundShader();
+  unsigned int lightLoc = glGetUniformLocation(shaderProgram, "exposure");
+  glUniform1fv(lightLoc, 1, &exposure);
+
+  delete[] pixels;
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
 }

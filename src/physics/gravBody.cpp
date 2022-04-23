@@ -45,6 +45,9 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
   if (jsonData.contains("emissiveMap")) {
     setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
   }
+  // Rotate model to begin with north pole facing upward
+  const glm::vec3 defaultRotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+  rotate( glm::angleAxis( 3.14159f/2 , defaultRotationAxis ) );
 }
 glm::vec3 GravBody::getVelocity() {
   return m_velocity;
@@ -62,14 +65,19 @@ void GravBody::setAxis(float x, float y, float z) {
 	m_axis = glm::vec3(x, y, z);
 }
 void GravBody::setTilt(float degrees) {
-  // Assuming degrees are from normal (earth north pole) from earth's orbital plane around sun (defined as 0)
+  // Assuming degrees are from normal of earth's orbital plane around sun (defined as 0)
+  std::cout << degrees << std::endl;
   double tiltRadians = glm::radians(degrees);
+  std::cout << tiltRadians << std::endl;
   glm::vec3 axis(
     -glm::sin(tiltRadians),
-    glm::cos(tiltRadians),
-    0.0
+    0.0,
+    glm::cos(tiltRadians)
   );
+  std::cout << axis.x << " " << axis.y << " " << axis.z << std::endl;
   m_axis = glm::normalize(axis);
+  std::cout << m_axis.x << " " << m_axis.y << " " << m_axis.z << "\n" << std::endl;
+
 }
 float GravBody::getRotationSpeed() {
   return m_rotationSpeed;

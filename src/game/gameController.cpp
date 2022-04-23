@@ -141,9 +141,11 @@ void GameController::updateFocusedPlanet() {
   
   auto physicsSystem = m_boundScene->getPhysicsSystem();
   auto bodies = physicsSystem->getBodies();
+  Camera* camera = m_boundScene->getCamera();
 
   
   if (m_focusedBody == bodies.size()) {
+    camera->setUp(glm::vec3(0.0f, 1.0f, 0.0f));
     m_focusedBody = -1;
   }
 
@@ -156,7 +158,7 @@ void GameController::updateFocusedPlanet() {
 
     if (target != nullptr) {
 
-      Camera* camera = m_boundScene->getCamera();
+      camera->setUp(glm::vec3(0.0f, 0.0f, 1.0f));
 
       float physicsDistanceFactor = physicsSystem->getPhysicsDistanceFactor();
       float universeScaleFactor = m_boundScene->getUniverseScaleFactor();
@@ -167,8 +169,8 @@ void GameController::updateFocusedPlanet() {
       float camDistance = 3 * radius / tanFov; // 3 accounts for most screen aspect ratios
 
       camera->setCameraTarget(scaledTargetPos);
-      camera->setCameraPosition(scaledTargetPos + glm::vec3(0.0f, 0.0f, camDistance));
-
+      camera->setCameraPosition(scaledTargetPos + glm::vec3(0.0f, camDistance, 0.0f));
+      
     }
     else {
       std::cout << "Could not find target planet: " << m_focusedBody << std::endl;
@@ -253,7 +255,7 @@ void GameController::render() {
 
   // Clear previous frame
   screenManager->bindSceneBuffer();
-  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
 
