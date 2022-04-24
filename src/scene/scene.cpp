@@ -81,6 +81,11 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   }
 
+  //setup skybox
+
+  Skybox SKYBOX;
+  skybox = SKYBOX;
+
 }
 
 void Scene::render() {
@@ -146,5 +151,8 @@ void Scene::render() {
 
   }
 
+  //render skybox
+
+  skybox.render(view, projection);
 }
 

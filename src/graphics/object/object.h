@@ -1,18 +1,51 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+
+
+struct Texture
+{
+    Texture(std::string p, int h, int w, int c, unsigned char *d)
+    {
+        this->path = p;
+        this->height = h;
+        this->width = w;
+        this->channels = c;
+        this->data = d;
+    }
+    Texture()
+    {
+        this->path = "";
+        this->height = 0;
+        this->width = 0;
+        this->channels = 0;
+        this->data = nullptr;
+    }
+    std::string path;
+    int height;
+    int width;
+    int channels;
+    unsigned char* data;
+};
+
 class Object {
   private:
+
     std::string m_meshFilePath;
     std::string m_vertexShaderPath;
     std::string m_fragShaderPath;
-    std::string m_diffuseMapFilePath;
-    std::string m_normalMapFilePath;
-    std::string m_specularMapFilePath;
-    std::string m_emissiveMapFilePath;
+
+    Texture m_diffuse;
+    Texture m_normal;
+    Texture m_specular;
+    Texture m_emissive;
+    Texture m_cloud;
+    Texture m_dynamic;
 
 
     std::string m_name;
@@ -20,6 +53,8 @@ class Object {
     glm::quat m_rotation;
     float m_scale;
     float m_axis;
+
+    double value;
 
   public:
     Object();
@@ -41,7 +76,11 @@ class Object {
     void setNormalMap(std::string normalMapFilePath);
     void setSpecularMap(std::string specularMapFilePath);
     void setEmissiveMap(std::string emissiveMapFilePath);
-    std::vector<std::string> getTextures();
+    void setCloudMap(std::string cloudMapFilePath);
+    Texture loadData(std::string path, int channels);
+    std::vector<Texture> getStaticTextures();
+    std::vector<Texture> getDynamicTextures();
+    //Texture generateCloudTexture();
     void bind();
 
 };

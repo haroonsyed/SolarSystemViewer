@@ -9,6 +9,8 @@
 // My Imports
 #include "config.h"
 #include "./game/gameController.h"
+#include "graphics/gui/gui.h"
+#include "graphics/texture/textureMod.h"
 
 // Prototypes
 GLFWwindow* createWindow();
@@ -47,13 +49,16 @@ int main()
     Scene scene(window);
     scene.loadScene("../assets/scenes/testing.json");
 
+    // Load GUI
+    Gui GUI;
+
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);
 
     // render loop
     // -----------
     glEnable(GL_DEPTH_TEST);
-    unsigned long frameCounter = 0;
+    double frameRate = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
     double timeAtLastDebug = 0.0;
     while (!glfwWindowShouldClose(window))
@@ -64,8 +69,9 @@ int main()
 
       double startTime = glfwGetTime();
 
-      game->update((float) frameTime);
+      game->update((float)frameTime);
       game->render();
+      GUI.render(frameRate);
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       // -------------------------------------------------------------------------------
@@ -75,20 +81,8 @@ int main()
       // Measure performance
       double endTime = glfwGetTime();
       frameTime = endTime - startTime;
-      double targetFrameTime = 1.0 / TARGET_FRAMERATE;
+      frameRate = 1 / frameTime;
 
-      frameCounter++;
-
-      // 5 percent error acceptance
-      if (frameTime > targetFrameTime*1.05) {
-        std::cout << "Framerate struggling to keep up!" << std::endl;
-      }
-
-      // Print FPS every n seconds
-      if (endTime - timeAtLastDebug > 5) {
-        timeAtLastDebug = endTime;
-        std::cout << "\nOverall Average framerate: " << frameCounter / endTime << " fps.\n" << std::endl;
-      }
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -109,6 +103,7 @@ GLFWwindow* createWindow() {
   // --------------------
   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "viewGL", NULL, NULL);
   glfwMakeContextCurrent(window);
+  glfwSwapInterval(0);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   return window;

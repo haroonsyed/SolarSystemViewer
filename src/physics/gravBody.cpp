@@ -45,6 +45,9 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
   if (jsonData.contains("emissiveMap")) {
     setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
   }
+  if (jsonData.contains("cloudMap")) {
+    setCloudMap(jsonData["cloudMap"].get<std::string>());
+  }
 }
 glm::vec3 GravBody::getVelocity() {
   return m_velocity;
