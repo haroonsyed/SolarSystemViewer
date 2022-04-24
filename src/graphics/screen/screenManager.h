@@ -9,7 +9,8 @@ private:
   static ScreenManager* m_instance;
   Object m_screenQuad;
   unsigned int m_sceneFBO;
-  unsigned int m_sceneFBOTexture;
+  unsigned int m_sceneHDRTexture;
+  unsigned int m_sceneBloomTexture;
   float m_prevExposure;
   ScreenManager();
 
@@ -18,5 +19,6 @@ public:
   void generateFrameBuffers();
   void bindDefaultBuffer();
   void bindSceneBuffer();
-  void render();
+  void clearScreenBuffer();
+  void renderToScreen();
 };

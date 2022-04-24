@@ -26,6 +26,7 @@ ScreenManager::ScreenManager() {
 }
 
 void ScreenManager::generateFrameBuffers() {
+
   // Create the hdr frame buffer
   glGenFramebuffers(1, &m_sceneFBO);
   glBindFramebuffer(GL_FRAMEBUFFER, m_sceneFBO);
@@ -35,41 +36,58 @@ void ScreenManager::generateFrameBuffers() {
   unsigned int width = config->getScreenWidth();
   unsigned int height = config->getScreenHeight();
 
-  glGenTextures(1, &m_sceneFBOTexture);
-  glBindTexture(GL_TEXTURE_2D, m_sceneFBOTexture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_sceneFBOTexture, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  // One for hdr scene render, one for bloom
+  //for (int i = 0; i < 2; i++) {
 
-  // Create render buffer for depth and stencil data
-  unsigned int rbo;
-  glGenRenderbuffers(1, &rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //unsigned int* textureLoc = i == 0 ? &m_sceneHDRTexture : &m_sceneBloomTexture;
+
+    glGenTextures(1, &m_sceneHDRTexture);
+    glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_sceneHDRTexture, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create render buffer for depth and stencil data
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+  //}
 }
 
 void ScreenManager::bindDefaultBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  m_screenQuad.bind();
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
 }
 
 void ScreenManager::bindSceneBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, m_sceneFBO);
 }
 
-void ScreenManager::render() {
+void ScreenManager::clearScreenBuffer() {
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glEnable(GL_DEPTH_TEST);
+}
 
+void ScreenManager::renderToScreen() {
+
+  // Calculate bloom
+
+
+
+  // Clear previous frame
+  bindDefaultBuffer();
   glClear(GL_COLOR_BUFFER_BIT);
   glDisable(GL_DEPTH_TEST);
 
-  m_screenQuad.bind();
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, m_sceneFBOTexture);
-
-  // Used to find avg luminance
+  // Calculate automatic exposure value
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glGenerateMipmap(GL_TEXTURE_2D); 
 
@@ -85,22 +103,21 @@ void ScreenManager::render() {
   //Calculate Luminance
   float luminance = (pixels[0] + pixels[1] + pixels[2]);
   float exposure = 0.5f / luminance;
-  exposure = std::max(exposure, 0.3f); // Limit so bright object look bright
-  exposure = std::min(exposure, 1e5f); // Don't let exposure go to infinity
-  
-  // Interpolate between this luminance and previous luminance
-  // Should probably be based on deltaT
-  exposure = glm::mix(m_prevExposure, exposure, 0.01f);
+
+  // Move toward this luminance from previous luminance
+  // Change to be based on 10 * deltaT
+  float a = 1e-2 * (1.0f/exposure) * std::fabsf(exposure - m_prevExposure);
+  exposure = m_prevExposure * (1 - a) + exposure * a;
+  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 0.3f, 1e4f);
   m_prevExposure = exposure;
 
-  //std::cout << "Luminance: " << luminance << " Exposure: " << exposure << std::endl;
+  // Render the frame on the quad with post processing
   ShaderManager* shaderManager = ShaderManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
-  unsigned int lightLoc = glGetUniformLocation(shaderProgram, "exposure");
-  glUniform1fv(lightLoc, 1, &exposure);
+  unsigned int exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
+  glUniform1fv(exposureLoc, 1, &exposure);
 
   delete[] pixels;
   glDrawArrays(GL_TRIANGLES, 0, 6);
-
 }
 

@@ -55,7 +55,7 @@ int main()
     // -----------
     unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
-    double timeAtLastDebug = 0.0;
+    double timeAtLastFpsLog = 0.0;
     while (!glfwWindowShouldClose(window))
     {
 
@@ -81,9 +81,12 @@ int main()
       }
 
       // Print FPS every n seconds
-      if (endTime - timeAtLastDebug > 5) {
-        timeAtLastDebug = endTime;
-        std::cout << "\nOverall Average framerate: " << frameCounter / endTime << " fps.\n" << std::endl;
+      if (endTime - timeAtLastFpsLog > 5) {
+
+        double timeSinceLastFpsLog = endTime - timeAtLastFpsLog;
+        std::cout << "\nFramerate: " << frameCounter / timeSinceLastFpsLog << " fps.\n" << std::endl;
+
+        timeAtLastFpsLog = endTime;
       }
     }
 
