@@ -36,3 +36,7 @@ void Camera::setFov(float fov) {
 glm::vec3 Camera::getUp() {
   return m_up;
 }
+
+void Camera::setUp(glm::vec3 up) {
+  m_up = up;
+}

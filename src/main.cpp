@@ -9,6 +9,7 @@
 // My Imports
 #include "config.h"
 #include "./game/gameController.h"
+#include "./graphics/screen/screenManager.h"
 
 // Prototypes
 GLFWwindow* createWindow();
@@ -45,22 +46,18 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/testing.json");
+    scene.loadScene("../assets/scenes/sol.json");
 
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);
 
     // render loop
     // -----------
-    glEnable(GL_DEPTH_TEST);
     unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
-    double timeAtLastDebug = 0.0;
+    double timeAtLastFpsLog = 0.0;
     while (!glfwWindowShouldClose(window))
     {
-      // Clear previous frame
-      glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       double startTime = glfwGetTime();
 
@@ -68,7 +65,6 @@ int main()
       game->render();
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-      // -------------------------------------------------------------------------------
       glfwSwapBuffers(window);
       glfwPollEvents();
 
@@ -85,9 +81,10 @@ int main()
       }
 
       // Print FPS every n seconds
-      if (endTime - timeAtLastDebug > 5) {
-        timeAtLastDebug = endTime;
-        std::cout << "\nOverall Average framerate: " << frameCounter / endTime << " fps.\n" << std::endl;
+      if (endTime - timeAtLastFpsLog > 5) {
+        std::cout << "\nFramerate: " << frameCounter / (endTime - timeAtLastFpsLog) << " fps.\n" << std::endl;
+        frameCounter = 0;
+        timeAtLastFpsLog = endTime;
       }
     }
 
@@ -123,5 +120,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
   Config* config = Config::getInstance();
   config->setScreenWidth(width);
   config->setScreenHeight(height);
+  ScreenManager* screenManager = ScreenManager::getInstance();
+  screenManager->generateFrameBuffers();
   glViewport(0, 0, width, height);
 }

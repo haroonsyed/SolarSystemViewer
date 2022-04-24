@@ -2,6 +2,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../graphics/screen/screenManager.h"
 #include "../config.h"
 
 GameController* GameController::m_instance = nullptr;
@@ -140,9 +141,11 @@ void GameController::updateFocusedPlanet() {
   
   auto physicsSystem = m_boundScene->getPhysicsSystem();
   auto bodies = physicsSystem->getBodies();
+  Camera* camera = m_boundScene->getCamera();
 
   
   if (m_focusedBody == bodies.size()) {
+    camera->setUp(glm::vec3(0.0f, 1.0f, 0.0f));
     m_focusedBody = -1;
   }
 
@@ -155,7 +158,7 @@ void GameController::updateFocusedPlanet() {
 
     if (target != nullptr) {
 
-      Camera* camera = m_boundScene->getCamera();
+      camera->setUp(glm::vec3(0.0f, 0.0f, 1.0f));
 
       float physicsDistanceFactor = physicsSystem->getPhysicsDistanceFactor();
       float universeScaleFactor = m_boundScene->getUniverseScaleFactor();
@@ -166,8 +169,8 @@ void GameController::updateFocusedPlanet() {
       float camDistance = 3 * radius / tanFov; // 3 accounts for most screen aspect ratios
 
       camera->setCameraTarget(scaledTargetPos);
-      camera->setCameraPosition(scaledTargetPos + glm::vec3(0.0f, 0.0f, camDistance));
-
+      camera->setCameraPosition(scaledTargetPos + glm::vec3(0.0f, camDistance, 0.0f));
+      
     }
     else {
       std::cout << "Could not find target planet: " << m_focusedBody << std::endl;
@@ -246,5 +249,17 @@ void GameController::update(float deltaT) {
 }
 
 void GameController::render() {
+
+  // Create framebuffer and setup screen to render to
+  ScreenManager* screenManager = ScreenManager::getInstance();
+
+  // Clear previous frame
+  screenManager->bindSceneBuffer();
+  screenManager->clearScreenBuffer();
+
   m_boundScene->render();
+
+  // Render to screen
+  screenManager->renderToScreen();
+
 }

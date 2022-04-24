@@ -11,7 +11,7 @@
     {
       "name": "Earth",
       "radius": 6378e3,
-      "mass": 6e24,
+      "mass": 5.97e24,
       "position": {
         "x": 0.0,
         "y": 0.0,
@@ -34,7 +34,7 @@
     {
       "name": "Moon",
       "radius": 1737.5e3,
-      "mass": 0.073e24,
+      "mass": 0.07346e24,
       "position": {
         "x": 363.3e6,
         "y": 0.0,
@@ -42,8 +42,8 @@
       },
       "velocity": {
         "x": 0.0,
-        "y": 0.0e3,
-        "z": -1.082e3
+        "y": 1.082e3,
+        "z": 0.0
       },
       "tilt": 6.7,
       "rotationPeriod": 655.7,
@@ -58,29 +58,29 @@
   "Lights": [
     {
         "position": {
-            "x": -10e15,
+            "x": 0.0,
             "y": 0.0,
             "z": 0.0
         },
         "color": {
-            "red": 0.0,
+            "red": 1.0,
             "green": 1.0,
-            "blue": 0.0
+            "blue": 1.0
         },
-        "intensity": 1.0
+        "intensity": 50.0
     },
     {
         "position": {
-            "x": 10e15,
+            "x": 1e10,
             "y": 0.0,
             "z": 0.0
         },
         "color": {
-            "red": 0.0,
-            "green": 1.0,
-            "blue": 0.0
+            "red": 1.0,
+            "green": 0.8,
+            "blue": 0.9
         },
-        "intensity": 1.0
+        "intensity": 0.0
     }
   ]
 }
