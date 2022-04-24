@@ -13,6 +13,7 @@ private:
   unsigned int m_sceneBloomTexture;
   float m_prevExposure;
   ScreenManager();
+  void calculateExposure();
 
 public:
   static ScreenManager* getInstance();

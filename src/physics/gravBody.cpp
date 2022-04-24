@@ -66,17 +66,13 @@ void GravBody::setAxis(float x, float y, float z) {
 }
 void GravBody::setTilt(float degrees) {
   // Assuming degrees are from normal of earth's orbital plane around sun (defined as 0)
-  std::cout << degrees << std::endl;
   double tiltRadians = glm::radians(degrees);
-  std::cout << tiltRadians << std::endl;
   glm::vec3 axis(
     -glm::sin(tiltRadians),
     0.0,
     glm::cos(tiltRadians)
   );
-  std::cout << axis.x << " " << axis.y << " " << axis.z << std::endl;
   m_axis = glm::normalize(axis);
-  std::cout << m_axis.x << " " << m_axis.y << " " << m_axis.z << "\n" << std::endl;
 
 }
 float GravBody::getRotationSpeed() {

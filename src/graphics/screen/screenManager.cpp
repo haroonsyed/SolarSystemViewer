@@ -59,6 +59,34 @@ void ScreenManager::generateFrameBuffers() {
   //}
 }
 
+void ScreenManager::calculateExposure() {
+  // Calculate automatic exposure value
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  // Crude, switch to a compute shader with histogram for median brightness
+  GLfloat* pixels = new GLfloat[4];
+  Config* config = Config::getInstance();
+  auto width = config->getScreenWidth();
+  auto height = config->getScreenHeight();
+
+  unsigned int baseMMLevel = ceil(log2(std::max(width, height))) - 1;
+  glGetTexImage(GL_TEXTURE_2D, baseMMLevel, GL_RGBA, GL_FLOAT, pixels);
+
+  //Calculate Luminance
+  float luminance = (pixels[0] + pixels[1] + pixels[2]);
+  float exposure = 0.5f / luminance;
+
+  // Move toward this luminance from previous luminance
+  // Change to be based on 10 * deltaT
+  float a = 1e-2 * (1.0f / exposure) * std::fabsf(exposure - m_prevExposure);
+  exposure = m_prevExposure * (1 - a) + exposure * a;
+  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 0.3f, 1e4f);
+  m_prevExposure = exposure;
+
+  delete[] pixels;
+}
+
 void ScreenManager::bindDefaultBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   m_screenQuad.bind();
@@ -76,48 +104,23 @@ void ScreenManager::clearScreenBuffer() {
   glEnable(GL_DEPTH_TEST);
 }
 
+
+
 void ScreenManager::renderToScreen() {
-
-  // Calculate bloom
-
-
 
   // Clear previous frame
   bindDefaultBuffer();
-  glClear(GL_COLOR_BUFFER_BIT);
-  glDisable(GL_DEPTH_TEST);
+  clearScreenBuffer();
 
-  // Calculate automatic exposure value
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glGenerateMipmap(GL_TEXTURE_2D); 
-
-  // Crude, switch to a compute shader with histogram for median brightness
-  GLfloat* pixels = new GLfloat[4];
-  Config* config = Config::getInstance();
-  auto width = config->getScreenWidth();
-  auto height = config->getScreenHeight();
-
-  unsigned int baseMMLevel = ceil(log2(std::max(width, height))) - 1;
-  glGetTexImage(GL_TEXTURE_2D, baseMMLevel, GL_RGBA, GL_FLOAT, pixels);
-
-  //Calculate Luminance
-  float luminance = (pixels[0] + pixels[1] + pixels[2]);
-  float exposure = 0.5f / luminance;
-
-  // Move toward this luminance from previous luminance
-  // Change to be based on 10 * deltaT
-  float a = 1e-2 * (1.0f/exposure) * std::fabsf(exposure - m_prevExposure);
-  exposure = m_prevExposure * (1 - a) + exposure * a;
-  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 0.3f, 1e4f);
-  m_prevExposure = exposure;
+  calculateExposure();
 
   // Render the frame on the quad with post processing
   ShaderManager* shaderManager = ShaderManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
   unsigned int exposureLoc = glGetUniformLocation(shaderProgram, "exposure");
-  glUniform1fv(exposureLoc, 1, &exposure);
+  glUniform1fv(exposureLoc, 1, &m_prevExposure);
 
-  delete[] pixels;
   glDrawArrays(GL_TRIANGLES, 0, 6);
+
 }
 
