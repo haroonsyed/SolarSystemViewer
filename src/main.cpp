@@ -82,10 +82,8 @@ int main()
 
       // Print FPS every n seconds
       if (endTime - timeAtLastFpsLog > 5) {
-
-        double timeSinceLastFpsLog = endTime - timeAtLastFpsLog;
-        std::cout << "\nFramerate: " << frameCounter / timeSinceLastFpsLog << " fps.\n" << std::endl;
-
+        std::cout << "\nFramerate: " << frameCounter / (endTime - timeAtLastFpsLog) << " fps.\n" << std::endl;
+        frameCounter = 0;
         timeAtLastFpsLog = endTime;
       }
     }
