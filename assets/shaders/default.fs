@@ -3,7 +3,7 @@ in vec3 transformedPos;
 in vec3 transformedNorm;
 in vec2 uvCoord;
 in mat3 TBN;
-in vec4 vertexTextures;
+in vec4 texLoc;
 
 out vec4 FragColor;
 
@@ -13,10 +13,10 @@ const int maxNumLights = 20;
 uniform float lights[numLightAttr*maxNumLights]; // Each light has 8 attributes, max of 20 lights
 uniform int lightCount; // How many lights to render for this frame
 
-bool diffuseMapExists = vertexTextures.x != -1.0;
-bool normalMapExists = vertexTextures.y != -1.0;
-bool specularMapExists = vertexTextures.z != -1.0;
-bool emissiveMapExists = vertexTextures.w != -1.0;
+bool diffuseMapExists = texLoc.x != -1.0;
+bool normalMapExists = texLoc.y != -1.0;
+bool specularMapExists = texLoc.z != -1.0;
+bool emissiveMapExists = texLoc.w != -1.0;
 
 uniform sampler2D textures[16];
 
@@ -24,10 +24,10 @@ void main()
 {
 	
   // Grab color for fragment from texture
-  vec4 diffuseColor = texture(textures[int(vertexTextures.x)], uvCoord);
-	vec3 normalMapData = texture(textures[int(vertexTextures.y)], uvCoord).rgb;
-  vec4 specularMapData = texture(textures[int(vertexTextures.z)], uvCoord);
-  vec4 emissiveMapData = texture(textures[int(vertexTextures.w)], uvCoord);
+  vec4 diffuseColor			=	texture(textures[int(texLoc.x)], uvCoord);
+	vec3 normalMapData		=	texture(textures[int(texLoc.y)], uvCoord).rgb;
+  vec4 specularMapData	=	texture(textures[int(texLoc.z)], uvCoord);
+  vec4 emissiveMapData	=	texture(textures[int(texLoc.w)], uvCoord);
 
   // Calculate vectors needed for lighting
   vec3 normal = normalize(transformedNorm);
@@ -69,9 +69,5 @@ void main()
 		
 		FragColor += lightStrength * ( (ambient + diffuse) * diffuseColor * lightColor + specularStrength * specular * specularColor );
   }
-
-	if(normalMapExists) {
-		FragColor = vec4(1.0);
-	}
 
 };

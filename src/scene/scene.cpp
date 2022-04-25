@@ -160,18 +160,7 @@ void Scene::render() {
 
         }
 
-        // Setup model matrix for this obj
-        glm::mat4 scale = glm::mat4(1.0);
-        scale = glm::scale(scale, glm::vec3(obj->getScale()));
-        glm::mat4 rotation = obj->getRotationMat();
-        glm::mat4 translation = glm::mat4(1.0f);
-        translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-
-        glm::mat4 modelView = view * translation * rotation * scale;
-        float* modelViewFloat = glm::value_ptr(modelView);
-        dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
-        
-        
+        // Set texture units for this object
         for (std::string tex: obj->getTextures()) {
           if (tex.empty()) {
             dynamicData.push_back(-1.0f);
@@ -188,6 +177,19 @@ void Scene::render() {
 
         // Add check if > 16 and do another batch with this vertex
 
+        // Setup model matrix for this obj
+        glm::mat4 scale = glm::mat4(1.0);
+        scale = glm::scale(scale, glm::vec3(obj->getScale()));
+        glm::mat4 rotation = obj->getRotationMat();
+        glm::mat4 translation = glm::mat4(1.0f);
+        translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
+
+        glm::mat4 modelView = view * translation * rotation * scale;
+        float* modelViewFloat = glm::value_ptr(modelView);
+        dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
+        
+        
+
       }
 
       // Add texture data
@@ -200,32 +202,33 @@ void Scene::render() {
       const unsigned int numDynamicDataPoints = 20; // (16 for mat4 and 4 for texId)
       glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_STATIC_DRAW);
 
-      glEnableVertexAttribArray(4);
-      glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)0);
-      glEnableVertexAttribArray(5);
-      glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(sizeof(glm::vec4)));
-      glEnableVertexAttribArray(6);
-      glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * sizeof(glm::vec4)));
-      glEnableVertexAttribArray(7);
-      glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(3 * sizeof(glm::vec4)));
+
+      glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 20, (void*)(0 * sizeof(glm::vec4)));
+      glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 20, (void*)(1 * sizeof(glm::vec4)));
+      glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 20, (void*)(2 * sizeof(glm::vec4)));
+      glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 20, (void*)(3 * sizeof(glm::vec4)));
+      glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 20, (void*)(4 * sizeof(glm::vec4)));
       
       glVertexAttribDivisor(4, 1);
       glVertexAttribDivisor(5, 1);
       glVertexAttribDivisor(6, 1);
       glVertexAttribDivisor(7, 1);
+      glVertexAttribDivisor(8, 1);
 
+
+      glEnableVertexAttribArray(4);
+      glEnableVertexAttribArray(5);
+      glEnableVertexAttribArray(6);
+      glEnableVertexAttribArray(7);
       glEnableVertexAttribArray(8);
-      glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(4 * sizeof(glm::vec4)));
-
-
 
 
       // Render
       std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-      const unsigned int numVertices = bufferInfo[2];
-      glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
       glBindBuffer(GL_ARRAY_BUFFER, bufferInfo[1]);
-
+      const unsigned int numVertices = bufferInfo[2];
+      glBindVertexArray(bufferInfo[0]);
+      glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
     }
 
   }

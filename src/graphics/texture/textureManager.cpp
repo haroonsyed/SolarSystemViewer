@@ -30,9 +30,8 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 	for (int i = 0; i < textureFilePaths.size(); i++) {
 
 		std::string path = textureFilePaths[i];
-		unsigned int exists = !path.empty();
 
-		if (!exists) {
+		if (path.empty()) {
 			// No texture, continue to next one
 			continue; 
 		}
@@ -75,8 +74,9 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 		// Bind the texture
 		unsigned int texture = m_textureMap.at(path);
+		std::string texUnitUniform = "textures[" + std::to_string(i) + "]";
 		glUniform1i(
-			glGetUniformLocation(shaderID, "textures[]"),
+			glGetUniformLocation(shaderID, texUnitUniform.c_str()),
 			(unsigned int)i
 		);
 		glActiveTexture(GL_TEXTURE0 + i);

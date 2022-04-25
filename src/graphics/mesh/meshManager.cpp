@@ -46,7 +46,7 @@ void MeshManager::bindMesh(std::string meshFilePath) {
 
         // Add attribute data
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)0); // Position Data
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(3 * sizeof(float))); // Texture data
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(3 * sizeof(float))); // Texture data
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(5 * sizeof(float))); // Normal data
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, numDataPoints * sizeof(float), (void*)(8 * sizeof(float))); // Tangent data
         glEnableVertexAttribArray(0);
