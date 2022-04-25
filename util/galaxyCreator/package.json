@@ -1,0 +1,12 @@
+{
+  "name": "galaxycreator",
+  "version": "1.0.0",
+  "description": "Small tool to make large things",
+  "main": "systemGen.js",
+  "scripts": {
+    "start": "node systemGen.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

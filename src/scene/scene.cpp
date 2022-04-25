@@ -219,37 +219,5 @@ void Scene::render() {
 
   }
 
-  //for (Object* obj : m_objects) {
-  //
-  //  // Setup model matrix for this obj
-  //  glm::mat4 scale = glm::mat4(1.0);
-  //  scale = glm::scale(scale, glm::vec3(obj->getScale()));
-  //  glm::mat4 rotation = obj -> getRotationMat();
-  //  glm::mat4 translation = glm::mat4(1.0f);
-  //  translation = glm::translate(translation, obj->getPosition()/m_universeScaleFactor);
-  //
-  //  glm::mat4 modelView = view * translation * rotation * scale;
-  //
-  //  obj->bind();
-  //
-  //  //Pass to gpu
-  //  unsigned int shaderProgram = shaderManager->getBoundShader();
-  //  unsigned int modelLoc = glGetUniformLocation(shaderProgram, "modelView");
-  //  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelView));
-  //  unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-  //  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-  //  
-  //  unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-  //  glUniform1i(lightCountLoc, m_lights.size());
-  //
-  //  unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-  //  glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-  //
-  //  std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-  //  const unsigned int numVertices = bufferInfo[2];
-  //  glDrawArrays(GL_TRIANGLES, 0, numVertices);
-  //
-  //}
-
 }
 
