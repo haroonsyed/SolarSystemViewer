@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
+#include <math.h>
 #include FT_FREETYPE_H
 
 #define GLFW_INCLUDE_NONE
@@ -72,7 +73,7 @@ Gui::Gui()
     FT_Init_FreeType(&ft);
 
     // find path to font
-    std::string font_name = "C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\src\\fonts\\arial.ttf";
+    std::string font_name = "../assets/fonts/arial.ttf";
     // load font as face
     FT_Face face;
     FT_New_Face(ft, font_name.c_str(), 0, &face);
@@ -140,16 +141,6 @@ Gui::Gui()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    Config* config = Config::getInstance();
-    unsigned int SCR_WIDTH = config->getScreenWidth();
-    unsigned int SCR_HEIGHT = config->getScreenHeight();
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
-    //might be a problem
-    glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-
-
-
 }
 
 //void Gui::render(std::unordered_set<unsigned int>* pressedKeys)
@@ -184,14 +175,28 @@ void Gui::render(double frameRate)
     {
         frameRateString = frameRateString.substr(0, 3);
     }
-    renderText(textShaderProgram, "System: Sol", 10.0f, 580.0f, 0.4f, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText(textShaderProgram, "Stars: 1", 10.0f, 560.0f, 0.4f, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText(textShaderProgram, "Planets: 9", 10.0f, 540.0f, 0.4f, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText(textShaderProgram, "Moons: 171", 10.0f, 520.0f, 0.4f, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText(textShaderProgram, "FPS " + frameRateString, 690.0f, 570.0f, 0.5f, glm::vec3(0.5, 0.8f, 0.2f));
+
+    glUseProgram(textShaderProgram);
+    Config* config = Config::getInstance();
+    float width = config->getScreenWidth();
+    float height = config->getScreenHeight();
+    glm::mat4 projection = glm::mat4(1.0);
+    projection = glm::ortho(0.0f, width, 0.0f, height);
+    unsigned int projectionloc = glGetUniformLocation(textShaderProgram, "projection");
+    glUniformMatrix4fv(projectionloc, 1, GL_FALSE, glm::value_ptr(projection));
+
+    float textScale = 0.4;
+
+    renderText("System: Sol", 20, height-20, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+    renderText("Stars: 1", 20, height - 40, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+    renderText("Planets: 9", 20, height - 60, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+    renderText("Moons: 171", 20, height - 80, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+    renderText("FPS " + frameRateString, (width - 100), height - 30, textScale + 0.1, glm::vec3(0.5, 0.8f, 0.2f));
     ShaderManager* shaderManager = ShaderManager::getInstance();
     shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
     glBindVertexArray(guiVAO);
+    projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
+    glUniform1f(projectionloc, width/height);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glDisable(GL_BLEND);
 }
@@ -202,10 +207,9 @@ unsigned int Gui::getShader()
 }
 
 
-void Gui::renderText(unsigned int shader, std::string text, float x, float y, float scale, glm::vec3 color)
+void Gui::renderText(std::string text, float x, float y, float scale, glm::vec3 color)
 {
-    glUseProgram(shader);
-    glUniform3f(glGetUniformLocation(shader, "textColor"), color.x, color.y, color.z);
+    glUniform3f(glGetUniformLocation(textShaderProgram, "textColor"), color.x, color.y, color.z);
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(textVAO);
 

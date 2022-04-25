@@ -23,17 +23,17 @@ private:
 		unsigned int Advance;   // Horizontal offset to advance to next glyph
 	};
 	std::map<GLchar, Character> Characters;
-	std::string gui_vertShaderPath = "C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\shaders\\guiShader.vs";
-	std::string gui_fragShaderPath = "C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\shaders\\guiShader.fs";
-	std::string text_vertShaderPath = "C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\shaders\\textShader.vs";
-	std::string text_fragShaderPath = "C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\shaders\\textShader.fs";
+	std::string gui_vertShaderPath = "../assets/shaders/guiShader.vs";
+	std::string gui_fragShaderPath = "../assets/shaders/guiShader.fs";
+	std::string text_vertShaderPath = "../assets/shaders/textShader.vs";
+	std::string text_fragShaderPath = "../assets/shaders/textShader.fs";
 	std::vector<std::string> planetData;
 
 public:
 	Gui();
 	//void render(std::unordered_set<unsigned int> * pressedKeys);
 	void render(double frameTime);
-	void renderText(unsigned int shader, std::string text, float x, float y, float scale, glm::vec3 color);
+	void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 	void renderPlanetData(float x, float y, float scale, std::vector<std::string> data);
 	unsigned int getShader();
 };

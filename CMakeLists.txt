@@ -10,7 +10,7 @@ message("Running on Linux")
 #Install VCPKG
 execute_process(COMMAND ../vcpkg/bootstrap-vcpkg.sh -disableMetrics)
 #Install the required libraries with vcpkg
-execute_process(COMMAND ../vcpkg/vcpkg install glew:x64-linux glfw3:x64-linux glm:x64-linux nlohmann-json:x64-linux)
+execute_process(COMMAND ../vcpkg/vcpkg install glew:x64-linux glfw3:x64-linux glm:x64-linux nlohmann-json:x64-linux freetype:x64-linux)
 ELSE()
 message("Running on Windows")
 execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\bootstrap-vcpkg.bat -disableMetrics freetype:x64-windows")

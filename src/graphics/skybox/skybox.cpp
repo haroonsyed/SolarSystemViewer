@@ -20,12 +20,12 @@ Skybox::Skybox()
     MeshManager * meshManager = MeshManager::getInstance();
     meshManager->bindMesh(meshPath);
 
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\right.png");
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\left.png");
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\top.png");
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\bottom.png");
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\front.png");
-    faces.push_back("C:\\Users\\erics\\source\\repos\\SolarSystemSimulator\\assets\\textures\\back.png");
+    faces.push_back("../assets/textures/skybox/right.jpg");
+    faces.push_back("../assets/textures/skybox/left.jpg");
+    faces.push_back("../assets/textures/skybox/top.jpg");
+    faces.push_back("../assets/textures/skybox/bottom.jpg");
+    faces.push_back("../assets/textures/skybox/front.jpg");
+    faces.push_back("../assets/textures/skybox/back.jpg");
 
     texture = loadCubemap(faces);
 }
