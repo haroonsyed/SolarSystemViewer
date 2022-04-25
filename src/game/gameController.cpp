@@ -253,7 +253,6 @@ void GameController::render() {
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
 
-  // Clear previous frame
   screenManager->bindSceneBuffer();
   screenManager->clearScreenBuffer();
 

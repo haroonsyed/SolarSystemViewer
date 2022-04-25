@@ -40,6 +40,7 @@ void ScreenManager::generateFrameBuffers() {
   //for (int i = 0; i < 2; i++) {
 
     //unsigned int* textureLoc = i == 0 ? &m_sceneHDRTexture : &m_sceneBloomTexture;
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     glGenTextures(1, &m_sceneHDRTexture);
     glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
@@ -99,16 +100,14 @@ void ScreenManager::bindSceneBuffer() {
 }
 
 void ScreenManager::clearScreenBuffer() {
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable(GL_DEPTH_TEST);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 
 
 void ScreenManager::renderToScreen() {
 
-  // Clear previous frame
   bindDefaultBuffer();
   clearScreenBuffer();
 

@@ -40,11 +40,11 @@ header.CameraPosition = {
   z: 3e11,
 };
 
-let numberOfStars = 1000;
+let numberOfStars = 100000;
 let xRange = header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
 let yRange = xRange / (16.0 / 9);
 let baseVelocity = xRange / header.PhysicsDistanceFactor;
-
+let outputFileName = "megaGalaxy.json";
 generationType = "random";
 
 let system = [];
@@ -80,7 +80,7 @@ let json = JSON.stringify({
 });
 
 var fs = require("fs");
-fs.writeFile("galaxy.json", json, "utf8", (err) => {
+fs.writeFile(outputFileName, json, "utf8", (err) => {
   if (err) {
     console.log(err);
   } else {

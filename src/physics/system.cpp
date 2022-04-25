@@ -37,7 +37,7 @@ std::vector<GravBody*> System::getBodies() {
 }
 
 void System::update(float deltaT) {
-
+  return;
   if (deltaT > 0.1f) {
     // Don't calculate physics when deltaT is large, introduces error into calculation
     return;

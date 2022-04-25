@@ -53,6 +53,11 @@ int main()
 
     // render loop
     // -----------
+
+    // OGL options
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
     unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
     double timeAtLastFpsLog = 0.0;

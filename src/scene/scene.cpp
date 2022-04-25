@@ -13,6 +13,7 @@ Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
 
   glGenBuffers(1, &dynamicDataBuffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
 }
 
@@ -139,7 +140,6 @@ void Scene::render() {
       auto meshFilePath = it.first;
       auto groupedMaterials = it.second;
 
-
       for (const auto it : groupedMaterials) {
 
         auto materialName = it.first;
@@ -167,7 +167,6 @@ void Scene::render() {
             glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
 
             objBound = true;
-
           }
 
           // Setup model matrix for this obj
@@ -176,7 +175,6 @@ void Scene::render() {
           glm::mat4 rotation = obj->getRotationMat();
           glm::mat4 translation = glm::mat4(1.0f);
           translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-
           glm::mat4 modelView = view * translation * rotation * scale;
           float* modelViewFloat = glm::value_ptr(modelView);
           dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
@@ -187,8 +185,8 @@ void Scene::render() {
         // Add model data from buffer to vertex attribute (instanced)
         const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
         glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
-        glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_STATIC_DRAW);
-
+        //glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * dynamicData.size(), &dynamicData[0]);
+        glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * sizeof(glm::vec4)));
         glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * sizeof(glm::vec4)));
@@ -209,7 +207,7 @@ void Scene::render() {
         std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
         glBindBuffer(GL_ARRAY_BUFFER, bufferInfo[1]);
         const unsigned int numVertices = bufferInfo[2];
-        glBindVertexArray(bufferInfo[0]);
+        //glBindVertexArray(bufferInfo[0]);
         glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
 
       }
