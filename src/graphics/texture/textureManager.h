@@ -16,5 +16,6 @@ private:
 public:
   static TextureManager* getInstance();
   unsigned int getBoundTexture();
+  std::string getMapFromUniformLocation(int location);
   void bindTextures(std::vector<std::string>& textureFilePaths);
 };

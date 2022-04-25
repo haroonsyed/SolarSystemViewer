@@ -23,6 +23,21 @@ unsigned int TextureManager::getBoundTexture() {
 	return m_boundTexture;
 }
 
+std::string TextureManager::getMapFromUniformLocation(int location) {
+	switch (location) {
+	case 0:
+		return "diffuseMap";
+	case 1:
+		return "normalMap";
+	case 2:
+		return "specularMap";
+	case 3:
+		return "emissiveMap";
+	default:
+		return ("custom" + std::to_string(location));
+	}
+}
+
 void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 	unsigned int shaderID = ShaderManager::getInstance()->getBoundShader();
@@ -30,8 +45,11 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 	for (int i = 0; i < textureFilePaths.size(); i++) {
 
 		std::string path = textureFilePaths[i];
+		unsigned int existsLoc = glGetUniformLocation(shaderID, (getMapFromUniformLocation(i) + "Exists").c_str());
+		unsigned int isEmpty = path.empty();
+		glUniform1i(existsLoc, !isEmpty);
 
-		if (path.empty()) {
+		if (isEmpty) {
 			// No texture, continue to next one
 			continue; 
 		}
@@ -74,9 +92,8 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 		// Bind the texture
 		unsigned int texture = m_textureMap.at(path);
-		std::string texUnitUniform = "textures[" + std::to_string(i) + "]";
 		glUniform1i(
-			glGetUniformLocation(shaderID, texUnitUniform.c_str()),
+			glGetUniformLocation(shaderID, getMapFromUniformLocation(i).c_str()),
 			(unsigned int)i
 		);
 		glActiveTexture(GL_TEXTURE0 + i);

@@ -14,8 +14,9 @@ class Scene {
     std::vector<Light> m_lights;
     std::vector<Object*> m_objects;
     // This format is optimal for batched/instanced rendering
-    // [ shaderProgram ] [ meshFilePath ] -> set(object*)
-    std::unordered_map < std::string, std::unordered_map<std::string, std::unordered_set<Object*>>> m_objects_map;
+    unsigned int dynamicDataBuffer;
+    // [ shaderProgram ] [ meshFilePath ] [ material ] -> set(object*)
+    std::unordered_map < std::string, std::unordered_map<std::string, std::unordered_map< std::string, std::unordered_set<Object*>>>> m_objects_map;
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
                                  // Compounds ontop of unit system defined in JSON document
