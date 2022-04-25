@@ -71,6 +71,14 @@ void Object::setMesh(std::string meshFilePath) {
   m_meshFilePath = meshFilePath;
 }
 
+std::string Object::getMesh() {
+  return m_meshFilePath;
+}
+
+std::pair<std::string, std::string> Object::getShaders() {
+  return std::make_pair(m_vertexShaderPath, m_fragShaderPath);
+}
+
 void Object::setShaders(std::string vertexShaderPath, std::string fragShaderPath) {
   m_vertexShaderPath = vertexShaderPath;
   m_fragShaderPath = fragShaderPath;

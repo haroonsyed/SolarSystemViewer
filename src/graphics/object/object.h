@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <utility>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -36,6 +37,8 @@ class Object {
     float getAxis();
     void setAxis(float axis);
     void setMesh(std::string meshFilePath);
+    std::string getMesh();
+    std::pair<std::string, std::string> getShaders();
     void setShaders(std::string vertexShaderPath, std::string fragShaderPath);
     void setDiffuseMap(std::string diffuseMapFilePath);
     void setNormalMap(std::string normalMapFilePath);

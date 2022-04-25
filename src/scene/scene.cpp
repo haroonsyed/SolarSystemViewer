@@ -6,6 +6,7 @@
 #include "nlohmann/json.hpp"
 #include "../graphics/shader/shaderManager.h"
 #include "../graphics/mesh/meshManager.h"
+#include "../graphics/texture/textureManager.h"
 #include "../config.h"
 
 Scene::Scene(GLFWwindow* window) {
@@ -57,6 +58,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
     m_physicsSystem.addBody(body); // Add gravBody to physics system
     m_objects.push_back(body); // Add gravBody mesh to scene
+
+    auto shaders = body->getShaders();
+    m_objects_map[shaders.first + shaders.second][body->getMesh()].insert(body);
   }
 
   // Construct lights
@@ -88,6 +92,7 @@ void Scene::render() {
   // Get shaderProgram
   ShaderManager* shaderManager = ShaderManager::getInstance();
   MeshManager* meshManager = MeshManager::getInstance();
+  TextureManager* textureManager = TextureManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
 
   // Get view projection for the entire draw call
@@ -114,37 +119,148 @@ void Scene::render() {
     lightData.push_back(light.getIntensity());
   }
 
-  for (Object* obj : m_objects) {
 
-    // Setup model matrix for this obj
-    glm::mat4 scale = glm::mat4(1.0);
-    scale = glm::scale(scale, glm::vec3(obj->getScale()));
-    glm::mat4 rotation = obj -> getRotationMat();
-    glm::mat4 translation = glm::mat4(1.0f);
-    translation = glm::translate(translation, obj->getPosition()/m_universeScaleFactor);
+  // Loop through the shaderPrograms, then batch together all the similar meshes for drawing
+  for (const auto it : m_objects_map) {
 
-    glm::mat4 modelView = view * translation * rotation * scale;
+    auto shader = it.first;
+    auto groupedObjs = it.second;
 
-    obj->bind();
+    bool objBound = false;
 
-    //Pass to gpu
-    unsigned int shaderProgram = shaderManager->getBoundShader();
-    unsigned int modelLoc = glGetUniformLocation(shaderProgram, "modelView");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelView));
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-    
-    unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-    glUniform1i(lightCountLoc, m_lights.size());
+    unsigned int offset = 0;
 
-    unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-    glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
+    for (const auto it : groupedObjs) {
 
-    std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-    const unsigned int numVertices = bufferInfo[2];
-    glDrawArrays(GL_TRIANGLES, 0, numVertices);
+      auto meshFilePath = it.first;
+      auto objs = it.second;
+
+      std::vector<float> dynamicData;
+      std::unordered_map<std::string, unsigned int> textureMap;
+      std::vector<std::string> textures;
+
+      for (const auto obj : objs) {
+
+        if (!objBound) {
+
+          obj->bind();
+
+          //Pass to gpu
+          unsigned int shaderProgram = shaderManager->getBoundShader();
+          unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+          glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+          unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
+          glUniform1i(lightCountLoc, m_lights.size());
+
+          unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
+          glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
+
+          objBound = true;
+
+        }
+
+        // Setup model matrix for this obj
+        glm::mat4 scale = glm::mat4(1.0);
+        scale = glm::scale(scale, glm::vec3(obj->getScale()));
+        glm::mat4 rotation = obj->getRotationMat();
+        glm::mat4 translation = glm::mat4(1.0f);
+        translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
+
+        glm::mat4 modelView = view * translation * rotation * scale;
+        float* modelViewFloat = glm::value_ptr(modelView);
+        dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
+        
+        
+        for (std::string tex: obj->getTextures()) {
+          if (tex.empty()) {
+            dynamicData.push_back(-1.0f);
+          }
+          else {
+            if (textureMap.count(tex) == 0) {
+              textureMap[tex] = textureMap.size();
+              textures.push_back(tex);
+            }
+            dynamicData.push_back(textureMap[tex]);
+          }
+
+        }
+
+        // Add check if > 16 and do another batch with this vertex
+
+      }
+
+      // Add texture data
+      textureManager->bindTextures(textures);
+
+      // Add model data
+      unsigned int dynamicDataBuffer;
+      glGenBuffers(1, &dynamicDataBuffer);
+      glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+      const unsigned int numDynamicDataPoints = 20; // (16 for mat4 and 4 for texId)
+      glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_STATIC_DRAW);
+
+      glEnableVertexAttribArray(4);
+      glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)0);
+      glEnableVertexAttribArray(5);
+      glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(sizeof(glm::vec4)));
+      glEnableVertexAttribArray(6);
+      glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * sizeof(glm::vec4)));
+      glEnableVertexAttribArray(7);
+      glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(3 * sizeof(glm::vec4)));
+      
+      glVertexAttribDivisor(4, 1);
+      glVertexAttribDivisor(5, 1);
+      glVertexAttribDivisor(6, 1);
+      glVertexAttribDivisor(7, 1);
+
+      glEnableVertexAttribArray(8);
+      glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(4 * sizeof(glm::vec4)));
+
+
+
+
+      // Render
+      std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
+      const unsigned int numVertices = bufferInfo[2];
+      glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
+      glBindBuffer(GL_ARRAY_BUFFER, bufferInfo[1]);
+
+    }
 
   }
+
+  //for (Object* obj : m_objects) {
+  //
+  //  // Setup model matrix for this obj
+  //  glm::mat4 scale = glm::mat4(1.0);
+  //  scale = glm::scale(scale, glm::vec3(obj->getScale()));
+  //  glm::mat4 rotation = obj -> getRotationMat();
+  //  glm::mat4 translation = glm::mat4(1.0f);
+  //  translation = glm::translate(translation, obj->getPosition()/m_universeScaleFactor);
+  //
+  //  glm::mat4 modelView = view * translation * rotation * scale;
+  //
+  //  obj->bind();
+  //
+  //  //Pass to gpu
+  //  unsigned int shaderProgram = shaderManager->getBoundShader();
+  //  unsigned int modelLoc = glGetUniformLocation(shaderProgram, "modelView");
+  //  glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelView));
+  //  unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+  //  glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+  //  
+  //  unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
+  //  glUniform1i(lightCountLoc, m_lights.size());
+  //
+  //  unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
+  //  glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
+  //
+  //  std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
+  //  const unsigned int numVertices = bufferInfo[2];
+  //  glDrawArrays(GL_TRIANGLES, 0, numVertices);
+  //
+  //}
 
 }
 
