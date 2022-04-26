@@ -226,6 +226,10 @@ Coming soon
 - Instancing is not as fast as I would have hoped. Will look into more with tools like nvidia insight.
 
 ## Outside Help
+learnopengl
+NASA USGS
+https://www.solarsystemscope.com/textures/ 
+https://en.wikipedia.org/wiki/Sobel_operator
 
 ## Assignment Requriements Checklist (Part 1):
 
@@ -237,7 +241,6 @@ Coming soon
 | User interaction                                     | :white_check_mark: |                                                                                                                                         |
 | Bloom                                                | :x:                | I did implement automatic exposure and HDR. I have a bloom implementation, but it is extremely slow because of its naive implementation |
 | Atmospheric Scattering                               | :x:                |                                                                                                                                         |
-| User interaction                                     | :white_check_mark: |
 | NBody Simlualtion using compute shader and quad-tree | :x:                |
 |                                                      |
 
