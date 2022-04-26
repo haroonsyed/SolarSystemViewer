@@ -1,5 +1,4 @@
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <ft2build.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -119,7 +118,7 @@ Gui::Gui()
             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
             static_cast<unsigned int>(face->glyph->advance.x)
          };
-        Characters.insert(std::pair<char, Character>(c, character));
+        Characters[c] = character;
      }
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -192,12 +191,12 @@ void Gui::render(double frameRate)
     renderText("Planets: 9", 20, height - 60, textScale, glm::vec3(0.5, 0.8f, 0.2f));
     renderText("Moons: 171", 20, height - 80, textScale, glm::vec3(0.5, 0.8f, 0.2f));
     renderText("FPS " + frameRateString, (width - 100), height - 30, textScale + 0.1, glm::vec3(0.5, 0.8f, 0.2f));
-    ShaderManager* shaderManager = ShaderManager::getInstance();
-    shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
-    glBindVertexArray(guiVAO);
-    projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
-    glUniform1f(projectionloc, width/height);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    //ShaderManager* shaderManager = ShaderManager::getInstance();
+    //shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
+    //glBindVertexArray(guiVAO);
+    //projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
+    //glUniform1f(projectionloc, width/height);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glDisable(GL_BLEND);
 }
 

@@ -144,10 +144,10 @@ void Scene::render() {
     const unsigned int numVertices = bufferInfo[2];
     glDrawArrays(GL_TRIANGLES, 0, numVertices);
 
+    // Render skybox
+    skybox.render(view, projection);
+
   }
 
-  //render skybox
-
-  skybox.render(view, projection);
 }
 

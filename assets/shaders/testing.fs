@@ -46,7 +46,7 @@ void main()
 
 	// x,y,z,type(point/spotlight),r,g,b,strength
 	vec3 lightPos = vec3(lights[lightIndex], lights[lightIndex+1], lights[lightIndex+2]);
-	vec3 lightColor = vec3(lights[lightIndex+4], lights[lightIndex+5], lights[lightIndex+6]);
+	vec4 lightColor = vec4(lights[lightIndex+4], lights[lightIndex+5], lights[lightIndex+6], 1.0);
 	float lightStrength = lights[lightIndex+7];
 
 	vec3 toLight = normalize(lightPos-transformedPos);
@@ -61,8 +61,17 @@ void main()
 	float specular = pow(max(dot(normal,h), 0),phongExp);
 
 	vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
+
+	float distance = length(lightPos - transformedPos);
+	float Kc = 1.0;
+	float Kl = 0.09;
+	float Kq = 0.032;
+	float attenuated = 1.0/( Kc + Kl * distance + Kq * distance * distance );
+	lightStrength *= attenuated;
 	
-	FragColor += (ambient + diffuse) * diffuseColor + specularStrength * specular * specularColor;
+	FragColor += lightStrength * ( (ambient + diffuse) * diffuseColor * lightColor + specularStrength * specular * specularColor );
   }
+
+  FragColor = vec4(vec3(FragColor), 1.0);
 
 };

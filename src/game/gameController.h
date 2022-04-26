@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_set>
 #include "../scene/scene.h"
+#include "../graphics/gui/gui.h"
 
 // Registers all key presses and updates camera accordingly
 class GameController {
@@ -17,6 +18,7 @@ private:
 
 	static GLFWwindow* m_window;
 	static Scene* m_boundScene;
+	static Gui* gui;
 
 	static int m_focusedBody;
 
@@ -35,7 +37,7 @@ public:
 
 	static GameController* getInstance(GLFWwindow* window, Scene* scene);
 	void update(float deltaT);
-	void render();
+	void render(float deltaT);
 
 };
 

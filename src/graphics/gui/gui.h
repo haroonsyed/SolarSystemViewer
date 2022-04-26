@@ -1,13 +1,14 @@
 #pragma once
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <GLFW/glfw3.h>
 
 #include <unordered_set>
 #include <map>
 #include <string>
 #include <vector>
+
 
 
 class Gui {
@@ -22,7 +23,7 @@ private:
 		glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
 		unsigned int Advance;   // Horizontal offset to advance to next glyph
 	};
-	std::map<GLchar, Character> Characters;
+	std::map<char, Character> Characters;
 	std::string gui_vertShaderPath = "../assets/shaders/guiShader.vs";
 	std::string gui_fragShaderPath = "../assets/shaders/guiShader.fs";
 	std::string text_vertShaderPath = "../assets/shaders/textShader.vs";
