@@ -45,6 +45,9 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
   if (jsonData.contains("emissiveMap")) {
     setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
   }
+  if (jsonData.contains("cloudMap")) {
+    setCloudMap(jsonData["cloudMap"].get<std::string>());
+  }
   // Rotate model to begin with north pole facing upward
   const glm::vec3 defaultRotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
   rotate( glm::angleAxis( 3.14159f/2 , defaultRotationAxis ) );

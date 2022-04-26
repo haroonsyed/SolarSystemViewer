@@ -64,8 +64,8 @@ void main()
 
 	float distance = length(lightPos - transformedPos);
 	float Kc = 1.0;
-	float Kl = 0.0014 / 2;
-	float Kq = 0.000007 / 4;
+	float Kl = 0.0014 / 16;
+	float Kq = 0.000007 / 256;
 	float attenuation = 1.0/( Kc + Kl * distance + Kq * distance * distance );
 	lightStrength *= attenuation;
 	

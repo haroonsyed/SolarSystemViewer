@@ -16,12 +16,14 @@ bool GameController::m_showGui = false;
 
 GLFWwindow* GameController::m_window = nullptr;
 Scene* GameController::m_boundScene = nullptr;
+Gui* GameController::gui = nullptr;
 int GameController::m_focusedBody = -1;
 
 
 GameController* GameController::getInstance(GLFWwindow* window, Scene* scene) {
   if (m_instance == nullptr) {
     m_instance = new GameController(window, scene);
+    gui = new Gui();
   }
   return m_instance;
 }
@@ -248,7 +250,7 @@ void GameController::update(float deltaT) {
   updateFocusedPlanet();
 }
 
-void GameController::render() {
+void GameController::render(float deltaT) {
 
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
@@ -261,5 +263,8 @@ void GameController::render() {
 
   // Render to screen
   screenManager->renderToScreen();
+
+  // Render GUI ontop
+  gui->render(1.0f/deltaT);
 
 }
