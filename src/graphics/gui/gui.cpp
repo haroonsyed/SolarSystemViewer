@@ -34,7 +34,6 @@ Gui::Gui()
         1, 2, 3   
     };
 
-
     glGenVertexArrays(1, &guiVAO);
     glGenBuffers(1, &guiVBO);
     glGenBuffers(1, &guiEBO);
@@ -142,62 +141,55 @@ Gui::Gui()
 
 }
 
-//void Gui::render(std::unordered_set<unsigned int>* pressedKeys)
-//{
-//    if (pressedKeys->count(GLFW_KEY_G))
-//    {
-//        if (toggleGUI)
-//            toggleGUI = false;
-//        else
-//            toggleGUI = true;
-//    }
-//    if (toggleGUI)
-//    {
-//        ShaderManager* shaderManager = ShaderManager::getInstance();
-//        shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
-//        glBindVertexArray(guiVAO);
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//        renderText();
-//    }
-//}
 
-void Gui::render(double frameRate)
+void Gui::render(double frameRate, bool status, std::vector<std::string> info)
 {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    std::string frameRateString = std::to_string(frameRate);
-    if (frameRate < 100)
-    {
-        frameRateString = frameRateString.substr(0, 2);
+    if (status) {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        std::string frameRateString = std::to_string(frameRate);
+        if (frameRate < 100)
+        {
+            frameRateString = frameRateString.substr(0, 2);
+        }
+        else
+        {
+            frameRateString = frameRateString.substr(0, 3);
+        }
+
+        glUseProgram(textShaderProgram);
+        Config* config = Config::getInstance();
+        float width = config->getScreenWidth();
+        float height = config->getScreenHeight();
+        glm::mat4 projection = glm::mat4(1.0);
+        projection = glm::ortho(0.0f, width, 0.0f, height);
+        unsigned int projectionloc = glGetUniformLocation(textShaderProgram, "projection");
+        glUniformMatrix4fv(projectionloc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        float textScale = 0.4;
+
+        renderText("System: Sol", 20, height - 20, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+        renderText("Stars: 1", 20, height - 40, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+        renderText("Planets: 9", 20, height - 60, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+        renderText("Moons: 171", 20, height - 80, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+        renderText("FPS " + frameRateString, (width - 100), height - 30, textScale + 0.1, glm::vec3(0.5, 0.8f, 0.2f));
+
+        float index = 20;
+
+        for (int i = 0; i < info.size(); i++)
+        {
+            renderText(info[i], 20, height - 850 - index, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+            index = index + 20;
+        }
+
+        /*ShaderManager* shaderManager = ShaderManager::getInstance();
+        shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
+        glBindVertexArray(guiVAO);
+        projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
+        glUniform1f(projectionloc, width / height);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
+        glDisable(GL_BLEND);
     }
-    else
-    {
-        frameRateString = frameRateString.substr(0, 3);
-    }
-
-    glUseProgram(textShaderProgram);
-    Config* config = Config::getInstance();
-    float width = config->getScreenWidth();
-    float height = config->getScreenHeight();
-    glm::mat4 projection = glm::mat4(1.0);
-    projection = glm::ortho(0.0f, width, 0.0f, height);
-    unsigned int projectionloc = glGetUniformLocation(textShaderProgram, "projection");
-    glUniformMatrix4fv(projectionloc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    float textScale = 0.4;
-
-    renderText("System: Sol", 20, height-20, textScale, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText("Stars: 1", 20, height - 40, textScale, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText("Planets: 9", 20, height - 60, textScale, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText("Moons: 171", 20, height - 80, textScale, glm::vec3(0.5, 0.8f, 0.2f));
-    renderText("FPS " + frameRateString, (width - 100), height - 30, textScale + 0.1, glm::vec3(0.5, 0.8f, 0.2f));
-    //ShaderManager* shaderManager = ShaderManager::getInstance();
-    //shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
-    //glBindVertexArray(guiVAO);
-    //projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
-    //glUniform1f(projectionloc, width/height);
-    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glDisable(GL_BLEND);
 }
 
 unsigned int Gui::getShader()

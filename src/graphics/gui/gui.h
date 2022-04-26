@@ -32,9 +32,7 @@ private:
 
 public:
 	Gui();
-	//void render(std::unordered_set<unsigned int> * pressedKeys);
-	void render(double frameTime);
+	void render(double frameTime, bool status, std::vector<std::string> info);
 	void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
-	void renderPlanetData(float x, float y, float scale, std::vector<std::string> data);
 	unsigned int getShader();
 };

@@ -18,6 +18,7 @@ GLFWwindow* GameController::m_window = nullptr;
 Scene* GameController::m_boundScene = nullptr;
 Gui* GameController::gui = nullptr;
 int GameController::m_focusedBody = -1;
+GravBody* target = nullptr;
 
 
 GameController* GameController::getInstance(GLFWwindow* window, Scene* scene) {
@@ -153,7 +154,6 @@ void GameController::updateFocusedPlanet() {
 
   if (m_focusedBody > -1) {
 
-    GravBody* target = nullptr;
     if (m_focusedBody < bodies.size()) {
       target = bodies[m_focusedBody];
     }
@@ -265,6 +265,15 @@ void GameController::render(float deltaT) {
   screenManager->renderToScreen();
 
   // Render GUI ontop
-  gui->render(1.0f/deltaT);
+  if (target == nullptr)
+  {
+      std::vector<std::string> temp;
+      temp.push_back("Solar System View");
+      gui->render(1.0f / deltaT, m_showGui, temp);
+  }
+  else
+  {
+      gui->render(1.0f / deltaT, m_showGui, target->getPlanetInfo());
+  }
 
 }
