@@ -54,7 +54,7 @@ void main()
 	vec3 h = normalize((-1*viewDir) + toLight);
 
 	float ambient = 0.1;
-	float specularStrength = 0.01f;
+	float specularStrength = 0.1f;
 	float phongExp = 1.0f;
 
 	float diffuse = max(dot(normal,toLight),0);
