@@ -126,3 +126,8 @@ void Object::bind() {
   textureManager->bindTextures(textures);
 
 }
+
+glm::mat4 Object::getModelMatrix() {
+  glm::mat4 model(1.0f);
+  return glm::translate(glm::toMat4(m_rotation) * glm::scale(model, glm::vec3(m_scale)), m_position);
+}

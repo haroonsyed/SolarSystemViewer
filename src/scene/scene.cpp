@@ -13,7 +13,9 @@ Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
 
   glGenBuffers(1, &dynamicDataBuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+  const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
+  glBufferData(GL_ARRAY_BUFFER, numDynamicDataPoints * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
 }
 
@@ -130,89 +132,99 @@ void Scene::render() {
 
 
   // Loop through the shaderPrograms, then loop through similar materials, then batch together all the similar objs for drawing
-  for (const auto it : m_objects_map) {
+  for (auto const& it : m_objects_map) {
 
-    auto shader = it.first;
-    auto groupedMeshes = it.second;
-
-    for (const auto it : groupedMeshes) {
-
-      auto meshFilePath = it.first;
-      auto groupedMaterials = it.second;
-
-      for (const auto it : groupedMaterials) {
-
-        auto materialName = it.first;
-        auto objs = it.second;
-
+    auto const& shader = it.first;
+    auto const& groupedMeshes = it.second;
+    
+    for (auto const& it : groupedMeshes) {
+    
+      auto const& meshFilePath = it.first;
+      auto const& groupedMaterials = it.second;
+    
+      for (auto const& it : groupedMaterials) {
+      
+        auto const& materialName = it.first;
+        auto const& objs = it.second;
+      
         // Render objects instanced with varying mvp matrix
         std::vector<float> dynamicData;
         bool objBound = false;
-
-        for (const auto obj : objs) {
-
+        auto modelView = glm::mat4(1.0);
+        
+        unsigned int offset = 0;
+      
+        for (auto const& obj : objs) {
+        
           if (!objBound) {
-
+          
             obj->bind();
-
+          
             //Pass to gpu
             unsigned int shaderProgram = shaderManager->getBoundShader();
             unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
+          
             unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
             glUniform1i(lightCountLoc, m_lights.size());
-
+          
             unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
             glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-
+      
+            glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+          
             objBound = true;
           }
-
+        
           // Setup model matrix for this obj
           glm::mat4 scale = glm::mat4(1.0);
           scale = glm::scale(scale, glm::vec3(obj->getScale()));
           glm::mat4 rotation = obj->getRotationMat();
           glm::mat4 translation = glm::mat4(1.0f);
           translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-          glm::mat4 modelView = view * translation * rotation * scale;
+          modelView = view * translation * rotation * scale;
           float* modelViewFloat = glm::value_ptr(modelView);
-          dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
-
+          glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * offset, sizeof(float) * 16, modelViewFloat);
+          offset+=16;
+          //dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
+        
         }
-
-
+        
+        
         // Add model data from buffer to vertex attribute (instanced)
-        const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
-        glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+        //glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
         //glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * dynamicData.size(), &dynamicData[0]);
-        glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_DYNAMIC_DRAW);
-
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * sizeof(glm::vec4)));
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * sizeof(glm::vec4)));
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * sizeof(glm::vec4)));
-        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(3 * sizeof(glm::vec4)));
-      
+        //glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_DYNAMIC_DRAW);
+        
+        // Set Dynamic attributes for each instance
+        const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
+        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * 4 * sizeof(float)));
+        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * 4 * sizeof(float)));
+        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * 4 * sizeof(float)));
+        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(3 * 4 * sizeof(float)));
         glVertexAttribDivisor(4, 1);
         glVertexAttribDivisor(5, 1);
         glVertexAttribDivisor(6, 1);
         glVertexAttribDivisor(7, 1);
-
+        
         glEnableVertexAttribArray(4);
         glEnableVertexAttribArray(5);
         glEnableVertexAttribArray(6);
         glEnableVertexAttribArray(7);
-
+        
+        
+        
+        
+        
         // Render
         std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
         glBindBuffer(GL_ARRAY_BUFFER, bufferInfo[1]);
         const unsigned int numVertices = bufferInfo[2];
         //glBindVertexArray(bufferInfo[0]);
         glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
-
+      
       }
-
-
+    
     }
 
   }

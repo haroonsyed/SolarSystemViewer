@@ -57,6 +57,7 @@ int main()
     // OGL options
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glfwSwapInterval(0);
 
     unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame

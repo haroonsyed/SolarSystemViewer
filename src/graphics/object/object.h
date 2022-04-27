@@ -46,5 +46,6 @@ class Object {
     void setEmissiveMap(std::string emissiveMapFilePath);
     std::vector<std::string> getTextures();
     void bind();
+    glm::mat4 getModelMatrix();
 
 };
