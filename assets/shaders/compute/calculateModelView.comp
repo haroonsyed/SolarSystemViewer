@@ -24,7 +24,6 @@ void main() {
   inputData[startIndex] = view * transformation * rotation * scale;
 
 
-
 }
 
 

@@ -13,9 +13,9 @@ Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
 
   glGenBuffers(1, &dynamicDataBuffer);
-  glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, dynamicDataBuffer);
   const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
-  glBufferData(GL_ARRAY_BUFFER, numDynamicDataPoints * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, numDynamicDataPoints * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
 
 }
 
@@ -79,9 +79,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>()/physicsDistanceFactor / m_universeScaleFactor,
-      lightJSON["position"]["y"].get<float>()/physicsDistanceFactor / m_universeScaleFactor,
-      lightJSON["position"]["z"].get<float>()/physicsDistanceFactor / m_universeScaleFactor
+      lightJSON["position"]["x"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
+      lightJSON["position"]["y"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
+      lightJSON["position"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
     );
 
     light.setColor(
@@ -113,12 +113,12 @@ void Scene::render() {
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov()/2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
 
   // Setup light data
   // x,y,z,type(point/spotlight),r,g,b,strength
   std::vector<float> lightData;
-  for (Light &light : m_lights) {
+  for (Light& light : m_lights) {
     glm::vec3 lightPos = light.getPosition() / m_universeScaleFactor;
     lightPos = view * glm::vec4(lightPos, 1.0);
     lightData.push_back(lightPos.x);
@@ -136,68 +136,74 @@ void Scene::render() {
 
     auto const& shader = it.first;
     auto const& groupedMeshes = it.second;
-    
+
     for (auto const& it : groupedMeshes) {
-    
+
       auto const& meshFilePath = it.first;
       auto const& groupedMaterials = it.second;
-    
+
       for (auto const& it : groupedMaterials) {
-      
+
         auto const& materialName = it.first;
         auto const& objs = it.second;
-      
+
         // Render objects instanced with varying mvp matrix
         std::vector<float> dynamicData;
-        bool objBound = false;
+        Object* objToBind = nullptr;
         auto modelView = glm::mat4(1.0);
-        
+
         unsigned int offset = 0;
-      
+
         for (auto const& obj : objs) {
-        
-          if (!objBound) {
-          
+
+          if (!objToBind) {
+            objToBind = obj;
             obj->bind();
-          
-            //Pass to gpu
+
+            // Bind uniform data for the objects
             unsigned int shaderProgram = shaderManager->getBoundShader();
             unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-          
+
             unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
             glUniform1i(lightCountLoc, m_lights.size());
-          
+
             unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
             glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-      
-            glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
-          
-            objBound = true;
+
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, dynamicDataBuffer);
+
           }
-        
+
           // Setup model matrix for this obj
           glm::mat4 scale = glm::mat4(1.0);
           scale = glm::scale(scale, glm::vec3(obj->getScale()));
           glm::mat4 rotation = obj->getRotationMat();
           glm::mat4 translation = glm::mat4(1.0f);
           translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-          modelView = view * translation * rotation * scale;
-          float* modelViewFloat = glm::value_ptr(modelView);
-          glBufferSubData(GL_ARRAY_BUFFER, sizeof(float) * offset, sizeof(float) * 16, modelViewFloat);
-          offset+=16;
+          //modelView = view * translation * rotation * scale;
+          //float* modelViewFloat = glm::value_ptr(modelView);
+          std::vector<glm::mat4> data = { scale, rotation, translation, view };
+          glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(float) * 16 * 4, &data[0]);
+          offset += 16 * 4;
           //dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
-        
+
         }
-        
-        
-        // Add model data from buffer to vertex attribute (instanced)
-        //glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
-        //glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * dynamicData.size(), &dynamicData[0]);
-        //glBufferData(GL_ARRAY_BUFFER, dynamicData.size() * sizeof(float), &dynamicData[0], GL_DYNAMIC_DRAW);
-        
+
+
+        // Compute modelViews for all objects
+
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, dynamicDataBuffer);
+
+        shaderManager->bindComputeShader("../assets/shaders/compute/calculateModelView.comp");
+        glDispatchCompute(objs.size(), 1, 1);
+
+        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+        glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+
         // Set Dynamic attributes for each instance
-        const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
+        const unsigned int numDynamicDataPoints = 16 * 4; // (16 for mat4)
         glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * 4 * sizeof(float)));
         glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * 4 * sizeof(float)));
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * 4 * sizeof(float)));
@@ -211,14 +217,11 @@ void Scene::render() {
         glEnableVertexAttribArray(5);
         glEnableVertexAttribArray(6);
         glEnableVertexAttribArray(7);
-        
-        
-        
-        
+
+        objToBind->bind();
         
         // Render
         std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-        glBindBuffer(GL_ARRAY_BUFFER, bufferInfo[1]);
         const unsigned int numVertices = bufferInfo[2];
         //glBindVertexArray(bufferInfo[0]);
         glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
