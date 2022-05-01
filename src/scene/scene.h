@@ -12,11 +12,18 @@ class Scene {
   private:
     Camera m_camera;
     std::vector<Light> m_lights;
-    std::vector<Object*> m_objects;
-    // This format is optimal for batched/instanced rendering
-    unsigned int dynamicDataBuffer;
-    // [ shaderProgram ] [ meshFilePath ] [ material ] -> set(object*)
-    std::unordered_map < std::string, std::unordered_map<std::string, std::unordered_map< std::string, std::unordered_set<Object*>>>> m_objects_map;
+
+    // Contains all model transforms in SSBO for on-vram updates with compute shaders
+    unsigned int m_modelBuffer;
+    unsigned int m_modelBufferSize;
+
+    // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the dynamicDataBuffer
+    // [ shaderProgram ] [ meshFilePath ] [ material ] [ Object* ] -> unsigned int
+    std::unordered_map < std::string, std::unordered_map<std::string, std::unordered_map< std::string, std::unordered_map< Object*, unsigned int > >>> m_objects_map;
+    
+    // Contains objects that need to be updated in a given frame
+    std::vector < Object* > m_newAndUpdatedObjects;
+
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
                                  // Compounds ontop of unit system defined in JSON document

@@ -12,10 +12,12 @@
 Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
 
-  glGenBuffers(1, &dynamicDataBuffer);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, dynamicDataBuffer);
-  const unsigned int numDynamicDataPoints = 16; // (16 for mat4)
+  glGenBuffers(1, &m_modelBuffer);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_modelBuffer);
+  const unsigned int numDynamicDataPoints = 16 * 3; // (scale, rot, translation)
   glBufferData(GL_SHADER_STORAGE_BUFFER, numDynamicDataPoints * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+
+  m_modelBufferSize = 0;
 
 }
 
@@ -63,15 +65,10 @@ void Scene::loadScene(std::string sceneFilePath) {
   for (auto gravBodyJSON : jScene["GravBodies"]) {
     GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
     m_physicsSystem.addBody(body); // Add gravBody to physics system
-    m_objects.push_back(body); // Add gravBody mesh to scene
 
-    auto shaders = body->getShaders();
-    auto material = body->getTextures();
-    std::string materialName = "";
-    for (auto str : material) {
-      materialName += str;
-    }
-    m_objects_map[shaders.first + shaders.second][body->getMesh()][materialName].insert(body);
+    // Tell scene to register this object
+    m_newAndUpdatedObjects.push_back(body);
+
   }
 
   // Construct lights
@@ -130,6 +127,49 @@ void Scene::render() {
     lightData.push_back(light.getIntensity());
   }
 
+  // Register new and updated objects to the scene and ssbo
+  const unsigned int numDynamicDataPoints = 16 * 3; // (scale, rot, translation)
+  for (Object* obj : m_newAndUpdatedObjects) {
+    auto shaders = obj->getShaders();
+    auto material = obj->getTextures();
+    std::string materialName = "";
+    for (auto str : material) {
+      materialName += str;
+    }
+
+    // Setup model matrix data for this obj
+    glm::mat4 scale = glm::mat4(1.0);
+    scale = glm::scale(scale, glm::vec3(obj->getScale()));
+    glm::mat4 rotation = obj->getRotationMat();
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
+
+    std::vector<glm::mat4> modelData = { scale, rotation, translation };
+
+    // Decide where to place in buffer
+    auto& sameInstances = m_objects_map[shaders.first + shaders.second][obj->getMesh()][materialName];
+
+    if (sameInstances.count(obj) == 0) {
+      m_modelBufferSize += numDynamicDataPoints;
+      sameInstances[obj] = m_modelBufferSize;
+      glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * m_modelBufferSize, sizeof(float) * numDynamicDataPoints, &modelData[0]);
+    }
+    else {
+      // Update this object in the buffer
+      unsigned int offset = sameInstances[obj];
+      glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(float) * numDynamicDataPoints, &modelData[0]);
+    }
+
+  }
+  m_newAndUpdatedObjects.clear();
+
+  // Compute model for all objects
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_modelBuffer);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_modelBuffer);
+  shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
+  glDispatchCompute(m_modelBufferSize / numDynamicDataPoints, 1, 1);
+  glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 
   // Loop through the shaderPrograms, then loop through similar materials, then batch together all the similar objs for drawing
   for (auto const& it : m_objects_map) {
@@ -147,63 +187,33 @@ void Scene::render() {
         auto const& materialName = it.first;
         auto const& objs = it.second;
 
-        // Render objects instanced with varying mvp matrix
-        std::vector<float> dynamicData;
-        Object* objToBind = nullptr;
-        auto modelView = glm::mat4(1.0);
-
-        unsigned int offset = 0;
-
-        for (auto const& obj : objs) {
-
-          if (!objToBind) {
-            objToBind = obj;
-            obj->bind();
-
-            // Bind uniform data for the objects
-            unsigned int shaderProgram = shaderManager->getBoundShader();
-            unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-            unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-            glUniform1i(lightCountLoc, m_lights.size());
-
-            unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-            glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, dynamicDataBuffer);
-
-          }
-
-          // Setup model matrix for this obj
-          glm::mat4 scale = glm::mat4(1.0);
-          scale = glm::scale(scale, glm::vec3(obj->getScale()));
-          glm::mat4 rotation = obj->getRotationMat();
-          glm::mat4 translation = glm::mat4(1.0f);
-          translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-          //modelView = view * translation * rotation * scale;
-          //float* modelViewFloat = glm::value_ptr(modelView);
-          std::vector<glm::mat4> data = { scale, rotation, translation, view };
-          glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(float) * 16 * 4, &data[0]);
-          offset += 16 * 4;
-          //dynamicData.insert(dynamicData.end(), modelViewFloat, modelViewFloat+16);
-
+        if (objs.size() == 0) {
+          continue;
         }
 
+        // Bind this instance type
+        auto const& itr = objs.begin();
+        
+        Object* instance = itr->first;
+        instance->bind();
 
-        // Compute modelViews for all objects
+        // Bind the uniform data for this instance
+        unsigned int shaderProgram = shaderManager->getBoundShader();
 
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, dynamicDataBuffer);
+        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-        shaderManager->bindComputeShader("../assets/shaders/compute/calculateModelView.comp");
-        glDispatchCompute(objs.size(), 1, 1);
+        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
+        glUniform1i(lightCountLoc, m_lights.size());
 
-        glBindBuffer(GL_ARRAY_BUFFER, dynamicDataBuffer);
+        unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
+        glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
 
         // Set Dynamic attributes for each instance
-        const unsigned int numDynamicDataPoints = 16 * 4; // (16 for mat4)
+        glBindBuffer(GL_ARRAY_BUFFER, m_modelBuffer);
         glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * 4 * sizeof(float)));
         glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * 4 * sizeof(float)));
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * 4 * sizeof(float)));
@@ -212,18 +222,15 @@ void Scene::render() {
         glVertexAttribDivisor(5, 1);
         glVertexAttribDivisor(6, 1);
         glVertexAttribDivisor(7, 1);
-        
+
         glEnableVertexAttribArray(4);
         glEnableVertexAttribArray(5);
         glEnableVertexAttribArray(6);
         glEnableVertexAttribArray(7);
-
-        objToBind->bind();
         
         // Render
         std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
         const unsigned int numVertices = bufferInfo[2];
-        //glBindVertexArray(bufferInfo[0]);
         glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
       
       }
