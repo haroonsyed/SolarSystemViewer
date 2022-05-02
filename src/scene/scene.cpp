@@ -106,8 +106,9 @@ unsigned int Scene::createModelBuffer() {
   return SSBO;
 }
 
-// Attach an update type (Insert, delete, update) later. So changes can be more efficient when keys change
 void Scene::addObjectToModelBuffer(Object* obj) {
+
+  obj->bind(); // make this object's VAO the current context
 
   std::string instanceGroupKey = getInstanceGroupKey(obj);
 
@@ -145,6 +146,22 @@ void Scene::addObjectToModelBuffer(Object* obj) {
   // Send the data to the vram
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
   glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(glm::mat4) * modelData.size(), &modelData[0]);
+
+  // Set Dynamic attributes for each instance
+  glBindBuffer(GL_ARRAY_BUFFER, SSBO);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
+  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
+  glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 1 * 4)));
+  glVertexAttribDivisor(4, 1);
+  glVertexAttribDivisor(5, 1);
+  glVertexAttribDivisor(6, 1);
+  glVertexAttribDivisor(7, 1);
+
+  glEnableVertexAttribArray(4);
+  glEnableVertexAttribArray(5);
+  glEnableVertexAttribArray(6);
+  glEnableVertexAttribArray(7);
 
 }
 
@@ -197,6 +214,13 @@ void Scene::render() {
     unsigned int SSBO = groupedInstances.first;
     auto const& objs = groupedInstances.second;
 
+    // Bind and calculate the model matrix for all objects in this instanceGroup
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
+    shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
+    glDispatchCompute(objs.size(), 1, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
     // Bind an instance's shader,mesh,mat
     auto const& objsItr = objs.begin();
     Object* instance = objsItr->first;
@@ -216,31 +240,6 @@ void Scene::render() {
 
     unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
     glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-
-    // Bind and calculate the model matrix for all objects in this instanceGroup
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
-    shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
-    glDispatchCompute(objs.size(), 1, 1);
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-    // Set Dynamic attributes for each instance
-    glBindBuffer(GL_ARRAY_BUFFER, SSBO);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
-    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
-    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * ( m_numFloatsPerModelData - 1 * 4) ));
-    glVertexAttribDivisor(4, 1);
-    glVertexAttribDivisor(5, 1);
-    glVertexAttribDivisor(6, 1);
-    glVertexAttribDivisor(7, 1);
-
-    glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
-    glEnableVertexAttribArray(6);
-    glEnableVertexAttribArray(7);
-
-    instance->bind(); // Bind the shader again
 
     // Render
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
