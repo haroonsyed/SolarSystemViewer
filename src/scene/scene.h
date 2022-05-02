@@ -22,9 +22,6 @@ class Scene {
         std::unordered_map<Object*, unsigned int> 
       > 
     > m_objects_map;
-    
-    // Contains objects that need to be updated in a given frame
-    std::vector < Object* > m_newAndUpdatedObjects;
 
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
@@ -32,7 +29,8 @@ class Scene {
 
     std::string getInstanceGroupKey(Object* obj);
     unsigned int createModelBuffer();
-    void addObjectToModelBuffer(Object* obj);
+    void registerObjectToScene(Object* obj);
+    void updateObjectInScene(Object* obj);
 
   public:
     Scene(GLFWwindow* window);

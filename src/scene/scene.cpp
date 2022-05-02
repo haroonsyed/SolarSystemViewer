@@ -70,7 +70,7 @@ void Scene::loadScene(std::string sceneFilePath) {
     m_physicsSystem.addBody(body); // Add gravBody to physics system
 
     // Tell scene to register this object
-    m_newAndUpdatedObjects.push_back(body);
+    registerObjectToScene(body);
 
   }
 
@@ -102,11 +102,11 @@ unsigned int Scene::createModelBuffer() {
   unsigned int SSBO;
   glGenBuffers(1, &SSBO);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, m_numFloatsPerModelData * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, m_numFloatsPerModelData * 1000000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
   return SSBO;
 }
 
-void Scene::addObjectToModelBuffer(Object* obj) {
+void Scene::registerObjectToScene(Object* obj) {
 
   obj->bind(); // make this object's VAO the current context
 
@@ -165,6 +165,10 @@ void Scene::addObjectToModelBuffer(Object* obj) {
 
 }
 
+void Scene::updateObjectInScene(Object* obj) {
+
+}
+
 void Scene::render() {
 
   // Get shaderProgram
@@ -197,15 +201,6 @@ void Scene::render() {
     lightData.push_back(light.getIntensity());
   }
 
-  // Register new and updated objects to the scene and ssbo
-  for (Object* obj : m_newAndUpdatedObjects) {
-    
-    addObjectToModelBuffer(obj);
-
-  }
-  m_newAndUpdatedObjects.clear();
-
-
   // Loop through the groups, then calculate their model matrices and render
   for (auto const& it : m_objects_map) {
 
@@ -219,7 +214,7 @@ void Scene::render() {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
     shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
     glDispatchCompute(objs.size(), 1, 1);
-    glMemoryBarrier(GL_ALL_BARRIER_BITS);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     // Bind an instance's shader,mesh,mat
     auto const& objsItr = objs.begin();
