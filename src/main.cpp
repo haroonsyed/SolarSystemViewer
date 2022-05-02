@@ -46,7 +46,7 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/galaxy.json");
+    scene.loadScene("../assets/scenes/sol.json");
 
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);

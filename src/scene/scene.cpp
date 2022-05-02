@@ -11,14 +11,17 @@
 
 Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
+  m_numFloatsPerModelData = 16 * 4; // mat4 (scale, rot, transform, modelMatrix)
+}
 
-  glGenBuffers(1, &m_modelBuffer);
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_modelBuffer);
-  const unsigned int numDynamicDataPoints = 16 * 3; // (scale, rot, translation)
-  glBufferData(GL_SHADER_STORAGE_BUFFER, numDynamicDataPoints * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
-
-  m_modelBufferSize = 0;
-
+std::string Scene::getInstanceGroupKey(Object* obj) {
+  auto shaders = obj->getShaders();
+  auto material = obj->getTextures();
+  std::string materialName = "";
+  for (auto const& str : material) {
+    materialName += str;
+  }
+  return shaders.first + shaders.second + obj->getMesh() + materialName;
 }
 
 System* Scene::getPhysicsSystem() {
@@ -95,6 +98,56 @@ void Scene::loadScene(std::string sceneFilePath) {
 
 }
 
+unsigned int Scene::createModelBuffer() {
+  unsigned int SSBO;
+  glGenBuffers(1, &SSBO);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, m_numFloatsPerModelData * 100000 * sizeof(float), nullptr, GL_DYNAMIC_DRAW);
+  return SSBO;
+}
+
+// Attach an update type (Insert, delete, update) later. So changes can be more efficient when keys change
+void Scene::addObjectToModelBuffer(Object* obj) {
+
+  std::string instanceGroupKey = getInstanceGroupKey(obj);
+
+  // Setup model matrix data for this obj
+  glm::mat4 scale = glm::mat4(1.0);
+  scale = glm::scale(scale, glm::vec3(obj->getScale()));
+  glm::mat4 rotation = obj->getRotationMat();
+  glm::mat4 translation = glm::mat4(1.0f);
+  translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
+
+  std::vector<glm::mat4> modelData = { scale, rotation, translation };
+
+  // Determine if an SSBO has been created for these instances
+  auto& sameInstances = m_objects_map.find(instanceGroupKey);
+  unsigned int offset = 0;
+  unsigned int SSBO;
+
+  if (sameInstances == m_objects_map.end()) {
+
+    // setup an ssbo for this instanceGroup
+    SSBO = createModelBuffer();
+    std::unordered_map<Object*, unsigned int> modelBufferInfo;
+    modelBufferInfo[obj] = 0;
+
+    m_objects_map[instanceGroupKey] = std::make_pair(SSBO, modelBufferInfo);
+
+  }
+  else {
+    // Determine the ssbo and offset for this object
+    SSBO = sameInstances->second.first;
+    offset = sameInstances->second.second.size() * m_numFloatsPerModelData;
+    sameInstances->second.second[obj] = offset;
+  }
+
+  // Send the data to the vram
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(glm::mat4) * modelData.size(), &modelData[0]);
+
+}
+
 void Scene::render() {
 
   // Get shaderProgram
@@ -128,114 +181,71 @@ void Scene::render() {
   }
 
   // Register new and updated objects to the scene and ssbo
-  const unsigned int numDynamicDataPoints = 16 * 3; // (scale, rot, translation)
   for (Object* obj : m_newAndUpdatedObjects) {
-    auto shaders = obj->getShaders();
-    auto material = obj->getTextures();
-    std::string materialName = "";
-    for (auto str : material) {
-      materialName += str;
-    }
-
-    // Setup model matrix data for this obj
-    glm::mat4 scale = glm::mat4(1.0);
-    scale = glm::scale(scale, glm::vec3(obj->getScale()));
-    glm::mat4 rotation = obj->getRotationMat();
-    glm::mat4 translation = glm::mat4(1.0f);
-    translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-
-    std::vector<glm::mat4> modelData = { scale, rotation, translation };
-
-    // Decide where to place in buffer
-    auto& sameInstances = m_objects_map[shaders.first + shaders.second][obj->getMesh()][materialName];
-
-    if (sameInstances.count(obj) == 0) {
-      m_modelBufferSize += numDynamicDataPoints;
-      sameInstances[obj] = m_modelBufferSize;
-      glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * m_modelBufferSize, sizeof(float) * numDynamicDataPoints, &modelData[0]);
-    }
-    else {
-      // Update this object in the buffer
-      unsigned int offset = sameInstances[obj];
-      glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(float) * offset, sizeof(float) * numDynamicDataPoints, &modelData[0]);
-    }
+    
+    addObjectToModelBuffer(obj);
 
   }
   m_newAndUpdatedObjects.clear();
 
-  // Compute model for all objects
-  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_modelBuffer);
-  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_modelBuffer);
-  shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
-  glDispatchCompute(m_modelBufferSize / numDynamicDataPoints, 1, 1);
-  glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-
-  // Loop through the shaderPrograms, then loop through similar materials, then batch together all the similar objs for drawing
+  // Loop through the groups, then calculate their model matrices and render
   for (auto const& it : m_objects_map) {
 
-    auto const& shader = it.first;
-    auto const& groupedMeshes = it.second;
+    auto const& instanceGroupKey = it.first;
+    auto const& groupedInstances = it.second;
+    unsigned int SSBO = groupedInstances.first;
+    auto const& objs = groupedInstances.second;
 
-    for (auto const& it : groupedMeshes) {
+    // Bind an instance's shader,mesh,mat
+    auto const& objsItr = objs.begin();
+    Object* instance = objsItr->first;
+    instance->bind();
 
-      auto const& meshFilePath = it.first;
-      auto const& groupedMaterials = it.second;
+    // Bind the uniform data for this instance
+    unsigned int shaderProgram = shaderManager->getBoundShader();
 
-      for (auto const& it : groupedMaterials) {
+    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
 
-        auto const& materialName = it.first;
-        auto const& objs = it.second;
+    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        if (objs.size() == 0) {
-          continue;
-        }
+    unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
+    glUniform1i(lightCountLoc, m_lights.size());
 
-        // Bind this instance type
-        auto const& itr = objs.begin();
-        
-        Object* instance = itr->first;
-        instance->bind();
+    unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
+    glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
 
-        // Bind the uniform data for this instance
-        unsigned int shaderProgram = shaderManager->getBoundShader();
+    // Bind and calculate the model matrix for all objects in this instanceGroup
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
+    shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
+    glDispatchCompute(objs.size(), 1, 1);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    // Set Dynamic attributes for each instance
+    glBindBuffer(GL_ARRAY_BUFFER, SSBO);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)( sizeof(float) * ( m_numFloatsPerModelData - 1 * 4) ));
+    glVertexAttribDivisor(4, 1);
+    glVertexAttribDivisor(5, 1);
+    glVertexAttribDivisor(6, 1);
+    glVertexAttribDivisor(7, 1);
 
-        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glEnableVertexAttribArray(4);
+    glEnableVertexAttribArray(5);
+    glEnableVertexAttribArray(6);
+    glEnableVertexAttribArray(7);
 
-        unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-        glUniform1i(lightCountLoc, m_lights.size());
+    instance->bind(); // Bind the shader again
 
-        unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-        glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-
-        // Set Dynamic attributes for each instance
-        glBindBuffer(GL_ARRAY_BUFFER, m_modelBuffer);
-        glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(0 * 4 * sizeof(float)));
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(1 * 4 * sizeof(float)));
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(2 * 4 * sizeof(float)));
-        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * numDynamicDataPoints, (void*)(3 * 4 * sizeof(float)));
-        glVertexAttribDivisor(4, 1);
-        glVertexAttribDivisor(5, 1);
-        glVertexAttribDivisor(6, 1);
-        glVertexAttribDivisor(7, 1);
-
-        glEnableVertexAttribArray(4);
-        glEnableVertexAttribArray(5);
-        glEnableVertexAttribArray(6);
-        glEnableVertexAttribArray(7);
-        
-        // Render
-        std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-        const unsigned int numVertices = bufferInfo[2];
-        glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
-      
-      }
-    
-    }
+    // Render
+    std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
+    const unsigned int numVertices = bufferInfo[2];
+    glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
 
   }
 

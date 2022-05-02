@@ -13,13 +13,15 @@ class Scene {
     Camera m_camera;
     std::vector<Light> m_lights;
 
-    // Contains all model transforms in SSBO for on-vram updates with compute shaders
-    unsigned int m_modelBuffer;
-    unsigned int m_modelBufferSize;
-
-    // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the dynamicDataBuffer
-    // [ shaderProgram ] [ meshFilePath ] [ material ] [ Object* ] -> unsigned int
-    std::unordered_map < std::string, std::unordered_map<std::string, std::unordered_map< std::string, std::unordered_map< Object*, unsigned int > >>> m_objects_map;
+    unsigned int m_numFloatsPerModelData;
+    // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the modelBuffer
+    // [ groupInstanceKey (shader+mesh+material) ] -> std::pair< SSBO, uMap< Object*, SSBO_ID > >
+    std::unordered_map< std::string, 
+      std::pair< 
+        unsigned int, 
+        std::unordered_map<Object*, unsigned int> 
+      > 
+    > m_objects_map;
     
     // Contains objects that need to be updated in a given frame
     std::vector < Object* > m_newAndUpdatedObjects;
@@ -27,6 +29,10 @@ class Scene {
     System m_physicsSystem;
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
                                  // Compounds ontop of unit system defined in JSON document
+
+    std::string getInstanceGroupKey(Object* obj);
+    unsigned int createModelBuffer();
+    void addObjectToModelBuffer(Object* obj);
 
   public:
     Scene(GLFWwindow* window);

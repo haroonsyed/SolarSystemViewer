@@ -14,13 +14,13 @@ void main() {
 
   uint gid = gl_GlobalInvocationID.x;
   
-  uint startIndex = 3 * gid;
+  uint startIndex = 4 * gid;
 
   mat4 scale = inputData[startIndex];
   mat4 rotation = inputData[startIndex + 1];
   mat4 transformation = inputData[startIndex + 2];
 
-  inputData[startIndex] = transformation * rotation * scale;
+  inputData[startIndex + 3] = transformation * rotation * scale;
 
 
 }
