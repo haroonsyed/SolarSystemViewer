@@ -29,7 +29,7 @@ class Light {
 class Header {
   PhysicsDistanceFactor = 1e6;
   PhysicsMassFactor = 1e6;
-  UniverseScaleFactor = 40.0;
+  UniverseScaleFactor = 10.0;
   CameraPosition;
 }
 
@@ -37,14 +37,14 @@ let header = new Header();
 header.CameraPosition = {
   x: 0.0,
   y: 0.0,
-  z: 3e11,
+  z: 3e12,
 };
 
-let numberOfStars = 100000;
-let xRange = header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
-let yRange = xRange / (16.0 / 9);
+let numberOfStars = 10000;
+let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
+let yRange = 2 * xRange / (16.0 / 9);
 let baseVelocity = xRange / header.PhysicsDistanceFactor;
-let outputFileName = "megaGalaxy.json";
+let outputFileName = "../../assets/scenes/galaxy.json";
 generationType = "random";
 
 let system = [];
@@ -55,13 +55,13 @@ for (let i = 0; i < numberOfStars; i++) {
     let body = new GravBody();
     body.name = String(i);
     body.position = {
-      x: Math.random() * xRange,
-      y: Math.random() * yRange,
+      x: Math.random() * xRange - (xRange / 2.0),
+      y: Math.random() * yRange - (yRange / 2.0),
       z: 0.0,
     };
     body.velocity = {
-      x: Math.random() * baseVelocity,
-      y: Math.random() * baseVelocity,
+      x: Math.random() * baseVelocity - (baseVelocity / 2.0),
+      y: Math.random() * baseVelocity - (baseVelocity / 2.0),
       z: 0.0,
     };
 
