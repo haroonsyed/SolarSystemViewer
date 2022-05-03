@@ -10,6 +10,7 @@ class GravBody {
   vertexShaderPath = "../assets/shaders/default.vs";
   fragmentShaderPath = "../assets/shaders/default.fs";
   diffuseMap = "../assets/textures/sun.jpg";
+  isParticle = true;
 }
 
 class Light {
@@ -40,7 +41,7 @@ header.CameraPosition = {
   z: 3e12,
 };
 
-let numberOfStars = 100000;
+let numberOfStars = 1000000;
 let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
 let yRange = (2 * xRange) / (16.0 / 9);
 let baseVelocity = xRange / header.PhysicsDistanceFactor;

@@ -15,6 +15,7 @@ Object::Object() {
   m_normalMapFilePath = "";
   m_specularMapFilePath = "";
   m_emissiveMapFilePath = "";
+  m_isParticle = false;
 }
 
 void Object::setName(std::string name) {
@@ -130,4 +131,12 @@ void Object::bind() {
 glm::mat4 Object::getModelMatrix() {
   glm::mat4 model(1.0f);
   return glm::translate(glm::toMat4(m_rotation) * glm::scale(model, glm::vec3(m_scale)), m_position);
+}
+
+bool Object::isParticle() {
+  return m_isParticle;
+}
+
+void Object::setIsParticle(bool isParticle) {
+  m_isParticle = isParticle;
 }

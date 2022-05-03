@@ -179,6 +179,7 @@ void Scene::render() {
 
   // Get view projection for the entire draw call
   glm::mat4 view = m_camera.getViewTransform();
+  glm::mat4 particleView = glm::mat4(1.0f);
 
   // Setup projection matrix for entire draw call
   Config* config = Config::getInstance();
@@ -235,6 +236,13 @@ void Scene::render() {
 
     unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
     glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
+
+    // Idk why I have to set the following every time. But it has low overhead anyway
+    glBindBuffer(GL_ARRAY_BUFFER, SSBO);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
+    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 1 * 4)));
 
     // Render
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();

@@ -22,6 +22,8 @@ class Object {
     float m_scale;
     float m_axis;
 
+    bool m_isParticle;
+
   public:
     Object();
     void setName(std::string name);
@@ -47,5 +49,7 @@ class Object {
     std::vector<std::string> getTextures();
     void bind();
     glm::mat4 getModelMatrix();
+    bool isParticle();
+    void setIsParticle(bool isParticle);
 
 };
