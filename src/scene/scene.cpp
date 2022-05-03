@@ -106,20 +106,29 @@ unsigned int Scene::createModelBuffer() {
   return SSBO;
 }
 
-void Scene::registerObjectToScene(Object* obj) {
+// Returns the scale, rotation and translation of the object
+std::vector<glm::mat4> Scene::getModelMatrices(Object* obj) {
 
-  obj->bind(); // make this object's VAO the current context
-
-  std::string instanceGroupKey = getInstanceGroupKey(obj);
-
-  // Setup model matrix data for this obj
   glm::mat4 scale = glm::mat4(1.0);
   scale = glm::scale(scale, glm::vec3(obj->getScale()));
   glm::mat4 rotation = obj->getRotationMat();
   glm::mat4 translation = glm::mat4(1.0f);
   translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
 
-  std::vector<glm::mat4> modelData = { scale, rotation, translation };
+
+  return { scale, rotation, translation };
+
+}
+
+void Scene::registerObjectToScene(Object* obj) {
+
+  std::string instanceGroupKey = getInstanceGroupKey(obj);
+
+  // Make this object's VAO the current context
+  obj->bind();
+
+  // Get the modelData (loc, rot, scale)
+  std::vector<glm::mat4> modelData = getModelMatrices(obj);
 
   // Determine if an SSBO has been created for these instances
   auto& sameInstances = m_objects_map.find(instanceGroupKey);
@@ -165,7 +174,40 @@ void Scene::registerObjectToScene(Object* obj) {
 
 }
 
+// update the scale, rotation and position of an object in the scene.
+// Note that particles are calculated on the gpu, and their data will be reset by this operation.
 void Scene::updateObjectInScene(Object* obj) {
+
+  std::string instanceGroupKey = getInstanceGroupKey(obj);
+
+  // Make the object's context current
+  bindObjectWithModelMatrix(obj);
+
+  std::vector<glm::mat4> modelData = getModelMatrices(obj);
+
+  // Find the offset of the object within the SSBO
+  auto const& groupedInstances = m_objects_map[instanceGroupKey];
+  unsigned int SSBO = groupedInstances.first;
+  unsigned int SSBO_OFFSET = sizeof(float) * groupedInstances.second.at(obj);
+
+  // Upload the new data to vram
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, SSBO_OFFSET, sizeof(glm::mat4) * modelData.size(), &modelData[0]);
+
+}
+
+void Scene::bindObjectWithModelMatrix(Object* obj) {
+
+  obj->bind();
+
+  // Set vertex attribute for model matrix instances
+  unsigned int SSBO = m_objects_map[getInstanceGroupKey(obj)].first;
+  glBindBuffer(GL_ARRAY_BUFFER, SSBO);
+  glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
+  glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
+  glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
+  glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 1 * 4)));
+
 
 }
 
@@ -174,7 +216,6 @@ void Scene::render() {
   // Get shaderProgram
   ShaderManager* shaderManager = ShaderManager::getInstance();
   MeshManager* meshManager = MeshManager::getInstance();
-  TextureManager* textureManager = TextureManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
 
   // Get view projection for the entire draw call
@@ -203,12 +244,22 @@ void Scene::render() {
   }
 
   // Loop through the groups, then calculate their model matrices and render
-  for (auto const& it : m_objects_map) {
+  for (auto const& itr : m_objects_map) {
 
-    auto const& instanceGroupKey = it.first;
-    auto const& groupedInstances = it.second;
+    auto const& instanceGroupKey = itr.first;
+    auto const& groupedInstances = itr.second;
     unsigned int SSBO = groupedInstances.first;
     auto const& objs = groupedInstances.second;
+
+    auto const& objsItr = objs.begin();
+    Object* instance = objsItr->first;
+
+    // Update vram if the object is not a particles
+    if (!instance->isParticle()) {
+      for (const auto& itr : objs) {
+        updateObjectInScene(itr.first);
+      }
+    }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
@@ -218,9 +269,7 @@ void Scene::render() {
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
     // Bind an instance's shader,mesh,mat
-    auto const& objsItr = objs.begin();
-    Object* instance = objsItr->first;
-    instance->bind();
+    bindObjectWithModelMatrix(instance);
 
     // Bind the uniform data for this instance
     unsigned int shaderProgram = shaderManager->getBoundShader();
@@ -236,14 +285,7 @@ void Scene::render() {
 
     unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
     glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
-
-    // Idk why I have to set the following every time. But it has low overhead anyway
-    glBindBuffer(GL_ARRAY_BUFFER, SSBO);
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 4 * 4)));
-    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 3 * 4)));
-    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
-    glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 1 * 4)));
-
+    
     // Render
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
     const unsigned int numVertices = bufferInfo[2];

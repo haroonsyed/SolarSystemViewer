@@ -29,8 +29,10 @@ class Scene {
 
     std::string getInstanceGroupKey(Object* obj);
     unsigned int createModelBuffer();
+    std::vector<glm::mat4> getModelMatrices(Object* obj);
     void registerObjectToScene(Object* obj);
     void updateObjectInScene(Object* obj);
+    void bindObjectWithModelMatrix(Object* obj);
 
   public:
     Scene(GLFWwindow* window);
