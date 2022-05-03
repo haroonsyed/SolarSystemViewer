@@ -13,7 +13,9 @@ GravBody::GravBody(float physicsDistanceFactor, float physicsMassFactor, json js
   setParamsFromJSON(physicsDistanceFactor, physicsMassFactor, jsonData);
 }
 void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassFactor, json jsonData) {
-  setName(jsonData["name"].get<std::string>());
+  std::string name = jsonData["name"].get<std::string>();
+  setName(name);
+  addPlanetInfo(name);
   setScale(jsonData["radius"].get<float>() / physicsDistanceFactor);
   setMass(jsonData["mass"].get<float>() / physicsMassFactor);
   setPosition(
@@ -48,6 +50,22 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
   if (jsonData.contains("cloudMap")) {
     setCloudMap(jsonData["cloudMap"].get<std::string>());
   }
+  if (jsonData.contains("Type")) {
+      addPlanetInfo("Type: " + jsonData["Type"].get<std::string>());
+  }
+  if (jsonData.contains("Radius")) {
+      addPlanetInfo("Radius: " + jsonData["Radius"].get<std::string>());
+  }
+  if (jsonData.contains("Orbital Period")) {
+      addPlanetInfo("Orbital Period: " + jsonData["Orbital Period"].get<std::string>());
+  }
+  if (jsonData.contains("Length of Day")) {
+      addPlanetInfo("Length of a Day: " + jsonData["Length of Day"].get<std::string>());
+  }
+  if (jsonData.contains("Temperature")) {
+      addPlanetInfo("Temperature: " + jsonData["Temperature"].get<std::string>());
+  }
+
   // Rotate model to begin with north pole facing upward
   const glm::vec3 defaultRotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
   rotate( glm::angleAxis( 3.14159f/2 , defaultRotationAxis ) );

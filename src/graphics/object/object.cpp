@@ -29,6 +29,9 @@ Object::Object() {
   Texture m_cloud;
   Texture m_dynamic;
 
+  std::vector<std::string> temp;
+  planetInfo = temp;
+
   value = 0;
 }
 
@@ -109,6 +112,16 @@ void Object::setEmissiveMap(std::string emissiveMapFilePath) {
 
 void Object::setCloudMap(std::string cloudMapFilePath) {
   m_cloud = loadData(cloudMapFilePath, 3);
+}
+
+void Object::addPlanetInfo(std::string info)
+{
+	planetInfo.push_back(info);
+}
+
+std::vector<std::string> Object::getPlanetInfo()
+{
+	return planetInfo;
 }
 
 Texture Object::loadData(std::string path, int channels)
@@ -197,18 +210,11 @@ void Object::bind() {
   meshManager->bindMesh(m_meshFilePath);
 
 
-
   // Now bind textures
   TextureManager* textureManager = TextureManager::getInstance();
 
   std::vector<Texture> staticTextures = getStaticTextures();
   std::vector<Texture> dynamicTextures;
-
-  /*if (m_cloud.data != nullptr)
-  {
-	  std::cout << "Hello" << std::endl;
-	  std::vector<Texture> dynamicTextures = getDynamicTextures();
-  }*/
 
   textureManager->bindTextures(staticTextures, dynamicTextures);
 

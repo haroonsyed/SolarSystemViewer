@@ -40,6 +40,8 @@ class Object {
     std::string m_vertexShaderPath;
     std::string m_fragShaderPath;
 
+    std::vector<std::string> planetInfo;
+
     Texture m_diffuse;
     Texture m_normal;
     Texture m_specular;
@@ -77,9 +79,10 @@ class Object {
     void setSpecularMap(std::string specularMapFilePath);
     void setEmissiveMap(std::string emissiveMapFilePath);
     void setCloudMap(std::string cloudMapFilePath);
+    void addPlanetInfo(std::string info);
+    std::vector<std::string> getPlanetInfo();
     Texture loadData(std::string path, int channels);
     std::vector<Texture> getStaticTextures();
-    std::vector<Texture> getDynamicTextures();
     //Texture generateCloudTexture();
     void bind();
 
