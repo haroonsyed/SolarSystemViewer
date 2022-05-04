@@ -69,25 +69,26 @@ void Skybox::buildCubeMapTextureFromFilePaths(std::vector<std::string> faces)
 
 void Skybox::render(glm::mat4 viewMatrix, glm::mat4 projMatrix)
 {
-    glDepthFunc(GL_LEQUAL);
+  glDisable(GL_DEPTH_TEST);
 
-    m_skybox.bind();
-    ShaderManager* shaderManager = ShaderManager::getInstance();
-    MeshManager* meshManager = MeshManager::getInstance();
+  m_skybox.bind();
+  ShaderManager* shaderManager = ShaderManager::getInstance();
+  MeshManager* meshManager = MeshManager::getInstance();
 
-    glm::mat4 view = glm::mat4(glm::mat3(viewMatrix)); // remove translation from the view matrix
-    glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "view"), 1, GL_FALSE, value_ptr(view));
-    glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "projection"), 1, GL_FALSE, value_ptr(projMatrix));
+  glm::mat4 view = glm::mat4(glm::mat3(viewMatrix)); // remove translation from the view matrix
+  glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "view"), 1, GL_FALSE, value_ptr(view));
+  glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "projection"), 1, GL_FALSE, value_ptr(projMatrix));
 
-    std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
-    const unsigned int numVertices = bufferInfo[2];
+  std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
+  const unsigned int numVertices = bufferInfo[2];
 
-    // Bind skybox texture
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+  // Bind skybox texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
-    // Render skybox
-    glDrawArrays(GL_TRIANGLES, 0, numVertices);
+  // Render skybox
+  glDrawArrays(GL_TRIANGLES, 0, numVertices);
 
-    glDepthFunc(GL_LESS);
+  glEnable(GL_DEPTH_TEST);
+
 }

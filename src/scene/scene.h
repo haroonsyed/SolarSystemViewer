@@ -42,5 +42,6 @@ class Scene {
     float getUniverseScaleFactor();
     void loadScene(std::string sceneFilePath);
     void render();
+    void renderSkybox();
 
 };

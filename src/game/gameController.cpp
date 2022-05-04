@@ -260,11 +260,15 @@ void GameController::render(float deltaT) {
 
   m_boundScene->render();
 
-  // Render to screen
-  screenManager->renderToScreen();
+  // Bind screen (default) buffer
+  screenManager->bindDefaultBuffer();
+  screenManager->clearScreenBuffer();
 
   // Render the skybox (unaffected by automatic exposure)
-  //m_boundScene->
+  m_boundScene->renderSkybox();
+
+  // Render to screen
+  screenManager->renderToScreen();
 
   // Render GUI ontop
   if (target == nullptr)
