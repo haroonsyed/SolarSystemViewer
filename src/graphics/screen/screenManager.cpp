@@ -40,7 +40,7 @@ void ScreenManager::generateFrameBuffers() {
   //for (int i = 0; i < 2; i++) {
 
     //unsigned int* textureLoc = i == 0 ? &m_sceneHDRTexture : &m_sceneBloomTexture;
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glGenTextures(1, &m_sceneHDRTexture);
     glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
@@ -82,7 +82,7 @@ void ScreenManager::calculateExposure() {
   // Change to be based on 10 * deltaT
   float a = 1e-2 * (1.0f / exposure) * std::fabsf(exposure - m_prevExposure);
   exposure = m_prevExposure * (1 - a) + exposure * a;
-  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 0.3f, 1e4f);
+  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 0.1f, 1e2f);
   m_prevExposure = exposure;
 
   delete[] pixels;
@@ -97,10 +97,11 @@ void ScreenManager::bindDefaultBuffer() {
 
 void ScreenManager::bindSceneBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, m_sceneFBO);
+  glEnable(GL_DEPTH_TEST);
 }
 
 void ScreenManager::clearScreenBuffer() {
-  glEnable(GL_DEPTH_TEST);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -108,10 +109,13 @@ void ScreenManager::clearScreenBuffer() {
 
 void ScreenManager::renderToScreen() {
 
+  // Clear previous frame
   bindDefaultBuffer();
   clearScreenBuffer();
 
   calculateExposure();
+
+  glDisable(GL_DEPTH_TEST);
 
   // Render the frame on the quad with post processing
   ShaderManager* shaderManager = ShaderManager::getInstance();

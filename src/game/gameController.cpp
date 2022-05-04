@@ -16,12 +16,15 @@ bool GameController::m_showGui = false;
 
 GLFWwindow* GameController::m_window = nullptr;
 Scene* GameController::m_boundScene = nullptr;
+Gui* GameController::gui = nullptr;
 int GameController::m_focusedBody = -1;
+GravBody* target = nullptr;
 
 
 GameController* GameController::getInstance(GLFWwindow* window, Scene* scene) {
   if (m_instance == nullptr) {
     m_instance = new GameController(window, scene);
+    gui = new Gui();
   }
   return m_instance;
 }
@@ -151,7 +154,6 @@ void GameController::updateFocusedPlanet() {
 
   if (m_focusedBody > -1) {
 
-    GravBody* target = nullptr;
     if (m_focusedBody < bodies.size()) {
       target = bodies[m_focusedBody];
     }
@@ -248,7 +250,7 @@ void GameController::update(float deltaT) {
   updateFocusedPlanet();
 }
 
-void GameController::render() {
+void GameController::render(float deltaT) {
 
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
@@ -260,5 +262,18 @@ void GameController::render() {
 
   // Render to screen
   screenManager->renderToScreen();
+
+  // Render the skybox (unaffected by automatic exposure)
+  //m_boundScene->
+
+  // Render GUI ontop
+  if (target == nullptr)
+  {
+      gui->render(1.0f / deltaT, m_showGui, {"Solar System View"});
+  }
+  else
+  {
+      gui->render(1.0f / deltaT, m_showGui, target->getPlanetInfo());
+  }
 
 }

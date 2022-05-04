@@ -293,5 +293,8 @@ void Scene::render() {
 
   }
 
+  // Render skybox after all objects in scene
+  skybox.render(view, projection);
+
 }
 

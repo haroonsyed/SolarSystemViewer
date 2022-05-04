@@ -29,7 +29,8 @@
       "fragmentShaderPath": "../assets/shaders/testing.fs",
       "diffuseMap": "../assets/textures/earth_diffuse_day.jpg",
       "specularMap": "../assets/textures/earth_specular.jpg",
-      "normalMap": "../assets/textures/earth_normal.png"
+      "normalMap": "../assets/textures/earth_normal.png",
+	"cloudMap": "../assets/textures/fair_clouds_8k.jpg"
     },
     {
       "name": "Moon",

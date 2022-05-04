@@ -60,7 +60,6 @@ int main()
     glCullFace(GL_BACK);
     glfwSwapInterval(0);
 
-    unsigned long frameCounter = 0;
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
     double timeAtLastFpsLog = 0.0;
     while (!glfwWindowShouldClose(window))
@@ -68,8 +67,8 @@ int main()
 
       double startTime = glfwGetTime();
 
-      game->update((float) frameTime);
-      game->render();
+      game->update((float)frameTime);
+      game->render((float)frameTime);
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       glfwSwapBuffers(window);
@@ -78,21 +77,7 @@ int main()
       // Measure performance
       double endTime = glfwGetTime();
       frameTime = endTime - startTime;
-      double targetFrameTime = 1.0 / TARGET_FRAMERATE;
 
-      frameCounter++;
-
-      // 5 percent error acceptance
-      if (frameTime > targetFrameTime*1.05) {
-        std::cout << "Framerate struggling to keep up!" << std::endl;
-      }
-
-      // Print FPS every n seconds
-      if (endTime - timeAtLastFpsLog > 5) {
-        std::cout << "\nFramerate: " << frameCounter / (endTime - timeAtLastFpsLog) << " fps.\n" << std::endl;
-        frameCounter = 0;
-        timeAtLastFpsLog = endTime;
-      }
     }
 
     // glfw: terminate, clearing all previously allocated GLFW resources.

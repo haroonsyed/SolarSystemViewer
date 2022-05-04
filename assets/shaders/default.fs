@@ -37,35 +37,35 @@ void main()
 		normal = normalMapData * 2.0 - 1.0; // Make range between -1 and 1 for normal map
 		normal = normalize(TBN * normal);
   }
-	
+
   // Iterate through the lights and add each result to the FragColor
   FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   for (int i=0; i<lightCount; i++) {
-	
+
 		int lightIndex = numLightAttr * i;
-	
+
 		// x,y,z,type(point/spotlight),r,g,b,strength
 		vec3 lightPos = vec3(lights[lightIndex], lights[lightIndex+1], lights[lightIndex+2]);
 		vec4 lightColor = vec4(lights[lightIndex+4], lights[lightIndex+5], lights[lightIndex+6], 1.0);
 		float lightStrength = lights[lightIndex+7];
-	
+
 		vec3 toLight = normalize(lightPos-transformedPos);
 		vec3 viewDir = normalize(transformedPos);
 		vec3 h = normalize((viewDir) + toLight);
-	
+
 		float ambient = 0.1;
-		float specularStrength = 0.01f;
+		float specularStrength = 0.1f;
 		float phongExp = 1.0f;
-	
+
 		float diffuse = max(dot(normal,toLight),0);
 		float specular = pow(max(dot(normal,h), 0),phongExp);
-	
+
 		vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
-	
+
 		float distance = length(lightPos - transformedPos);
 		float Kc = 1.0;
-		float Kl = 0.0014 / 2;
-		float Kq = 0.000007 / 4;
+		float Kl = 0.0014 / 16;
+		float Kq = 0.000007 / 256;
 		float attenuation = 1.0/( Kc + Kl * distance + Kq * distance * distance );
 		lightStrength *= attenuation;
 		

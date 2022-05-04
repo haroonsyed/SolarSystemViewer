@@ -1,17 +1,18 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
-#include <unordered_set>
 #include <string>
 #include "../physics/system.h"
 #include "../graphics/light/light.h"
 #include "../camera/camera.h"
 #include "GLFW/glfw3.h"
+#include "../graphics/skybox/skybox.h"
 
 class Scene {
   private:
     Camera m_camera;
     std::vector<Light> m_lights;
+    Skybox skybox;
 
     unsigned int m_numFloatsPerModelData;
     // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the modelBuffer
