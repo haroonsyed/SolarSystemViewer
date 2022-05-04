@@ -255,7 +255,6 @@ void GameController::render(float deltaT) {
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
 
-  // Clear previous frame
   screenManager->bindSceneBuffer();
   screenManager->clearScreenBuffer();
 
@@ -264,12 +263,13 @@ void GameController::render(float deltaT) {
   // Render to screen
   screenManager->renderToScreen();
 
+  // Render the skybox (unaffected by automatic exposure)
+  //m_boundScene->
+
   // Render GUI ontop
   if (target == nullptr)
   {
-      std::vector<std::string> temp;
-      temp.push_back("Solar System View");
-      gui->render(1.0f / deltaT, m_showGui, temp);
+      gui->render(1.0f / deltaT, m_showGui, {"Solar System View"});
   }
   else
   {

@@ -9,6 +9,7 @@ class GravBody : public Object {
 		glm::vec3 m_axis;
 	  float m_mass;
 		float m_rotationSpeed; // In rad/s
+		std::vector<std::string> m_planetInfo;
 
 	public:
 	  GravBody();
@@ -25,4 +26,7 @@ class GravBody : public Object {
 	  float getMass();
 	  void setMass(float mass);
 	  void print();
+
+		void addPlanetInfo(std::string info);
+		std::vector<std::string> getPlanetInfo();
 };

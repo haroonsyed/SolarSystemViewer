@@ -28,18 +28,8 @@ int main()
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     #endif
 
-    // Get the config
-    Config* config = Config::getInstance();
-    unsigned int TARGET_FRAMERATE = config->getTargetFramerate();
-
-
     // Make window 
     GLFWwindow* window = createWindow();
-    if (!window) {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      glfwTerminate();
-      return -1;
-    }
 
     // // glew: load all OpenGL function pointers
     glewInit();
@@ -51,9 +41,13 @@ int main()
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);
 
-    // render loop
-    // -----------
-    //glEnable(GL_DEPTH_TEST);
+
+    // OGL options
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glfwSwapInterval(0);
+
     double frameTime = 1e-9; // Initialize very small so object don't move on first frame
     double timeAtLastFpsLog = 0.0;
     while (!glfwWindowShouldClose(window))
@@ -92,8 +86,12 @@ GLFWwindow* createWindow() {
   // --------------------
   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "viewGL", NULL, NULL);
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(0);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  if (!window) {
+    std::cout << "Failed to create GLFW window" << std::endl;
+    glfwTerminate();
+  }
 
   return window;
 }

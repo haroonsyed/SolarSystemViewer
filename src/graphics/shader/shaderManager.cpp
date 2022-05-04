@@ -30,6 +30,55 @@ unsigned int ShaderManager::getBoundShader() {
 	return m_boundShader;
 }
 
+void ShaderManager::bindComputeShader(std::string computeShaderPath) {
+	// Shaders are cached so they aren't built every time
+	std::string shaderKey = computeShaderPath;
+
+	if (m_shaderMap.count(shaderKey) == 0) {
+
+		std::string rawComputeShader = readShader(computeShaderPath);
+		const char* computeShaderSource = rawComputeShader.c_str();
+
+		unsigned int computeShader = glCreateShader(GL_COMPUTE_SHADER);
+		glShaderSource(computeShader, 1, &computeShaderSource, NULL);
+		glCompileShader(computeShader);
+
+		int success;
+		char infoLog[512];
+		glGetShaderiv(computeShader, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			glGetShaderInfoLog(computeShader, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::COMPUTE::COMPILATION_FAILED\n" << infoLog << std::endl;
+		}
+
+		// Now link and bind the program
+		unsigned int shaderProgram = glCreateProgram();
+		glAttachShader(shaderProgram, computeShader);
+		glLinkProgram(shaderProgram);
+
+		// check for linking errors
+		glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+		if (!success) {
+			glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+			std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		}
+		glDeleteShader(computeShader);
+
+		// Add to cache
+		m_shaderMap[shaderKey] = shaderProgram;
+
+	}
+
+	// Bind program
+	unsigned int shaderProgram = m_shaderMap.at(shaderKey);
+	if (shaderProgram != m_boundShader) { // Driver probably caches, but just in case
+		glUseProgram(shaderProgram);
+		m_boundShader = shaderProgram;
+	}
+
+}
+
 void ShaderManager::bindShader(std::string vertexShaderPath, std::string fragShaderPath) {
 
 	// Shaders are cached so they aren't built every time

@@ -178,16 +178,10 @@ void Gui::render(double frameRate, bool status, std::vector<std::string> info)
 
         for (int i = 0; i < info.size(); i++)
         {
-            renderText(info[i], 20, height - 850 - index, textScale, glm::vec3(0.5, 0.8f, 0.2f));
+            renderText(info[i], 20, index, textScale, glm::vec3(0.5, 0.8f, 0.2f));
             index = index + 20;
         }
 
-        /*ShaderManager* shaderManager = ShaderManager::getInstance();
-        shaderManager->bindShader(gui_vertShaderPath, gui_fragShaderPath);
-        glBindVertexArray(guiVAO);
-        projectionloc = glGetUniformLocation(shaderManager->getBoundShader(), "scale");
-        glUniform1f(projectionloc, width / height);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);*/
         glDisable(GL_BLEND);
     }
 }

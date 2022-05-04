@@ -16,5 +16,6 @@ private:
 public:
     static ShaderManager* getInstance();
     unsigned int getBoundShader();
+    void bindComputeShader(std::string computeShaderPath);
     void bindShader(std::string vertexShaderPath, std::string fragShaderPath);
 };

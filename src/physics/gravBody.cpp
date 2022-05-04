@@ -47,8 +47,8 @@ void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassF
   if (jsonData.contains("emissiveMap")) {
     setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
   }
-  if (jsonData.contains("cloudMap")) {
-    setCloudMap(jsonData["cloudMap"].get<std::string>());
+  if (jsonData.contains("isParticle")) {
+    setIsParticle(jsonData["isParticle"].get<bool>());
   }
   if (jsonData.contains("Type")) {
       addPlanetInfo("Type: " + jsonData["Type"].get<std::string>());
@@ -115,5 +115,15 @@ void GravBody::print() {
 	const float px = getPosition().x;
 	const float py = getPosition().y;
 	const float pz = getPosition().z;
+}
+
+void GravBody::addPlanetInfo(std::string info)
+{
+  m_planetInfo.push_back(info);
+}
+
+std::vector<std::string> GravBody::getPlanetInfo()
+{
+  return m_planetInfo;
 }
 

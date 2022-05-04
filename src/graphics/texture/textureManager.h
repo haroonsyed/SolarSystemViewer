@@ -1,13 +1,7 @@
 #pragma once
-
-#include "../../../lib/std_image.h"
-
-#include <iostream>
-#include <GL/glew.h>
 #include <string>
-
-#include "../shader/shaderManager.h"
-#include "../object/object.h"
+#include <vector>
+#include <unordered_map>
 
 // Singleton pattern (I think it's fine since this class takes over code in the main)
 // I could decouple, but I really like the caching feature
@@ -22,6 +16,6 @@ private:
 public:
   static TextureManager* getInstance();
   unsigned int getBoundTexture();
-  std::string getMapFromUniformLocation(int location);
-  void bindTextures(std::vector<Texture>& staticTextures, std::vector<Texture> dynamicTextures);
+  std::string getMapTypeFromLocation(int location);
+  void bindTextures(std::vector<std::string>& textureFilePaths);
 };

@@ -1,10 +1,10 @@
+#include <GL/glew.h>
 #include "skybox.h"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "../../../lib/std_image.h"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-#include <GL/glew.h>
 #include <vector>
 #include <string>
 
@@ -14,25 +14,31 @@
 
 Skybox::Skybox()
 {
-    ShaderManager* shaderManager = ShaderManager::getInstance();
-    shaderManager->bindShader(skyboxVertShaderPath, skyboxFragShaderPath);
 
-    MeshManager * meshManager = MeshManager::getInstance();
-    meshManager->bindMesh(meshPath);
+  std::string skyboxVertShaderPath = "../assets/shaders/skyboxShader.vs";
+  std::string skyboxFragShaderPath = "../assets/shaders/skyboxShader.fs";
 
-    faces.push_back("../assets/textures/skybox/right.jpg");
-    faces.push_back("../assets/textures/skybox/left.jpg");
-    faces.push_back("../assets/textures/skybox/top.jpg");
-    faces.push_back("../assets/textures/skybox/bottom.jpg");
-    faces.push_back("../assets/textures/skybox/front.jpg");
-    faces.push_back("../assets/textures/skybox/back.jpg");
+  std::string meshPath = "../assets/models/skybox.obj";
 
-    texture = loadCubemap(faces);
+  m_skybox.setShaders(skyboxVertShaderPath, skyboxFragShaderPath);
+  m_skybox.setMesh(meshPath);
+
+  // We handle textures separately since OGL has a CUBE_MAP built in
+  std::vector<std::string> faceTextures;
+
+  faceTextures.push_back("../assets/textures/skybox/right.jpg");
+  faceTextures.push_back("../assets/textures/skybox/left.jpg");
+  faceTextures.push_back("../assets/textures/skybox/top.jpg");
+  faceTextures.push_back("../assets/textures/skybox/bottom.jpg");
+  faceTextures.push_back("../assets/textures/skybox/front.jpg");
+  faceTextures.push_back("../assets/textures/skybox/back.jpg");
+
+  buildCubeMapTextureFromFilePaths(faceTextures);
+
 }
 
-unsigned int Skybox::loadCubemap(std::vector<std::string> faces)
+void Skybox::buildCubeMapTextureFromFilePaths(std::vector<std::string> faces)
 {
-    unsigned int texture;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
@@ -59,29 +65,29 @@ unsigned int Skybox::loadCubemap(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    return texture;
 }
 
 void Skybox::render(glm::mat4 viewMatrix, glm::mat4 projMatrix)
 {
     glDepthFunc(GL_LEQUAL);
 
+    m_skybox.bind();
     ShaderManager* shaderManager = ShaderManager::getInstance();
-    shaderManager->bindShader(skyboxVertShaderPath, skyboxFragShaderPath);
+    MeshManager* meshManager = MeshManager::getInstance();
 
     glm::mat4 view = glm::mat4(glm::mat3(viewMatrix)); // remove translation from the view matrix
     glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "view"), 1, GL_FALSE, value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderManager->getBoundShader(), "projection"), 1, GL_FALSE, value_ptr(projMatrix));
 
-    MeshManager* meshManager = MeshManager::getInstance();
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();
     const unsigned int numVertices = bufferInfo[2];
 
-    // skybox cube
+    // Bind skybox texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+    // Render skybox
     glDrawArrays(GL_TRIANGLES, 0, numVertices);
-    glBindVertexArray(0);
 
     glDepthFunc(GL_LESS);
 }

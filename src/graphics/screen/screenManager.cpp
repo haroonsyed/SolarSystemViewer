@@ -40,6 +40,7 @@ void ScreenManager::generateFrameBuffers() {
   //for (int i = 0; i < 2; i++) {
 
     //unsigned int* textureLoc = i == 0 ? &m_sceneHDRTexture : &m_sceneBloomTexture;
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glGenTextures(1, &m_sceneHDRTexture);
     glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);

@@ -37,9 +37,13 @@ std::vector<GravBody*> System::getBodies() {
 }
 
 void System::update(float deltaT) {
-
   if (deltaT > 0.1f) {
     // Don't calculate physics when deltaT is large, introduces error into calculation
+    return;
+  }
+
+  // Let compute shader calculate large simulations
+  if (m_bodies.size() > 1000) {
     return;
   }
 
@@ -103,6 +107,7 @@ void System::update(float deltaT) {
       body->getRotationSpeed() * adjustedTimeFactor,
       body->getAxis()
     ));
+
   }
 
 }
