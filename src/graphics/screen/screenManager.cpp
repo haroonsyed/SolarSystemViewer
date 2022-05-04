@@ -90,18 +90,13 @@ void ScreenManager::calculateExposure() {
 
 void ScreenManager::bindDefaultBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  m_screenQuad.bind();
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
 }
 
 void ScreenManager::bindSceneBuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, m_sceneFBO);
-  glEnable(GL_DEPTH_TEST);
 }
 
 void ScreenManager::clearScreenBuffer() {
-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -109,12 +104,14 @@ void ScreenManager::clearScreenBuffer() {
 
 void ScreenManager::renderToScreen() {
 
-  // Clear previous frame
-  bindDefaultBuffer();
-  clearScreenBuffer();
+  // Bind the quad to render scene texture on
+  m_screenQuad.bind();
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_sceneHDRTexture);
 
   calculateExposure();
 
+  glEnable(GL_BLEND); // Blend with background (or skybox)
   glDisable(GL_DEPTH_TEST);
 
   // Render the frame on the quad with post processing
@@ -124,6 +121,9 @@ void ScreenManager::renderToScreen() {
   glUniform1fv(exposureLoc, 1, &m_prevExposure);
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
+
+  glDisable(GL_BLEND);
+  glEnable(GL_DEPTH_TEST);
 
 }
 

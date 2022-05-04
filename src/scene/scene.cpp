@@ -293,7 +293,18 @@ void Scene::render() {
 
   }
 
-  // Render skybox after all objects in scene
+}
+
+void Scene::renderSkybox() {
+
+  // Get view projection for the entire draw call
+  glm::mat4 view = m_camera.getViewTransform();
+
+  Config* config = Config::getInstance();
+  unsigned int SCR_WIDTH = config->getScreenWidth();
+  unsigned int SCR_HEIGHT = config->getScreenHeight();
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
+
   skybox.render(view, projection);
 
 }

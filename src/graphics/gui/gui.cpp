@@ -146,7 +146,9 @@ void Gui::render(double frameRate, bool status, std::vector<std::string> info)
 {
     if (status) {
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDisable(GL_DEPTH_TEST);
+
+
         std::string frameRateString = std::to_string(frameRate);
         if (frameRate < 100)
         {
@@ -182,7 +184,9 @@ void Gui::render(double frameRate, bool status, std::vector<std::string> info)
             index = index + 20;
         }
 
+        glEnable(GL_DEPTH_TEST);
         glDisable(GL_BLEND);
+
     }
 }
 

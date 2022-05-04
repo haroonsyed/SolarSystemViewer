@@ -8,8 +8,8 @@ uniform float exposure;
 
 void main()
 {
- 
-  vec3 hdrColor = texture(screenTexture, uvCoord).rgb;
+  vec4 hdrColorRaw = texture(screenTexture, uvCoord);
+  vec3 hdrColor = hdrColorRaw.rgb;
 
   // Perform hdr tone-mapping
   const float gamma = 2.2;
@@ -21,7 +21,7 @@ void main()
   // Gamma correction
   //mapped = pow(mapped, vec3(1.0 / gamma));
   
-  FragColor = vec4(mapped, 1.0);
+  FragColor = vec4(mapped, hdrColorRaw.w);
   //FragColor = texture(screenTexture, uvCoord);
 
 };
