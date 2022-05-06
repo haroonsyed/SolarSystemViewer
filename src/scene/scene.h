@@ -14,6 +14,8 @@ class Scene {
     std::vector<Light> m_lights;
     Skybox skybox;
 
+    unsigned int m_uniformBuffer;
+
     unsigned int m_numFloatsPerModelData;
     // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the modelBuffer
     // [ groupInstanceKey (shader+mesh+material) ] -> std::pair< SSBO, uMap< Object*, SSBO_ID > >
@@ -28,6 +30,7 @@ class Scene {
     float m_universeScaleFactor; // Used to scale the distance between objects in scene.
                                  // Compounds ontop of unit system defined in JSON document
 
+    void genUniformBuffer();
     std::string getInstanceGroupKey(Object* obj);
     unsigned int createModelBuffer();
     std::vector<glm::mat4> getModelMatrices(Object* obj);

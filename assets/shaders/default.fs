@@ -9,8 +9,15 @@ out vec4 FragColor;
 // x,y,z,type(point/spotlight),r,g,b,strength
 const int numLightAttr = 8;
 const int maxNumLights = 20;
-uniform float lights[numLightAttr*maxNumLights]; // Each light has 8 attributes, max of 20 lights
-uniform int lightCount; // How many lights to render for this frame
+layout (std140, binding = 0) uniform uniformData
+{
+    mat4 view;
+    mat4 projection;
+		int lightCount; // How many lights to render for this frame
+		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
+};
+
+//uniform float lights[numLightAttr*maxNumLights];
 
 uniform bool diffuseMapExists;
 uniform bool normalMapExists;
@@ -42,12 +49,12 @@ void main()
   FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   for (int i=0; i<lightCount; i++) {
 
-		int lightIndex = numLightAttr * i;
+		int lightIndex = numLightAttr * i / 4;
 
 		// x,y,z,type(point/spotlight),r,g,b,strength
-		vec3 lightPos = vec3(lights[lightIndex], lights[lightIndex+1], lights[lightIndex+2]);
-		vec4 lightColor = vec4(lights[lightIndex+4], lights[lightIndex+5], lights[lightIndex+6], 1.0);
-		float lightStrength = lights[lightIndex+7];
+		vec3 lightPos = lights[lightIndex].xyz;
+		vec4 lightColor = vec4(lights[lightIndex+1].xyz, 1.0);
+		float lightStrength = lights[lightIndex+1].w;
 
 		vec3 toLight = normalize(lightPos-transformedPos);
 		vec3 viewDir = normalize(transformedPos);

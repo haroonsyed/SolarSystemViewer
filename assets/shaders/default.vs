@@ -11,8 +11,15 @@ out vec2 uvCoord;
 out mat3 TBN;
 out vec4 texLoc;
 
-uniform mat4 view;
-uniform mat4 projection;
+const int numLightAttr = 8;
+const int maxNumLights = 20;
+layout (std140, binding = 0) uniform uniformData
+{
+    mat4 view;
+    mat4 projection;
+    int lightCount; // How many lights to render for this frame
+		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
+};
 
 void main()
 {

@@ -17,7 +17,7 @@ ScreenManager* ScreenManager::getInstance() {
 ScreenManager::ScreenManager() {
   // Setup screen quad to display on
   m_screenQuad.setMesh("../assets/models/plane.obj");
-  m_screenQuad.setShaders("../assets/shaders/postProcessing.vs", "../assets/shaders/postProcessing.fs");
+  m_screenQuad.setShaders("../assets/shaders/colorCorrection.vs", "../assets/shaders/colorCorrection.fs");
 
   generateFrameBuffers();
 
