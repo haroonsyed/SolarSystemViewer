@@ -61,7 +61,7 @@ void main()
 		vec3 h = normalize((viewDir) + toLight);
 
 		float ambient = 0.1;
-		float specularStrength = 0.1f;
+		float specularStrength = 0.0f;
 		float phongExp = 1.0f;
 
 		float diffuse = max(dot(normal,toLight),0);
@@ -71,8 +71,8 @@ void main()
 
 		float distance = length(lightPos - transformedPos);
 		float Kc = 1.0;
-		float Kl = 0.0014 / 16;
-		float Kq = 0.000007 / 256;
+		float Kl = 0.0014 * 8;
+		float Kq = 0.000007 * 64;
 		float attenuation = 1.0/( Kc + Kl * distance + Kq * distance * distance );
 		lightStrength *= attenuation;
 		

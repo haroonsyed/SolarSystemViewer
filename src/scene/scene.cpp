@@ -262,10 +262,6 @@ void Scene::render() {
   unsigned int numOfLights = m_lights.size();
   glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(unsigned int), &numOfLights);
   glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4), sizeof(float) * lightData.size(), &(lightData[0]));
-  //std::cout << "-------DEBUG------" << std::endl;
-  //std::cout << 2 * sizeof(glm::mat4) + sizeof(unsigned int) << std::endl;
-  //std::cout << sizeof(float) * lightData.size() << std::endl;
-
 
   // Loop through the groups, then calculate their model matrices and render
   for (auto const& itr : m_objects_map) {
@@ -286,7 +282,7 @@ void Scene::render() {
     }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+    unsigned int workerGroupSize = 1;
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
     shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
     glDispatchCompute(objs.size(), 1, 1);
@@ -294,21 +290,6 @@ void Scene::render() {
 
     // Bind an instance's shader,mesh,mat
     bindObjectWithModelMatrix(instance);
-
-    // Bind the uniform data for this instance
-    //unsigned int shaderProgram = shaderManager->getBoundShader();
-
-    //unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    //glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-    //unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-    //glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    //unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-    //glUniform1i(lightCountLoc, m_lights.size());
-
-    //unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-    //glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
     
     // Render
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();

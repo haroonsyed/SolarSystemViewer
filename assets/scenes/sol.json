@@ -283,7 +283,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 1e2
+      "intensity": 1e5
     }
   ]
 }
