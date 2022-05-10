@@ -44,7 +44,7 @@ void main() {
 
   vec3 pixelColor = imageLoad( hdrImage, pixelPosition).xyz;
   // According to CIE xyY color space
-  float internalLuminance = pixelColor.x * 0.2125 + pixelColor.y * 0.6154 + pixelColor.z * 0.1721;
+  float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
   
   // Scale to be in the range of a uint and not lose float resolution
   internalLuminance *= 10000;

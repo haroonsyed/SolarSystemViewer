@@ -7,7 +7,7 @@ Config::Config() {
   m_SCR_HEIGHT = 600;
   m_TARGET_FRAMERATE = 60;
   m_MOUSE_SENSITIVITY = 0.8;
-  m_auto_exposure_center_range = 0.15;
+  m_auto_exposure_center_range = 0.20;
 }
 
 Config* Config::getInstance() {
