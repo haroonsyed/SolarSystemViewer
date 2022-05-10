@@ -11,6 +11,8 @@ void main()
   vec4 hdrColorRaw = texture(screenTexture, uvCoord);
   vec3 hdrColor = hdrColorRaw.rgb;
 
+  // Perform luminance mapping
+
   // Perform hdr tone-mapping
   const float gamma = 2.2;
 
@@ -19,7 +21,7 @@ void main()
   //vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
 
   // Gamma correction
-  //mapped = pow(mapped, vec3(1.0 / gamma));
+  mapped = pow(mapped, vec3(1.0 / gamma));
   
   FragColor = vec4(mapped, hdrColorRaw.w);
   //FragColor = texture(screenTexture, uvCoord);

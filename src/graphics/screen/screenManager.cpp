@@ -36,7 +36,7 @@ void ScreenManager::genScreenSSBO() {
   Config* config = Config::getInstance();
   const unsigned int width = config->getScreenWidth();
   const unsigned int height = config->getScreenHeight();
-  const unsigned int percentRangeFromCenterForLuminanceCalc = config->getAutoExposureRange();;
+  const unsigned int percentRangeFromCenterForLuminanceCalc = config->getAutoExposureRange() * 100;
   std::vector<GLuint> data = { 0, width, height, percentRangeFromCenterForLuminanceCalc };
 
   unsigned int ssboSizeBytes = 4 * sizeof(GLuint); // Luminance, Width, Height, Range, Luminance
@@ -106,24 +106,24 @@ void ScreenManager::calculateExposure(float deltaT) {
   unsigned int luminanceRaw = 0;
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_screenSSBO);
   glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &luminanceRaw);
-  luminance = static_cast<float>(luminanceRaw) / (static_cast<float>(rangeX) * rangeY * 100 / (workerGroupSize * workerGroupSize));
-  //luminance = std::log(luminance);
+  luminance = static_cast<float>(luminanceRaw) / (static_cast<float>(rangeX) * rangeY / (workerGroupSize * workerGroupSize));
 
-  float exposure = 1.0f / luminance;
+  luminance *= std::log(1.0 + luminance);
+
+  float exposureControl = 0.3f;
+  float exposure = exposureControl / (luminance);
 
   // Move toward this luminance from previous luminance
-  // Exposure should take 3 seconds to adjust
-  float exposureSpeed = deltaT / 3;
+  // Exposure should take 5 seconds to adjust
+  float exposureSpeed = deltaT / 3.0f;
   float a = exposureSpeed * (1.0f / exposure) * std::fabsf(exposure - m_prevExposure);
   exposure = m_prevExposure * (1 - a) + exposure * a;
-  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 1e-1f, 1e3f);
+  exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 1e-8f, 1e8f);
   m_prevExposure = exposure;
 
+  std::cout << "Luminance Raw: " << luminanceRaw << std::endl;
   std::cout << "Luminance: " << luminance << std::endl;
   std::cout << "Exposure: " << exposure << std::endl;
-
-  glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &luminanceRaw);
-
 
 }
 

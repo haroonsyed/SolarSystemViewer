@@ -31,27 +31,30 @@ void main() {
 
   uint gid = gl_GlobalInvocationID.x;
 
-  uint rangeX = width * percentRangeFromCenterForLuminanceCalc / 100;
-  uint rangeY = height * percentRangeFromCenterForLuminanceCalc / 100;
+  uint rangeX = (width * percentRangeFromCenterForLuminanceCalc) / 100;
+  uint rangeY = (height * percentRangeFromCenterForLuminanceCalc) / 100;
   uint centerX = width / 2;
   uint centerY = height / 2;
 
-  ivec2 bottomQuadrant = ivec2(centerX - rangeX, centerY - rangeY);
+  ivec2 bottomQuadrant = ivec2(centerX - rangeX / 2, centerY - rangeY / 2);
   ivec2 pixelPosition = bottomQuadrant + ivec2(gl_GlobalInvocationID.xy);
   
+  // DEBUG TO SEE COMPUTED AREA, make sure hdr write is enabled in screenManager
+  //imageStore(hdrImage, pixelPosition, ivec4(0, 1000, 1000, 1) );
+
   vec3 pixelColor = imageLoad( hdrImage, pixelPosition).xyz;
   // According to CIE xyY color space
-  float internalLuminance = pixelColor.x * 0.2125 + pixelColor.y * 0.7154 + pixelColor.z * 0.0721;
+  float internalLuminance = pixelColor.x * 0.2125 + pixelColor.y * 0.6154 + pixelColor.z * 0.1721;
   
-  // Scale to be in the range of a uint
-  internalLuminance *= 100;
+  // Scale to be in the range of a uint and not lose float resolution
+  internalLuminance *= 10000;
 
   atomicAdd(workGroupAverageLuminance, uint(internalLuminance));
   barrier(); // Wait for all threads to finish
 
   if(gl_LocalInvocationIndex == 0) {
     // Add to global luminance
-    workGroupAverageLuminance /= ( 32 * 32 );
+    workGroupAverageLuminance /= ( 32 * 32 * 10000 );
     atomicAdd(scaledLuminance, workGroupAverageLuminance);
   }
 
