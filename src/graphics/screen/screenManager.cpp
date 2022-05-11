@@ -110,7 +110,7 @@ void ScreenManager::calculateExposure(float deltaT) {
 
   luminance *= std::log(1.0 + luminance);
 
-  float exposureControl = 0.2f;
+  float exposureControl = 0.3f;
   float exposure = exposureControl / (luminance);
 
   // Move toward this luminance from previous luminance

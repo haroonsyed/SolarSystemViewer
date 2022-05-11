@@ -58,11 +58,11 @@ void main()
 
 		vec3 toLight = normalize(lightPos-transformedPos);
 		vec3 viewDir = normalize(transformedPos);
-		vec3 h = normalize((viewDir) + toLight);
+		vec3 h = normalize((-viewDir) + toLight);
 
 		float ambient = 0.1;
-		float specularStrength = 0.0f;
-		float phongExp = 1.0f;
+		float specularStrength = dot(normal, toLight) > 0.0 ? 0.1f : 0.0;
+		float phongExp = 50.0f;
 
 		float diffuse = max(dot(normal,toLight),0);
 		float specular = pow(max(dot(normal,h), 0),phongExp);
