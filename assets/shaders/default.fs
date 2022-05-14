@@ -15,9 +15,13 @@ layout (std140, binding = 0) uniform uniformData
     mat4 projection;
 		int lightCount; // How many lights to render for this frame
 		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
+		float ambientStrength;
+		float specularStrength;
+		float phongExponent;
+		float kc;
+		float kl;
+		float kq;
 };
-
-//uniform float lights[numLightAttr*maxNumLights];
 
 uniform bool diffuseMapExists;
 uniform bool normalMapExists;
@@ -60,23 +64,19 @@ void main()
 		vec3 viewDir = normalize(transformedPos);
 		vec3 h = normalize((-viewDir) + toLight);
 
-		float ambient = 0.1;
-		float specularStrength = dot(normal, toLight) > 0.0 ? 0.1f : 0.0;
+		float specularStrengthFinal = dot(normal, toLight) > 0.0 ? 0.1f : 0.0;
 		float phongExp = 50.0f;
 
-		float diffuse = max(dot(normal,toLight),0);
+		float diffuseStrength = max(dot(normal,toLight),0);
 		float specular = pow(max(dot(normal,h), 0),phongExp);
 
 		vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
 
 		float distance = length(lightPos - transformedPos);
-		float Kc = 1.0;
-		float Kl = 1.0;
-		float Kq = 0.000007;
-		float attenuation = 1.0/( Kc + Kl * distance + Kq * distance * distance );
+		float attenuation = 1.0/( kc + kl * distance + kq * distance * distance );
 		lightStrength *= attenuation;
 		
-		FragColor += lightStrength * ( (ambient + diffuse) * diffuseColor * lightColor + specularStrength * specular * specularColor );
+		FragColor += lightStrength * ( (ambientStrength + diffuseStrength) * diffuseColor * lightColor + specularStrengthFinal * specular * specularColor );
   }
 
 };

@@ -10,6 +10,11 @@ private:
   unsigned int m_SCR_HEIGHT;
   unsigned int m_TARGET_FRAMERATE;
   double m_MOUSE_SENSITIVITY;
+
+  bool m_bloomEnabled;
+  bool m_hdrEnabled;
+  bool m_autoExposureEnabled;
+  float m_autoExposureControl;
   double m_auto_exposure_center_range; // Percent of middle of screen to use for AE calculation
 
   Config();
@@ -23,5 +28,10 @@ public:
   unsigned int getTargetFramerate();
   double getMouseSensitivity();
   double getAutoExposureRange();
+  bool getBloomEnabled();
+  bool getHdrEnabled();
+  bool getAutoExposureEnabled();
+  float getAutoExposureControl();
+
 
 };

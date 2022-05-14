@@ -15,8 +15,11 @@ Scene::Scene(GLFWwindow* window) {
   genUniformBuffer();
 }
 
-unsigned int getUBOSize() {
-  return sizeof(float) * (16 + 16 + 8 * 20) + sizeof(unsigned int);
+unsigned int Scene::getUBOSize() {
+  // view, projection, 20 lights, ambient, specular, phong, kc, kl, kq ( 6 constants for lighting);
+  // Each light takes 2 vec4s
+  const unsigned int numOfLightingConstants = 6;
+  return sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * (m_MAX_NUM_LIGHTS * 2 + numOfLightingConstants);
 }
 
 void Scene::genUniformBuffer() {
@@ -72,6 +75,14 @@ void Scene::loadScene(std::string sceneFilePath) {
       jScene["CameraPosition"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
     )
   );
+
+  // Setup lighting data in uniform
+  m_ambientStrength = jScene["ambientStrength"].get<float>();
+  m_specularStrength = jScene["specularStrength"].get<float>();
+  m_phongExponent = jScene["phongExponent"].get<float>();
+  m_kc = jScene["kc"].get<float>();
+  m_kl = jScene["kl"].get<float>();
+  m_kq = jScene["kq"].get<float>();
 
   // Setup physics
   m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
@@ -262,6 +273,12 @@ void Scene::render() {
   unsigned int numOfLights = m_lights.size();
   glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(unsigned int), &numOfLights);
   glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4), sizeof(float) * lightData.size(), &(lightData[0]));
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (1 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_ambientStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (2 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_specularStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (3 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_phongExponent);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (4 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kc);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (5 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kl);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (6 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kq);
 
   // Loop through the groups, then calculate their model matrices and render
   for (auto const& itr : m_objects_map) {

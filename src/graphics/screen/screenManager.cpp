@@ -94,6 +94,10 @@ void ScreenManager::calculateExposure(float deltaT) {
   int rangeX = width * range;
   int rangeY = height * range;
 
+  if (config->) {
+
+  }
+
   glBindImageTexture(2, m_sceneHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
@@ -121,9 +125,9 @@ void ScreenManager::calculateExposure(float deltaT) {
   exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 1e-8f, 1e8f);
   m_prevExposure = exposure;
 
-  std::cout << "Luminance Raw: " << luminanceRaw << std::endl;
-  std::cout << "Luminance: " << luminance << std::endl;
-  std::cout << "Exposure: " << exposure << std::endl;
+  //std::cout << "Luminance Raw: " << luminanceRaw << std::endl;
+  //std::cout << "Luminance: " << luminance << std::endl;
+  //std::cout << "Exposure: " << exposure << std::endl;
 
 }
 

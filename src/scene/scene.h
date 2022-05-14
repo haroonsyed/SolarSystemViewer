@@ -11,10 +11,19 @@
 class Scene {
   private:
     Camera m_camera;
+    unsigned int m_MAX_NUM_LIGHTS = 20;
     std::vector<Light> m_lights;
     Skybox skybox;
 
     unsigned int m_uniformBuffer;
+
+    /// Uniform Buffer data for this scene
+    float m_ambientStrength;
+    float m_specularStrength;
+    float m_phongExponent;
+    float m_kc; // Light dropoff constants
+    float m_kl;
+    float m_kq;
 
     unsigned int m_numFloatsPerModelData;
     // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the modelBuffer
@@ -31,6 +40,7 @@ class Scene {
                                  // Compounds ontop of unit system defined in JSON document
 
     void genUniformBuffer();
+    unsigned int getUBOSize();
     std::string getInstanceGroupKey(Object* obj);
     unsigned int createModelBuffer();
     std::vector<glm::mat4> getModelMatrices(Object* obj);
