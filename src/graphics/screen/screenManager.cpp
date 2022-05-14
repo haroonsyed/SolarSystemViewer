@@ -94,8 +94,9 @@ void ScreenManager::calculateExposure(float deltaT) {
   int rangeX = width * range;
   int rangeY = height * range;
 
-  if (config->) {
-
+  if (!config->getAutoExposureEnabled()) {
+    m_prevExposure = 1.0f;
+    return;
   }
 
   glBindImageTexture(2, m_sceneHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
@@ -114,7 +115,7 @@ void ScreenManager::calculateExposure(float deltaT) {
 
   luminance *= std::log(1.0 + luminance);
 
-  float exposureControl = 0.3f;
+  float exposureControl = config->getAutoExposureControl();
   float exposure = exposureControl / (luminance);
 
   // Move toward this luminance from previous luminance

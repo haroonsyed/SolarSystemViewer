@@ -8,7 +8,6 @@ Config::Config() {
   m_TARGET_FRAMERATE = 60;
   m_MOUSE_SENSITIVITY = 0.8;
   m_bloomEnabled = true;
-  m_hdrEnabled = true;
   m_autoExposureEnabled = true;
   m_autoExposureControl = 0.3;
   m_auto_exposure_center_range = 0.20;
@@ -45,10 +44,6 @@ double Config::getAutoExposureRange() {
 
 bool Config::getBloomEnabled() {
     return m_bloomEnabled;
-}
-
-bool Config::getHdrEnabled() {
-  return m_hdrEnabled;
 }
 
 bool Config::getAutoExposureEnabled() {
