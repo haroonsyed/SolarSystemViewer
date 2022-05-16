@@ -7,6 +7,10 @@ Config::Config() {
   m_SCR_HEIGHT = 600;
   m_TARGET_FRAMERATE = 60;
   m_MOUSE_SENSITIVITY = 0.8;
+  m_bloomEnabled = true;
+  m_autoExposureEnabled = true;
+  m_autoExposureControl = 0.3;
+  m_auto_exposure_center_range = 0.20;
 }
 
 Config* Config::getInstance() {
@@ -32,4 +36,20 @@ unsigned int Config::getTargetFramerate() {
 }
 double Config::getMouseSensitivity() {
   return m_MOUSE_SENSITIVITY;
+}
+
+double Config::getAutoExposureRange() {
+  return m_auto_exposure_center_range;
+}
+
+bool Config::getBloomEnabled() {
+    return m_bloomEnabled;
+}
+
+bool Config::getAutoExposureEnabled() {
+  return m_autoExposureEnabled;
+}
+
+float Config::getAutoExposureControl() {
+  return m_autoExposureControl;
 }

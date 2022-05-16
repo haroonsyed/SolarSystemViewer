@@ -108,6 +108,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
   config->setScreenWidth(width);
   config->setScreenHeight(height);
   ScreenManager* screenManager = ScreenManager::getInstance();
-  screenManager->generateFrameBuffers();
+  screenManager->generateBuffers();
   glViewport(0, 0, width, height);
 }

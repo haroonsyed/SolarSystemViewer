@@ -11,6 +11,8 @@ void main()
   vec4 hdrColorRaw = texture(screenTexture, uvCoord);
   vec3 hdrColor = hdrColorRaw.rgb;
 
+  // Perform luminance mapping
+
   // Perform hdr tone-mapping
   const float gamma = 2.2;
 

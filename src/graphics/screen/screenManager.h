@@ -11,15 +11,18 @@ private:
   unsigned int m_sceneFBO;
   unsigned int m_sceneHDRTexture;
   unsigned int m_sceneBloomTexture;
+  unsigned int m_screenSSBO;
   float m_prevExposure;
   ScreenManager();
-  void calculateExposure();
+  void calculateExposure(float deltaT);
+  void genScreenSSBO();
+  void generateFrameBuffers();
 
 public:
   static ScreenManager* getInstance();
-  void generateFrameBuffers();
+  void generateBuffers();
   void bindDefaultBuffer();
   void bindSceneBuffer();
   void clearScreenBuffer();
-  void renderToScreen();
+  void renderToScreen(float deltaT);
 };

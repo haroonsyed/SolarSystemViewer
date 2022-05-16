@@ -268,7 +268,7 @@ void GameController::render(float deltaT) {
   m_boundScene->renderSkybox();
 
   // Render to screen
-  screenManager->renderToScreen();
+  screenManager->renderToScreen(deltaT);
 
   // Render GUI ontop
   if (target == nullptr)

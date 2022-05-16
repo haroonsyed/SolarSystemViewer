@@ -1,0 +1,63 @@
+#version 430 core
+#extension GL_ARB_compute_shader : enable
+#extension GL_ARB_shader_storage_buffer_object : enable
+
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout(std140, binding = 1) buffer screenData {
+
+  uint scaledLuminance;
+  uint width;
+  uint height;
+  uint percentRangeFromCenterForLuminanceCalc;
+
+};
+
+layout (rgba32f, binding = 2) uniform image2D hdrImage;
+
+shared uint workGroupAverageLuminance; // * 100 float value
+
+void main() {
+
+  if(gl_GlobalInvocationID.xy == ivec2(0,0)) {
+    scaledLuminance = 0;
+  }
+
+  if(gl_LocalInvocationIndex == 0) {
+    workGroupAverageLuminance = 0;
+  }
+
+  barrier(); // Wait for all threads in workgroup to be initialized
+
+  uint gid = gl_GlobalInvocationID.x;
+
+  uint rangeX = (width * percentRangeFromCenterForLuminanceCalc) / 100;
+  uint rangeY = (height * percentRangeFromCenterForLuminanceCalc) / 100;
+  uint centerX = width / 2;
+  uint centerY = height / 2;
+
+  ivec2 bottomQuadrant = ivec2(centerX - rangeX / 2, centerY - rangeY / 2);
+  ivec2 pixelPosition = bottomQuadrant + ivec2(gl_GlobalInvocationID.xy);
+  
+  // DEBUG TO SEE COMPUTED AREA, make sure hdr write is enabled in screenManager
+  //imageStore(hdrImage, pixelPosition, ivec4(0, 1000, 1000, 1) );
+
+  vec3 pixelColor = imageLoad( hdrImage, pixelPosition).xyz;
+  // According to CIE xyY color space
+  float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
+  
+  // Scale to be in the range of a uint and not lose float resolution
+  internalLuminance *= 10000;
+
+  atomicAdd(workGroupAverageLuminance, uint(internalLuminance));
+  barrier(); // Wait for all threads to finish
+
+  if(gl_LocalInvocationIndex == 0) {
+    // Add to global luminance
+    workGroupAverageLuminance /= ( 32 * 32 * 10000 );
+    atomicAdd(scaledLuminance, workGroupAverageLuminance);
+  }
+
+}
+
+

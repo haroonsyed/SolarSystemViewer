@@ -83,7 +83,8 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 			// Send the texture to gpu and generate mip maps
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			unsigned int colorSpace = textureType == "diffuseMap" ? GL_SRGB_ALPHA : GL_RGBA;
+			glTexImage2D(GL_TEXTURE_2D, 0, colorSpace, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 
 			// Add to map

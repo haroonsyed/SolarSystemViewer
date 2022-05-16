@@ -12,6 +12,22 @@
 Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
   m_numFloatsPerModelData = 16 * 4; // mat4 (scale, rot, transform, modelMatrix)
+  genUniformBuffer();
+}
+
+unsigned int Scene::getUBOSize() {
+  // view, projection, 20 lights, ambient, specular, phong, kc, kl, kq ( 6 constants for lighting);
+  // Each light takes 2 vec4s
+  const unsigned int numOfLightingConstants = 6;
+  return sizeof(glm::mat4) * 2 + sizeof(glm::vec4) * (m_MAX_NUM_LIGHTS * 2 + numOfLightingConstants);
+}
+
+void Scene::genUniformBuffer() {
+  unsigned int sizeOfUBO = getUBOSize();
+  glGenBuffers(1, &m_uniformBuffer);
+  glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
+  glBufferData(GL_UNIFORM_BUFFER, sizeOfUBO, nullptr, GL_DYNAMIC_DRAW);
+  glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 std::string Scene::getInstanceGroupKey(Object* obj) {
@@ -59,6 +75,14 @@ void Scene::loadScene(std::string sceneFilePath) {
       jScene["CameraPosition"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
     )
   );
+
+  // Setup lighting data in uniform
+  m_ambientStrength = jScene["ambientStrength"].get<float>();
+  m_specularStrength = jScene["specularStrength"].get<float>();
+  m_phongExponent = jScene["phongExponent"].get<float>();
+  m_kc = jScene["kc"].get<float>();
+  m_kl = jScene["kl"].get<float>();
+  m_kq = jScene["kq"].get<float>();
 
   // Setup physics
   m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
@@ -208,7 +232,6 @@ void Scene::bindObjectWithModelMatrix(Object* obj) {
   glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 2 * 4)));
   glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, sizeof(float) * m_numFloatsPerModelData, (void*)(sizeof(float) * (m_numFloatsPerModelData - 1 * 4)));
 
-
 }
 
 void Scene::render() {
@@ -216,7 +239,6 @@ void Scene::render() {
   // Get shaderProgram
   ShaderManager* shaderManager = ShaderManager::getInstance();
   MeshManager* meshManager = MeshManager::getInstance();
-  unsigned int shaderProgram = shaderManager->getBoundShader();
 
   // Get view projection for the entire draw call
   glm::mat4 view = m_camera.getViewTransform();
@@ -243,6 +265,21 @@ void Scene::render() {
     lightData.push_back(light.getIntensity());
   }
 
+  // Set the uniform data in the UBO
+  glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
+  glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uniformBuffer);
+  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &view);
+  glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &projection);
+  unsigned int numOfLights = m_lights.size();
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(unsigned int), &numOfLights);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4), sizeof(float) * lightData.size(), &(lightData[0]));
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (1 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_ambientStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (2 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_specularStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (3 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_phongExponent);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (4 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kc);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (5 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kl);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (6 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kq);
+
   // Loop through the groups, then calculate their model matrices and render
   for (auto const& itr : m_objects_map) {
 
@@ -262,7 +299,7 @@ void Scene::render() {
     }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO);
+    unsigned int workerGroupSize = 1;
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
     shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
     glDispatchCompute(objs.size(), 1, 1);
@@ -270,21 +307,6 @@ void Scene::render() {
 
     // Bind an instance's shader,mesh,mat
     bindObjectWithModelMatrix(instance);
-
-    // Bind the uniform data for this instance
-    unsigned int shaderProgram = shaderManager->getBoundShader();
-
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-    unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-    glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-    unsigned int lightCountLoc = glGetUniformLocation(shaderProgram, "lightCount");
-    glUniform1i(lightCountLoc, m_lights.size());
-
-    unsigned int lightLoc = glGetUniformLocation(shaderProgram, "lights");
-    glUniform1fv(lightLoc, lightData.size(), &(lightData[0]));
     
     // Render
     std::vector<unsigned int> bufferInfo = meshManager->getBufferInfo();

@@ -7,6 +7,12 @@
     "y": 0.0,
     "z": 3e11
   },
+  "ambientStrength": 0.1,
+  "specularStrength": 0.1,
+  "phongExponent": 50.0,
+  "kc": 1.0,
+  "kl": 1.0,
+  "kq": 0.000007,
   "GravBodies": [
     {
       "name": "Sun",
@@ -49,12 +55,12 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/mercury.jpg",
-      "normalMap":  "../assets/textures/mercury_normal.png",
-	"Type":  "Terrestrial",
-	"Radius": "1,516 mi",
-	"Orbital Period": "88 Days",
-	"Length of a Day": "58d 15h 30m",
-	"Temperature": "167 C"
+      "normalMap": "../assets/textures/mercury_normal.png",
+      "Type": "Terrestrial",
+      "Radius": "1,516 mi",
+      "Orbital Period": "88 Days",
+      "Length of a Day": "58d 15h 30m",
+      "Temperature": "167 C"
     },
     {
       "name": "Venus",
@@ -76,12 +82,12 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/venus.jpg",
-      "normalMap":  "../assets/textures/venus_normal.png",
-	"Type":  "Terrestrial",
-	"Radius": "3760.4 mi",
-	"Orbital Period": "225 Days",
-	"Length of a Day": "116d 18h 0m",
-	"Temperature": "475 C"
+      "normalMap": "../assets/textures/venus_normal.png",
+      "Type": "Terrestrial",
+      "Radius": "3760.4 mi",
+      "Orbital Period": "225 Days",
+      "Length of a Day": "116d 18h 0m",
+      "Temperature": "475 C"
     },
     {
       "name": "Earth",
@@ -105,11 +111,11 @@
       "diffuseMap": "../assets/textures/earth_diffuse_day.jpg",
       "specularMap": "../assets/textures/earth_specular.jpg",
       "normalMap": "../assets/textures/earth_normal.png",
-	"Type":  "Terrestrial",
-	"Radius": "3958.8 mi",
-	"Orbital Period": "365 days",
-	"Length of a Day": "24hr 0m 0s",
-	"Temperature": "15 C"
+      "Type": "Terrestrial",
+      "Radius": "3958.8 mi",
+      "Orbital Period": "365 days",
+      "Length of a Day": "24hr 0m 0s",
+      "Temperature": "15 C"
     },
     {
       "name": "Moon",
@@ -132,11 +138,11 @@
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/moon.jpg",
       "normalMap": "../assets/textures/moon_normal.jpg",
-	"Type":  "Moon",
-	"Radius": "1,079.6 mi",
-	"Orbital Period": "27.32 days",
-	"Length of a Day": "29.53 days",
-	"Temperature": "-183 C to 106 C"
+      "Type": "Moon",
+      "Radius": "1,079.6 mi",
+      "Orbital Period": "27.32 days",
+      "Length of a Day": "29.53 days",
+      "Temperature": "-183 C to 106 C"
     },
     {
       "name": "Mars",
@@ -158,12 +164,12 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/mars.jpg",
-      "normalMap":  "../assets/textures/mars_normal_john.png",
-	"Type":  "Terrestrial",
-	"Radius": "2106.1 mi",
-	"Orbital Period": "687 days",
-	"Length of a Day": "24hr 37m 0s",
-	"Temperature": "-60 C"
+      "normalMap": "../assets/textures/mars_normal_john.png",
+      "Type": "Terrestrial",
+      "Radius": "2106.1 mi",
+      "Orbital Period": "687 days",
+      "Length of a Day": "24hr 37m 0s",
+      "Temperature": "-60 C"
     },
     {
       "name": "Jupiter",
@@ -185,11 +191,11 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/jupiter.jpg",
-	"Type":  "Gas Giant",
-	"Radius": "43441 mi",
-	"Orbital Period": "12 years",
-	"Length of a Day": "9h 56m 0s",
-	"Temperature": "-145 C"
+      "Type": "Gas Giant",
+      "Radius": "43441 mi",
+      "Orbital Period": "12 years",
+      "Length of a Day": "9h 56m 0s",
+      "Temperature": "-145 C"
     },
     {
       "name": "Saturn",
@@ -211,11 +217,11 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/saturn.jpg",
-	"Type":  "Gas Giant",
-	"Radius": "36184 mi",
-	"Orbital Period": "29 years",
-	"Length of a Day": "10h 42m 0s",
-	"Temperature": "-178 C"
+      "Type": "Gas Giant",
+      "Radius": "36184 mi",
+      "Orbital Period": "29 years",
+      "Length of a Day": "10h 42m 0s",
+      "Temperature": "-178 C"
     },
     {
       "name": "Uranus",
@@ -237,11 +243,11 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/uranus.jpg",
-	"Type":  "Gas Giant",
-	"Radius": "15,759 mi",
-	"Orbital Period": "84 years",
-	"Length of a Day": "17h 14m 0s",
-	"Temperature": "-195 C"
+      "Type": "Gas Giant",
+      "Radius": "15,759 mi",
+      "Orbital Period": "84 years",
+      "Length of a Day": "17h 14m 0s",
+      "Temperature": "-195 C"
     },
     {
       "name": "Neptune",
@@ -263,11 +269,11 @@
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/neptune.jpg",
-	"Type":  "Gas Giant",
-	"Radius": "15299 mi",
-	"Orbital Period": "165 years",
-	"Length of a Day": "16h 6m 0s",
-	"Temperature": "-220 C"
+      "Type": "Gas Giant",
+      "Radius": "15299 mi",
+      "Orbital Period": "165 years",
+      "Length of a Day": "16h 6m 0s",
+      "Temperature": "-220 C"
     }
 
   ],
@@ -283,7 +289,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 1e2
+      "intensity": 5e6
     }
   ]
 }
