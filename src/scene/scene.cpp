@@ -155,7 +155,7 @@ void Scene::registerObjectToScene(Object* obj) {
   std::vector<glm::mat4> modelData = getModelMatrices(obj);
 
   // Determine if an SSBO has been created for these instances
-  auto& sameInstances = m_objects_map.find(instanceGroupKey);
+  auto const& sameInstances = m_objects_map.find(instanceGroupKey);
   unsigned int offset = 0;
   unsigned int SSBO;
 

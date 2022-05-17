@@ -121,7 +121,7 @@ void ScreenManager::calculateExposure(float deltaT) {
   // Move toward this luminance from previous luminance
   // Exposure should take 5 seconds to adjust
   float exposureSpeed = deltaT / 3.0f;
-  float a = exposureSpeed * (1.0f / exposure) * std::fabsf(exposure - m_prevExposure);
+  float a = exposureSpeed * (1.0f / exposure) * std::fabs(exposure - m_prevExposure);
   exposure = m_prevExposure * (1 - a) + exposure * a;
   exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 1e-8f, 1e8f);
   m_prevExposure = exposure;
