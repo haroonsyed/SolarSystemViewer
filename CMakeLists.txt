@@ -13,7 +13,7 @@ execute_process(COMMAND ../vcpkg/bootstrap-vcpkg.sh -disableMetrics)
 execute_process(COMMAND ../vcpkg/vcpkg install glew:x64-linux glfw3:x64-linux glm:x64-linux nlohmann-json:x64-linux freetype:x64-linux)
 ELSE()
 message("Running on Windows")
-execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\bootstrap-vcpkg.bat -disableMetrics freetype:x64-windows")
+execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\bootstrap-vcpkg.bat -disableMetrics")
 execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\vcpkg install glew:x64-windows glfw3:x64-windows glm:x64-windows nlohmann-json:x64-windows freetype:x64-windows")
 ENDIF()
 
@@ -35,14 +35,17 @@ file(GLOB_RECURSE SRC
 )
 add_executable(main ${SRC})
 
+find_package(freetype CONFIG REQUIRED)
+target_link_libraries(main PRIVATE freetype)
+
 find_package(GLEW REQUIRED)
 target_link_libraries(main PRIVATE GLEW::GLEW)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(main PRIVATE glfw)
 
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(main PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(main PRIVATE glm::glm)
 
-find_package(freetype CONFIG REQUIRED)
-target_link_libraries(main PRIVATE freetype)
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
