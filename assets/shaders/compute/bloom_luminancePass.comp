@@ -21,22 +21,21 @@ void main() {
   float threshold = luminance * 2.0;
 
   ivec2 pixelPosition = ivec2(gl_GlobalInvocationID.xy);
-  vec4 pixelRaw = imageLoad(hdrImage, pixelPosition);
-  vec3 pixelColor = pixelRaw.xyz;
 
-  // According to CIE xyY color space
-  float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
+  if(pixelPosition.x <= width && pixelPosition.y <= height) {  
+    vec4 pixelRaw = imageLoad(hdrImage, pixelPosition);
+    vec3 pixelColor = pixelRaw.xyz;
 
-  if(internalLuminance > threshold) {
-    imageStore(blurBuffer, pixelPosition, pixelRaw );
-  } 
-  else {
-    imageStore(blurBuffer, pixelPosition, ivec4(0,0,0,0) );
+    // According to CIE xyY color space
+    float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
+
+    if(internalLuminance > threshold) {
+      imageStore(blurBuffer, pixelPosition, pixelRaw );
+    } 
+    else {
+      imageStore(blurBuffer, pixelPosition, vec4(0,0,0,0) );
+    }
   }
-  barrier();
-
-  // Now blur everything in the blurBuffer
-
 
 }
 

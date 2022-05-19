@@ -37,9 +37,9 @@ void ScreenManager::genScreenSSBO() {
   const unsigned int width = config->getScreenWidth();
   const unsigned int height = config->getScreenHeight();
   const unsigned int percentRangeFromCenterForLuminanceCalc = config->getAutoExposureRange() * 100;
-  std::vector<GLuint> data = { 0, width, height, percentRangeFromCenterForLuminanceCalc };
+  std::vector<GLuint> data = { 0, width, height, percentRangeFromCenterForLuminanceCalc, 0 };
 
-  unsigned int ssboSizeBytes = 4 * sizeof(GLuint); // Luminance, Width, Height, Range
+  unsigned int ssboSizeBytes = 5 * sizeof(GLuint); // Luminance, Width, Height, Range, isXPass
 
   glGenBuffers(1, &m_screenSSBO);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_screenSSBO);
@@ -109,8 +109,11 @@ float ScreenManager::calculateLuminance() {
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
   shaderManager->bindComputeShader("../assets/shaders/compute/calculateLuminance.comp");
-  unsigned int workerGroupSize = 32;
-  glDispatchCompute(rangeX / workerGroupSize, rangeY / workerGroupSize, 1);
+  float workGroupSize = 32;
+
+  unsigned int workGroupSize_X = std::ceil(rangeX / workGroupSize);
+  unsigned int workGroupSize_Y = std::ceil(rangeY / workGroupSize);
+  glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
   glMemoryBarrier(GL_SHADER_STORAGE_BUFFER);
 
   float luminance = 0.0f;
@@ -119,7 +122,7 @@ float ScreenManager::calculateLuminance() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_screenSSBO);
   glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(unsigned int), &luminanceRaw);
 
-  luminance = static_cast<float>(luminanceRaw) / (static_cast<float>(rangeX) * rangeY / (workerGroupSize * workerGroupSize));
+  luminance = static_cast<float>(luminanceRaw) / (static_cast<float>(rangeX) * rangeY / (workGroupSize * workGroupSize));
   luminance *= std::log(1.0 + luminance);
 
   // Write averaged luminance back into buffer
@@ -165,14 +168,27 @@ void ScreenManager::applyBloom() {
     return;
   }
 
-  glBindImageTexture(2, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+  glBindImageTexture(2, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
   glBindImageTexture(3, m_screenBloomTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
-  shaderManager->bindComputeShader("../assets/shaders/compute/applyBloom.comp");
-  unsigned int workerGroupSize = 32;
-  glDispatchCompute(width / workerGroupSize, height / workerGroupSize, 1);
-  glMemoryBarrier(GL_SHADER_STORAGE_BUFFER);
+  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_luminancePass.comp");
+  float workGroupSize = 32;
+
+  unsigned int workGroupSize_X = std::ceil(width / workGroupSize);
+  unsigned int workGroupSize_Y = std::ceil(height / workGroupSize);
+
+  glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
+  glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+
+  int bloomStrength = 5;
+  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur.comp");
+  for (int i = 1; i <= 2 * bloomStrength; i++) {
+    int isXPass = i % 2;
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(GLint), sizeof(GLint), &isXPass);
+    glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+  }
 
 }
 
@@ -198,6 +214,8 @@ void ScreenManager::renderToScreen(float deltaT) {
   m_screenQuad.bind();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, m_screenHDRTexture);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTexture);
 
   glEnable(GL_BLEND); // Blend with background (or skybox)
   glDisable(GL_DEPTH_TEST);
