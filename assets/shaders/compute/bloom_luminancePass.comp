@@ -12,8 +12,8 @@ layout(std140, binding = 1) buffer screenData {
   uint percentRangeFromCenterForLuminanceCalc;
 
 };
-layout (rgba32f, binding = 2) uniform image2D hdrImage;
-layout (rgba32f, binding = 3) uniform image2D blurBuffer;
+layout (rgba16f, binding = 2) uniform image2D hdrImage;
+layout (rgba16f, binding = 3) uniform image2D blurBuffer;
 
 void main() {
 
@@ -22,20 +22,20 @@ void main() {
 
   ivec2 pixelPosition = ivec2(gl_GlobalInvocationID.xy);
 
-  if(pixelPosition.x <= width && pixelPosition.y <= height) {  
-    vec4 pixelRaw = imageLoad(hdrImage, pixelPosition);
-    vec3 pixelColor = pixelRaw.xyz;
+  // We are doing the first downsample here (using quarter resolution)
+  vec4 pixelRaw = imageLoad(hdrImage, pixelPosition * 2);
+  vec3 pixelColor = pixelRaw.xyz;
 
-    // According to CIE xyY color space
-    float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
+  // According to CIE xyY color space
+  float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
 
-    if(internalLuminance > threshold) {
-      imageStore(blurBuffer, pixelPosition, pixelRaw );
-    } 
-    else {
-      imageStore(blurBuffer, pixelPosition, vec4(0,0,0,0) );
-    }
+  if(internalLuminance > threshold) {
+    imageStore(blurBuffer, pixelPosition, pixelRaw );
+  } 
+  else {
+    imageStore(blurBuffer, pixelPosition, vec4(0,0,0,0) );
   }
+  
 
 }
 

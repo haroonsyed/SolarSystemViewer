@@ -13,7 +13,7 @@ layout(std140, binding = 1) buffer screenData {
 
 };
 
-layout (rgba32f, binding = 2) uniform image2D hdrImage;
+layout (rgba16f, binding = 2) uniform image2D hdrImage;
 
 shared uint workGroupAverageLuminance; // * 100 float value
 

@@ -12,7 +12,7 @@
   "phongExponent": 50.0,
   "kc": 1.0,
   "kl": 1.0,
-  "kq": 0.000007,
+  "kq": 7e-6,
   "GravBodies": [
     {
       "name": "Sun",
