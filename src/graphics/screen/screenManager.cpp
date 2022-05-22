@@ -62,11 +62,20 @@ void ScreenManager::generateFrameBuffers() {
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
   glGenTextures(4, &m_screenBloomTextures[0]);
-  for (int i = 0; i < m_screenBloomTextures.size(); i++) {
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[0]);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> 1, height >> 1, 0, GL_RGBA, GL_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  for (int i = 1; i < m_screenBloomTextures.size(); i++) {
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> i, height >> i, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
@@ -171,7 +180,7 @@ void ScreenManager::applyBloom() {
   }
 
   glBindImageTexture(2, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
-  glBindImageTexture(3, m_screenBloomTextures[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+  glBindImageTexture(3, m_screenBloomTextures[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
   shaderManager->bindComputeShader("../assets/shaders/compute/bloom_luminancePass.comp");
@@ -192,14 +201,12 @@ void ScreenManager::applyBloom() {
     int inputTexLocation = mipMapLevel;
     int outputTexLocation = mipMapLevel + 1;
     glBindImageTexture(2, m_screenBloomTextures[inputTexLocation], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
-    glBindImageTexture(3, m_screenBloomTextures[outputTexLocation], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glBindImageTexture(3, m_screenBloomTextures[outputTexLocation], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
 
-    for (int i = 0; i < 2; i++) {
-      unsigned int blurPassCount = mipMapLevel * 2 + i;
-      glBufferSubData(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(GLint), sizeof(GLint), &blurPassCount);
-      glDispatchCompute(workGroupSize_X >> mipMapLevel, workGroupSize_Y >> mipMapLevel, 1);
-      glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    }
+    int blurPassCount = 2 * mipMapLevel;
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(GLint), sizeof(GLint), &blurPassCount);
+    glDispatchCompute(workGroupSize_X >> mipMapLevel, workGroupSize_Y >> mipMapLevel, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
   }
 
@@ -234,6 +241,8 @@ void ScreenManager::renderToScreen(float deltaT) {
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[3]);
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[4]);
+  glActiveTexture(GL_TEXTURE5);
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[0]);
 
   glEnable(GL_BLEND); // Blend with background (or skybox)
   glDisable(GL_DEPTH_TEST);

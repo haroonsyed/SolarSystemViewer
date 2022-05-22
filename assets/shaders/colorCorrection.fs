@@ -8,6 +8,7 @@ layout(binding = 1) uniform sampler2D bloomTexture1;
 layout(binding = 2) uniform sampler2D bloomTexture2;
 layout(binding = 3) uniform sampler2D bloomTexture3;
 layout(binding = 4) uniform sampler2D bloomTexture4;
+layout(binding = 5) uniform sampler2D lightPass;
 
 uniform float exposure;
 
@@ -16,7 +17,7 @@ void main()
   vec4 bloomColor = texture(bloomTexture1, uvCoord) + texture(bloomTexture2, uvCoord) + texture(bloomTexture3, uvCoord) + texture(bloomTexture4, uvCoord);
   bloomColor /= 4;
   vec4 pixelColor = texture(screenTexture, uvCoord) + bloomColor;
-  //vec4 pixelColor = texture(bloomTexture, uvCoord);
+  //vec4 pixelColor = texture(bloomTexture4, uvCoord);
 
   // Perform hdr tone-mapping
   const float gamma = 2.2;

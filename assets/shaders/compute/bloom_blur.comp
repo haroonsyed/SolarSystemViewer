@@ -16,12 +16,16 @@ layout(std140, binding = 1) buffer screenData {
 layout (rgba16f, binding = 2) uniform image2D inputBlurBuffer;
 layout (rgba16f, binding = 3) uniform image2D outputBlurBuffer;
 
+bool isWithinBounds(ivec2 samplePixelPositionOffset, ivec2 out_img_size) {
+  return samplePixelPositionOffset.x >= 0 && samplePixelPositionOffset.y >= 0 && 
+         samplePixelPositionOffset.x <= out_img_size.x && samplePixelPositionOffset.x <= out_img_size.y;
+}
+
 void main() {
 
 
   uint mipMapLevel = 1 + (blurPassCount / 2);
-  uint out_img_width = width >> mipMapLevel;
-  uint out_img_height = height >> mipMapLevel;
+  ivec2 out_img_size = imageSize(outputBlurBuffer);
 
   ivec2 pixelPosition = ivec2(gl_GlobalInvocationID.xy);
 
@@ -29,28 +33,25 @@ void main() {
   // If mipMapLevel==1 then we don't need to downsample (done already in luminancePass)
   ivec2 samplePixelPosition = mipMapLevel != 1 ? 2 * pixelPosition : pixelPosition; 
 
-  if(pixelPosition.x < out_img_width && pixelPosition.y < out_img_height) {
+  if(pixelPosition.x <= out_img_size.x && pixelPosition.y <= out_img_size.y) {
 
     // B in the blurBuffer
     int blurSize = 5;
 
     vec4 tempColor = vec4(0,0,0,0);
-    bool isXPass = blurPassCount % 2 == 1;
+    uint numOfValidPixels = 0;
 
-    if(isXPass) {
-      for(int j=1; j<=blurSize; j++) {
-        tempColor += imageLoad(inputBlurBuffer, samplePixelPosition + ivec2(j, 0));
-        tempColor += imageLoad(inputBlurBuffer, samplePixelPosition - ivec2(j, 0));
-      }
-    }
-    else{
-      for(int j=1; j<=blurSize; j++) {
-        tempColor += imageLoad(inputBlurBuffer, samplePixelPosition + ivec2(0, j)) ;
-        tempColor +=  imageLoad(inputBlurBuffer, samplePixelPosition - ivec2(0, j)) ;
+    for(int i=-blurSize; i<=blurSize; i++) {
+      for(int j=-blurSize; j<=blurSize; j++) {
+        ivec2 samplePixelPositionOffset = samplePixelPosition + ivec2(i, j);
+        //if(isWithinBounds(samplePixelPositionOffset,out_img_size)) {
+          tempColor += imageLoad(inputBlurBuffer, samplePixelPositionOffset);
+          numOfValidPixels++;
+        //}
       }
     }
 
-    tempColor /= 2 * blurSize;
+    tempColor /= numOfValidPixels;
 
     imageStore(outputBlurBuffer, pixelPosition, tempColor);
 
