@@ -1,22 +1,18 @@
 {
-  "PhysicsDistanceFactor": 1e6,
-  "PhysicsMassFactor": 1e6,
-  "UniverseScaleFactor": 40.0,
+  "SIUnitScaleFactor" :  1e10,
+  "UniverseScaleFactor": 1.0,
   "CameraPosition": {
     "x": 0.0,
     "y": 0.0,
     "z": 3e11
   },
-  "ambientStrength": 0.1,
-  "specularStrength": 0.1,
-  "phongExponent": 50.0,
-  "kc": 1.0,
-  "kl": 1.0,
-  "kq": 7e-6,
+  "ambientStrength": 1e-3,
+  "specularStrength": 0.3,
+  "phongExponent": 100.0,
   "GravBodies": [
     {
       "name": "Sun",
-      "radius": 395700e3,
+      "radius": 696340e3,
       "mass": 1.99e30,
       "position": {
         "x": 0.0,
@@ -289,7 +285,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 5e6
+      "intensity": 1.0
     }
   ]
 }

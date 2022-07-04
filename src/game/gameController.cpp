@@ -162,7 +162,7 @@ void GameController::updateFocusedPlanet() {
 
       camera->setUp(glm::vec3(0.0f, 0.0f, 1.0f));
 
-      float physicsDistanceFactor = physicsSystem->getPhysicsDistanceFactor();
+      float physicsDistanceFactor = physicsSystem->getSIUnitScaleFactor();
       float universeScaleFactor = m_boundScene->getUniverseScaleFactor();
 
       glm::vec3 scaledTargetPos = target->getPosition() / universeScaleFactor;

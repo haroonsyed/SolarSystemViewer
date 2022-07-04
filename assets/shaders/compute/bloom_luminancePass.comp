@@ -15,6 +15,11 @@ layout(std140, binding = 1) buffer screenData {
 layout (rgba16f, binding = 2) uniform image2D hdrImage;
 layout (rgba16f, binding = 3) uniform image2D blurBuffer;
 
+bool isWithinBounds(ivec2 samplePixelPositionOffset, ivec2 img_size) {
+  return samplePixelPositionOffset.x >= 0 && samplePixelPositionOffset.y >= 0 && 
+         samplePixelPositionOffset.x <= img_size.x && samplePixelPositionOffset.y < img_size.y;
+}
+
 void main() {
 
   // Use all light above threshold for bloom
@@ -29,13 +34,16 @@ void main() {
   // According to CIE xyY color space
   float internalLuminance = pixelColor.x * 0.4125 + pixelColor.y * 0.3154 + pixelColor.z * 0.2721;
 
-  if(internalLuminance > threshold) {
-    imageStore(blurBuffer, pixelPosition, pixelRaw );
-  } 
-  else {
-    imageStore(blurBuffer, pixelPosition, vec4(0,0,0,0) );
-  }
+  if(isWithinBounds(pixelPosition, imageSize(blurBuffer))) {
   
+    if(internalLuminance > threshold) {
+      imageStore(blurBuffer, pixelPosition, pixelRaw );
+    } 
+    else {
+      imageStore(blurBuffer, pixelPosition, vec4(0,0,0,0) );
+    }
+  
+  }
 
 }
 

@@ -13,8 +13,8 @@ class GravBody : public Object {
 
 	public:
 	  GravBody();
-		GravBody(float physicsDistanceFactor, float physicsMassFactor, nlohmann::json jsonData);
-		void setParamsFromJSON(float physicsDistanceFactor, float physicsMassFactor, nlohmann::json jsonData);
+		GravBody(float SIUnitScaleFactor, nlohmann::json jsonData);
+		void setParamsFromJSON(float SIUnitScaleFactor, nlohmann::json jsonData);
 	  glm::vec3 getVelocity();
 	  void setVelocity(float x, float y, float z);
 	  void setVelocity(glm::vec3 velocity);

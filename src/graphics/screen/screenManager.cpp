@@ -61,7 +61,7 @@ void ScreenManager::generateFrameBuffers() {
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-  glGenTextures(4, &m_screenBloomTextures[0]);
+  glGenTextures(m_screenBloomTextures.size(), &m_screenBloomTextures[0]);
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[0]);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> 1, height >> 1, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -69,10 +69,10 @@ void ScreenManager::generateFrameBuffers() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glBindTexture(GL_TEXTURE_2D, 0);
-  for (int i = 1; i < m_screenBloomTextures.size(); i++) {
+  for (unsigned int i = 1; i < m_screenBloomTextures.size(); i++) {
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> i, height >> i, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -156,16 +156,14 @@ void ScreenManager::calculateExposure(float deltaT, float luminance) {
   float exposure = exposureControl / (luminance);
 
   // Move toward this luminance from previous luminance
-  // Exposure should take 5 seconds to adjust
   float exposureSpeed = deltaT / 3.0f;
   float a = exposureSpeed * (1.0f / exposure) * std::fabs(exposure - m_prevExposure);
   exposure = m_prevExposure * (1 - a) + exposure * a;
   exposure = glm::isnan(exposure) ? 1.0f : glm::clamp(exposure, 1e-8f, 1e8f);
   m_prevExposure = exposure;
 
-  //std::cout << "Luminance Raw: " << luminanceRaw << std::endl;
-  //std::cout << "Luminance: " << luminance << std::endl;
-  //std::cout << "Exposure: " << exposure << std::endl;
+  std::cout << "Luminance: " << luminance << std::endl;
+  std::cout << "Exposure: " << exposure << std::endl;
 
 }
 
@@ -227,7 +225,7 @@ void ScreenManager::clearScreenBuffer() {
 void ScreenManager::renderToScreen(float deltaT) {
   float luminance = calculateLuminance();
   calculateExposure(deltaT, luminance);
-  applyBloom();
+  //applyBloom();
 
   // Bind the quad to render screen texture on
   m_screenQuad.bind();

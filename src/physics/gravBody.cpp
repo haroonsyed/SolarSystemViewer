@@ -9,24 +9,24 @@ GravBody::GravBody() {
   m_mass = 1.0f;
   m_rotationSpeed = 1.0f;
 }
-GravBody::GravBody(float physicsDistanceFactor, float physicsMassFactor, json jsonData) {
-  setParamsFromJSON(physicsDistanceFactor, physicsMassFactor, jsonData);
+GravBody::GravBody(float SIUnitScaleFactor, json jsonData) {
+  setParamsFromJSON(SIUnitScaleFactor, jsonData);
 }
-void GravBody::setParamsFromJSON(float physicsDistanceFactor, float physicsMassFactor, json jsonData) {
+void GravBody::setParamsFromJSON(float SIUnitScaleFactor, json jsonData) {
   std::string name = jsonData["name"].get<std::string>();
   setName(name);
   addPlanetInfo(name);
-  setScale(jsonData["radius"].get<float>() / physicsDistanceFactor);
-  setMass(jsonData["mass"].get<float>() / physicsMassFactor);
+  setScale(jsonData["radius"].get<float>() / SIUnitScaleFactor);
+  setMass(jsonData["mass"].get<float>() / SIUnitScaleFactor);
   setPosition(
-    jsonData["position"]["x"].get<float>() / physicsDistanceFactor,
-    jsonData["position"]["y"].get<float>() / physicsDistanceFactor,
-    jsonData["position"]["z"].get<float>() / physicsDistanceFactor
+    jsonData["position"]["x"].get<float>() / SIUnitScaleFactor,
+    jsonData["position"]["y"].get<float>() / SIUnitScaleFactor,
+    jsonData["position"]["z"].get<float>() / SIUnitScaleFactor
   );
   setVelocity(
-    jsonData["velocity"]["x"].get<float>() / physicsDistanceFactor,
-    jsonData["velocity"]["y"].get<float>() / physicsDistanceFactor,
-    jsonData["velocity"]["z"].get<float>() / physicsDistanceFactor
+    jsonData["velocity"]["x"].get<float>() / SIUnitScaleFactor,
+    jsonData["velocity"]["y"].get<float>() / SIUnitScaleFactor,
+    jsonData["velocity"]["z"].get<float>() / SIUnitScaleFactor
   );
   setTilt(jsonData["tilt"].get<float>());
   setRotationSpeedFromPeriod(jsonData["rotationPeriod"].get<float>()); // Defined in hours!

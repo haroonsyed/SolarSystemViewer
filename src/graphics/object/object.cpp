@@ -3,6 +3,7 @@
 #include "../mesh/meshManager.h"
 #include "../shader/shaderManager.h"
 #include "../texture/textureManager.h"
+#include <iostream>
 
 Object::Object() {
   m_position = glm::vec3(0.0);

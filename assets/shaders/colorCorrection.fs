@@ -17,16 +17,16 @@ void main()
   vec4 bloomColor = texture(bloomTexture1, uvCoord) + texture(bloomTexture2, uvCoord) + texture(bloomTexture3, uvCoord) + texture(bloomTexture4, uvCoord);
   bloomColor /= 4;
   vec4 pixelColor = texture(screenTexture, uvCoord) + bloomColor;
-  //vec4 pixelColor = texture(bloomTexture4, uvCoord);
 
   // Perform hdr tone-mapping
   const float gamma = 2.2;
 
-  // exposure tone mapping
-  vec3 mapped = vec3(1.0) - exp(-pixelColor.rgb * exposure);
+  // tone mapping
+  //vec3 mapped = vec3(1.0) - exp(-pixelColor.rgb * exposure);
+  vec3 mapped = pixelColor.rgb / (pixelColor.rgb + vec3(1.0));
 
   // Gamma correction
-  //mapped = pow(mapped, vec3(1.0 / gamma));
+  mapped = pow(mapped, vec3(1.0 / gamma));
   
   FragColor = vec4(mapped, pixelColor.a);
 

@@ -17,14 +17,11 @@ layout (std140, binding = 0) uniform uniformData
 {
     mat4 view;
     mat4 projection;
-		int lightCount; // How many lights to render for this frame
-		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
 		float ambientStrength;
 		float specularStrength;
 		float phongExponent;
-		float kc;
-		float kl;
-		float kq;
+		int lightCount; // How many lights to render for this frame
+		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
 };
 
 void main()

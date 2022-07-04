@@ -13,14 +13,11 @@ layout (std140, binding = 0) uniform uniformData
 {
     mat4 view;
     mat4 projection;
-		int lightCount; // How many lights to render for this frame
-		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
 		float ambientStrength;
 		float specularStrength;
 		float phongExponent;
-		float kc;
-		float kl;
-		float kq;
+		int lightCount; // How many lights to render for this frame
+		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
 };
 
 uniform bool diffuseMapExists;
@@ -64,16 +61,15 @@ void main()
 		vec3 viewDir = normalize(transformedPos);
 		vec3 h = normalize((-viewDir) + toLight);
 
-		float specularStrengthFinal = dot(normal, toLight) > 0.0 ? 0.1f : 0.0;
-		float phongExp = 50.0f;
+		float specularStrengthFinal = dot(normal, toLight) > 0.0 ? specularStrength : 0.0;
 
 		float diffuseStrength = max(dot(normal,toLight),0);
-		float specular = pow(max(dot(normal,h), 0),phongExp);
+		float specular = pow(max(dot(normal,h), 0),phongExponent);
 
 		vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
 
 		float distance = length(lightPos - transformedPos);
-		float attenuation = 1.0/( kc + kl * distance + kq * distance * distance );
+		float attenuation = 1.0/( 1.0 ); // Should be distance * distance in denom
 		lightStrength *= attenuation;
 		
 		FragColor += lightStrength * ( (ambientStrength + diffuseStrength) * diffuseColor * lightColor + specularStrengthFinal * specular * specularColor );
