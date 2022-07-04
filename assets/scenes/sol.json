@@ -29,7 +29,9 @@
       "meshFilePath": "../assets/models/sphere.obj",
       "vertexShaderPath": "../assets/shaders/default.vs",
       "fragmentShaderPath": "../assets/shaders/default.fs",
-      "diffuseMap": "../assets/textures/sun.jpg"
+      "diffuseMap": "../assets/textures/sun.jpg",
+      "emissiveMap": "../assets/textures/sun_emissive.jpg",
+      "emissiveMapStrength":  1e3
     },
     {
       "name": "Mercury",
@@ -285,7 +287,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 1.0
+      "intensity": 1e3
     }
   ]
 }

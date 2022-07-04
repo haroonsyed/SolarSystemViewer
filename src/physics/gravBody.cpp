@@ -11,18 +11,11 @@ GravBody::GravBody() {
 }
 GravBody::GravBody(float SIUnitScaleFactor, json jsonData) {
   setParamsFromJSON(SIUnitScaleFactor, jsonData);
-}
-void GravBody::setParamsFromJSON(float SIUnitScaleFactor, json jsonData) {
+
+  // Gravbody specific data
   std::string name = jsonData["name"].get<std::string>();
-  setName(name);
   addPlanetInfo(name);
-  setScale(jsonData["radius"].get<float>() / SIUnitScaleFactor);
   setMass(jsonData["mass"].get<float>() / SIUnitScaleFactor);
-  setPosition(
-    jsonData["position"]["x"].get<float>() / SIUnitScaleFactor,
-    jsonData["position"]["y"].get<float>() / SIUnitScaleFactor,
-    jsonData["position"]["z"].get<float>() / SIUnitScaleFactor
-  );
   setVelocity(
     jsonData["velocity"]["x"].get<float>() / SIUnitScaleFactor,
     jsonData["velocity"]["y"].get<float>() / SIUnitScaleFactor,
@@ -30,26 +23,6 @@ void GravBody::setParamsFromJSON(float SIUnitScaleFactor, json jsonData) {
   );
   setTilt(jsonData["tilt"].get<float>());
   setRotationSpeedFromPeriod(jsonData["rotationPeriod"].get<float>()); // Defined in hours!
-  setMesh(jsonData["meshFilePath"].get<std::string>());
-  setShaders(
-    jsonData["vertexShaderPath"].get<std::string>(),
-    jsonData["fragmentShaderPath"].get<std::string>()
-  );
-  if (jsonData.contains("diffuseMap")) {
-    setDiffuseMap(jsonData["diffuseMap"].get<std::string>());
-  }
-  if (jsonData.contains("normalMap")) {
-    setNormalMap(jsonData["normalMap"].get<std::string>());
-  }
-  if (jsonData.contains("specularMap")) {
-    setSpecularMap(jsonData["specularMap"].get<std::string>());
-  }
-  if (jsonData.contains("emissiveMap")) {
-    setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
-  }
-  if (jsonData.contains("isParticle")) {
-    setIsParticle(jsonData["isParticle"].get<bool>());
-  }
   if (jsonData.contains("Type")) {
       addPlanetInfo("Type: " + jsonData["Type"].get<std::string>());
   }
@@ -65,11 +38,8 @@ void GravBody::setParamsFromJSON(float SIUnitScaleFactor, json jsonData) {
   if (jsonData.contains("Temperature")) {
       addPlanetInfo("Temperature: " + jsonData["Temperature"].get<std::string>());
   }
-
-  // Rotate model to begin with north pole facing upward
-  const glm::vec3 defaultRotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
-  rotate( glm::angleAxis( 3.14159f/2 , defaultRotationAxis ) );
 }
+
 glm::vec3 GravBody::getVelocity() {
   return m_velocity;
 }

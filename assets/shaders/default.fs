@@ -20,10 +20,10 @@ layout (std140, binding = 0) uniform uniformData
 		vec4 lights[numLightAttr*maxNumLights / 4];  // Each light has 8 attributes, max of 20 lights / 4 since each is a vec4 for tight packing
 };
 
-uniform bool diffuseMapExists;
-uniform bool normalMapExists;
-uniform bool specularMapExists;
-uniform bool emissiveMapExists;
+uniform float diffuseMapStrength;
+uniform float normalMapStrength;
+uniform float specularMapStrength;
+uniform float emissiveMapStrength;
 
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
@@ -41,7 +41,7 @@ void main()
 
   // Calculate vectors needed for lighting
   vec3 normal = normalize(transformedNorm);
-  if (normalMapExists) {
+  if (normalMapStrength != 0.0) {
 		normal = normalMapData * 2.0 - 1.0; // Make range between -1 and 1 for normal map
 		normal = normalize(TBN * normal);
   }
@@ -66,13 +66,13 @@ void main()
 		float diffuseStrength = max(dot(normal,toLight),0);
 		float specular = pow(max(dot(normal,h), 0),phongExponent);
 
-		vec4 specularColor = specularMapExists ? specularMapData : vec4(1.0);
+		vec4 specularColor = specularMapStrength==0.0 ? specularMapData : vec4(1.0);
 
 		float distance = length(lightPos - transformedPos);
-		float attenuation = 1.0/( 1.0 ); // Should be distance * distance in denom
+		float attenuation = 1.0/( distance * distance ); // Should be distance * distance in denom
 		lightStrength *= attenuation;
 		
 		FragColor += lightStrength * ( (ambientStrength + diffuseStrength) * diffuseColor * lightColor + specularStrengthFinal * specular * specularColor );
   }
-
+	FragColor += emissiveMapData * emissiveMapStrength;
 };

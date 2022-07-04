@@ -38,7 +38,7 @@ std::string TextureManager::getMapTypeFromLocation(int location) {
 	}
 }
 
-void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
+void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths, std::vector<float>& textureStrengths) {
 
 	unsigned int shaderID = ShaderManager::getInstance()->getBoundShader();
 
@@ -46,12 +46,12 @@ void TextureManager::bindTextures(std::vector<std::string>& textureFilePaths) {
 
 		std::string path = textureFilePaths[i];
 		std::string textureType = getMapTypeFromLocation(i);
-		std::string existsUniformName = textureType + "Exists";
+		std::string uniformStrength = textureType + "Strength";
 
-		int existsLoc = glGetUniformLocation(shaderID, existsUniformName.c_str());
+		int strengthLoc = glGetUniformLocation(shaderID, uniformStrength.c_str());
 
 		unsigned int isEmpty = path.empty();
-		glUniform1i(existsLoc, !isEmpty);
+		glUniform1f(strengthLoc, isEmpty ? 0.0f : textureStrengths[i]);
 
 		if (isEmpty) {
 			// No texture, continue to next one

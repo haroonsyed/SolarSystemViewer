@@ -22,8 +22,8 @@ void main()
   const float gamma = 2.2;
 
   // tone mapping
-  //vec3 mapped = vec3(1.0) - exp(-pixelColor.rgb * exposure);
-  vec3 mapped = pixelColor.rgb / (pixelColor.rgb + vec3(1.0));
+  vec3 mapped = vec3(1.0) - exp(-pixelColor.rgb * exposure);
+  //vec3 mapped = pixelColor.rgb / (pixelColor.rgb + vec3(1.0));
 
   // Gamma correction
   mapped = pow(mapped, vec3(1.0 / gamma));
