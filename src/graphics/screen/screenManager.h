@@ -10,7 +10,7 @@ private:
   Object m_screenQuad;
   unsigned int m_screenFBO;
   unsigned int m_screenHDRTexture;
-  std::vector<unsigned int> m_screenBloomTextures = {0,0,0,0,0}; // Reserve 5 uints for bloom textures (1st is brightPass)
+  std::vector<unsigned int> m_screenBloomTextures = {0,0,0,0}; 
   unsigned int m_screenSSBO;
   float m_prevExposure;
   ScreenManager();

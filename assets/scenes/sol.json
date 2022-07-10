@@ -4,7 +4,7 @@
   "CameraPosition": {
     "x": 0.0,
     "y": 0.0,
-    "z": 3e11
+    "z": 3e10
   },
   "ambientStrength": 1e-3,
   "specularStrength": 0.3,
@@ -31,7 +31,7 @@
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/sun.jpg",
       "emissiveMap": "../assets/textures/sun_emissive.jpg",
-      "emissiveMapStrength":  1e3
+      "emissiveMapStrength":  1e1
     },
     {
       "name": "Mercury",

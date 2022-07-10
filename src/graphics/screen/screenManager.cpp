@@ -61,31 +61,14 @@ void ScreenManager::generateFrameBuffers() {
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-  glGenTextures(m_screenBloomTextures.size(), &m_screenBloomTextures[0]);
-  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[0]);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> 1, height >> 1, 0, GL_RGBA, GL_FLOAT, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  for (unsigned int i = 1; i < m_screenBloomTextures.size(); i++) {
-    glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> i, height >> i, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
-  }
-
   glGenTextures(1, &m_screenHDRTexture);
   glBindTexture(GL_TEXTURE_2D, m_screenHDRTexture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_screenHDRTexture, 0);
-  glBindTexture(GL_TEXTURE_2D, 0);
 
   // Create render buffer for depth and stencil data
   unsigned int rbo;
@@ -94,6 +77,19 @@ void ScreenManager::generateFrameBuffers() {
   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
   glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  // Create the mipmap levels for bloom
+  // Change to actually use mipmaps instead of different textures...
+  glGenTextures(m_screenBloomTextures.size(), &m_screenBloomTextures[0]);
+  for (unsigned int i = 0; i < m_screenBloomTextures.size(); i++) {
+    glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> (i+1), height >> (i + 1), 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
   
 }
 
@@ -169,43 +165,44 @@ void ScreenManager::calculateExposure(float deltaT, float luminance) {
 
 void ScreenManager::applyBloom() {
 
+  ShaderManager* shaderManager = ShaderManager::getInstance();
   Config* config = Config::getInstance();
-  auto width = config->getScreenWidth();
-  auto height = config->getScreenHeight();
 
   if (!config->getBloomEnabled()) {
     return;
   }
 
-  glBindImageTexture(2, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
-  glBindImageTexture(3, m_screenBloomTextures[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-
-  ShaderManager* shaderManager = ShaderManager::getInstance();
-  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_luminancePass.comp");
+  auto width = config->getScreenWidth();
+  auto height = config->getScreenHeight();
 
   float workGroupSize = 32;
-  int numOfMipMaps = 4;
+  int numOfMipMaps = m_screenBloomTextures.size();
+  unsigned int workGroupSize_X = std::ceil(width / workGroupSize);
+  unsigned int workGroupSize_Y = std::ceil(height / workGroupSize);
 
-  // The luminance pass will do our resolution decrease as well, hence the div2
-  unsigned int workGroupSize_X = std::ceil(width / workGroupSize / 2);
-  unsigned int workGroupSize_Y = std::ceil(height / workGroupSize / 2);
-
-  glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
-  glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
-  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur.comp");
+  
+  // Downsample hdr buffer into its mipmaps
+  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_downsample.comp");
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_screenHDRTexture);
   for (int mipMapLevel = 0; mipMapLevel < numOfMipMaps; mipMapLevel++) {
-    // Set the input and output textures
-    int inputTexLocation = mipMapLevel;
-    int outputTexLocation = mipMapLevel + 1;
-    glBindImageTexture(2, m_screenBloomTextures[inputTexLocation], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F);
-    glBindImageTexture(3, m_screenBloomTextures[outputTexLocation], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    if (mipMapLevel > 0) {
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel-1]);
+    }
+    glBindImageTexture(3, m_screenBloomTextures[mipMapLevel], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+    glDispatchCompute(workGroupSize_X >> (mipMapLevel), workGroupSize_Y >> (mipMapLevel), 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+  }
 
-    int blurPassCount = 2 * mipMapLevel;
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(GLint), sizeof(GLint), &blurPassCount);
-    glDispatchCompute(workGroupSize_X >> mipMapLevel, workGroupSize_Y >> mipMapLevel, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-
+  // Now upsample and blur back up
+  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur_upsample.comp");
+  for (int mipMapLevel = numOfMipMaps-1; mipMapLevel > 0; mipMapLevel--) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel]);
+    glBindImageTexture(3, m_screenBloomTextures[mipMapLevel-1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
+    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
   }
 
 }
@@ -223,24 +220,22 @@ void ScreenManager::clearScreenBuffer() {
 }
 
 void ScreenManager::renderToScreen(float deltaT) {
-  float luminance = calculateLuminance();
-  calculateExposure(deltaT, luminance);
-  //applyBloom();
+  //float luminance = calculateLuminance();
+  //calculateExposure(deltaT, luminance);
+  applyBloom();
 
   // Bind the quad to render screen texture on
   m_screenQuad.bind();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, m_screenHDRTexture);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[1]);
-  glActiveTexture(GL_TEXTURE2);
-  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[2]);
-  glActiveTexture(GL_TEXTURE3);
-  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[3]);
-  glActiveTexture(GL_TEXTURE4);
-  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[4]);
-  glActiveTexture(GL_TEXTURE5);
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[0]);
+  glActiveTexture(GL_TEXTURE2);
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[1]);
+  glActiveTexture(GL_TEXTURE3);
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[2]);
+  glActiveTexture(GL_TEXTURE4);
+  glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[3]);
 
   glEnable(GL_BLEND); // Blend with background (or skybox)
   glDisable(GL_DEPTH_TEST);
