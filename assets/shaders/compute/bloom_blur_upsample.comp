@@ -48,10 +48,9 @@ void main() {
   upsample += (a+c+g+i);
   upsample *= 1.0 / 16.0;
 
-  vec3 original = imageLoad(outputTexture, pixelPosition).rgb;
-  vec3 final = original + upsample;
+  vec3 test = vec3(1.0,0.0,0.0);
 
-  imageStore(outputTexture, pixelPosition, vec4(final, 1.0)); // Store outside image bound will do nothing :D
+  imageStore(outputTexture, pixelPosition, vec4(upsample, 1.0)); // Store outside image bound will do nothing :D
 
 }
 

@@ -83,7 +83,7 @@ void ScreenManager::generateFrameBuffers() {
   glGenTextures(m_screenBloomTextures.size(), &m_screenBloomTextures[0]);
   for (unsigned int i = 0; i < m_screenBloomTextures.size(); i++) {
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> (i+1), height >> (i + 1), 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> (i + 1), height >> (i + 1), 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -172,10 +172,10 @@ void ScreenManager::applyBloom() {
     return;
   }
 
-  auto width = config->getScreenWidth();
-  auto height = config->getScreenHeight();
+  const unsigned int width = config->getScreenWidth();
+  const unsigned int height = config->getScreenHeight();
 
-  float workGroupSize = 32;
+  float workGroupSize = 32.0f;
   int numOfMipMaps = m_screenBloomTextures.size();
   unsigned int workGroupSize_X = std::ceil(width / workGroupSize);
   unsigned int workGroupSize_Y = std::ceil(height / workGroupSize);
@@ -190,19 +190,46 @@ void ScreenManager::applyBloom() {
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel-1]);
     }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindImageTexture(3, m_screenBloomTextures[mipMapLevel], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
-    glDispatchCompute(workGroupSize_X >> (mipMapLevel), workGroupSize_Y >> (mipMapLevel), 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+
+    const unsigned int adjustedGroupSize_X = std::ceil( (width >> (mipMapLevel + 1)) / 32.0f);
+    const unsigned int adjustedGroupSize_Y = std::ceil( (height >> (mipMapLevel + 1)) / 32.0f);
+
+    if (adjustedGroupSize_X > 0 && adjustedGroupSize_Y > 0) {
+      glDispatchCompute(adjustedGroupSize_X, adjustedGroupSize_Y, 1);
+      glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+    }
   }
 
   // Now upsample and blur back up
   shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur_upsample.comp");
-  for (int mipMapLevel = numOfMipMaps-1; mipMapLevel > 0; mipMapLevel--) {
+  for (int mipMapLevel = numOfMipMaps-1; mipMapLevel >= 0; mipMapLevel--) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (mipMapLevel > 0) {
+
     glBindImageTexture(3, m_screenBloomTextures[mipMapLevel-1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
-    glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+    }
+    else {
+      glBindImageTexture(3, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
+    }
+
+    const unsigned int adjustedGroupSize_X = std::ceil((width >> (mipMapLevel)) / 32.0f);
+    const unsigned int adjustedGroupSize_Y = std::ceil((height >> (mipMapLevel)) / 32.0f);
+
+    if (adjustedGroupSize_X > 0 && adjustedGroupSize_Y > 0) {
+      glDispatchCompute(adjustedGroupSize_X, adjustedGroupSize_Y, 1);
+      glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT);
+    }
+
   }
 
 }
@@ -237,7 +264,7 @@ void ScreenManager::renderToScreen(float deltaT) {
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[3]);
 
-  glEnable(GL_BLEND); // Blend with background (or skybox)
+  //glEnable(GL_BLEND); // Blend with background (or skybox)
   glDisable(GL_DEPTH_TEST);
 
   // Render the frame on the quad with post processing

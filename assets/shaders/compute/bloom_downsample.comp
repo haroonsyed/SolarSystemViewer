@@ -65,7 +65,7 @@ void main() {
   downsample = max(downsample, 0.0001f); // Avoid 0 multiplications causing artifacts
 
   // Write downsample to output
-  vec3 test = vec3(1.0,0.0,0.0);
+  vec3 test = vec3(0.0,1.0,0.0);
   imageStore(outputTexture, pixelPosition, vec4(downsample, 1.0)); // Store outside image bound will do nothing :D
 
 }
