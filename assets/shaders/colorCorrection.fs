@@ -15,7 +15,7 @@ uniform float exposure;
 void main()
 {
 
-  float bloomStrength = 0.05;
+  float bloomStrength = 0.04;
 
   vec4 hdrColor = texture(screenTexture, uvCoord);
   vec4 blurColor = texture(bloomTexture0, uvCoord);

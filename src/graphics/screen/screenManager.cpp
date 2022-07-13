@@ -83,7 +83,7 @@ void ScreenManager::generateFrameBuffers() {
   glGenTextures(m_screenBloomTextures.size(), &m_screenBloomTextures[0]);
   for (unsigned int i = 0; i < m_screenBloomTextures.size(); i++) {
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[i]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> (i + 1), height >> (i + 1), 0, GL_RGBA, GL_FLOAT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width >> (i), height >> (i), 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -184,20 +184,24 @@ void ScreenManager::applyBloom() {
   // Downsample hdr buffer into its mipmaps
   shaderManager->bindComputeShader("../assets/shaders/compute/bloom_downsample.comp");
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, m_screenHDRTexture);
-  for (int mipMapLevel = 0; mipMapLevel < numOfMipMaps; mipMapLevel++) {
-    if (mipMapLevel > 0) {
-      glActiveTexture(GL_TEXTURE0);
-      glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel-1]);
-    }
+
+   
+  // Copy hdrRender into bloom level 0
+  glCopyImageSubData(m_screenHDRTexture, GL_TEXTURE_2D, 0, 0, 0, 0, 
+                    m_screenBloomTextures[0], GL_TEXTURE_2D, 0, 0, 0, 0,
+                    width, height, 1);
+
+  for (int mipMapLevel = 1; mipMapLevel < numOfMipMaps; mipMapLevel++) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel - 1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindImageTexture(3, m_screenBloomTextures[mipMapLevel], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
-    const unsigned int adjustedGroupSize_X = std::ceil( (width >> (mipMapLevel + 1)) / 32.0f);
-    const unsigned int adjustedGroupSize_Y = std::ceil( (height >> (mipMapLevel + 1)) / 32.0f);
+    const unsigned int adjustedGroupSize_X = std::ceil( (width >> (mipMapLevel)) / 32.0f);
+    const unsigned int adjustedGroupSize_Y = std::ceil( (height >> (mipMapLevel)) / 32.0f);
 
     if (adjustedGroupSize_X > 0 && adjustedGroupSize_Y > 0) {
       glDispatchCompute(adjustedGroupSize_X, adjustedGroupSize_Y, 1);
@@ -207,23 +211,17 @@ void ScreenManager::applyBloom() {
 
   // Now upsample and blur back up
   shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur_upsample.comp");
-  for (int mipMapLevel = numOfMipMaps-1; mipMapLevel >= 0; mipMapLevel--) {
+  for (int mipMapLevel = numOfMipMaps-1; mipMapLevel > 0; mipMapLevel--) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    if (mipMapLevel > 0) {
-
     glBindImageTexture(3, m_screenBloomTextures[mipMapLevel-1], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
-    }
-    else {
-      glBindImageTexture(3, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F);
-    }
 
-    const unsigned int adjustedGroupSize_X = std::ceil((width >> (mipMapLevel)) / 32.0f);
-    const unsigned int adjustedGroupSize_Y = std::ceil((height >> (mipMapLevel)) / 32.0f);
+    const unsigned int adjustedGroupSize_X = std::ceil((width >> (mipMapLevel-1)) / 32.0f);
+    const unsigned int adjustedGroupSize_Y = std::ceil((height >> (mipMapLevel-1)) / 32.0f);
 
     if (adjustedGroupSize_X > 0 && adjustedGroupSize_Y > 0) {
       glDispatchCompute(adjustedGroupSize_X, adjustedGroupSize_Y, 1);
