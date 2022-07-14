@@ -5,7 +5,7 @@
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout (binding = 0) uniform sampler2D inputTexture;
-layout (rgba16f, binding = 3) uniform writeonly image2D outputTexture;
+layout (rgba32f, binding = 3) uniform writeonly image2D outputTexture;
 
 void main() {
 
@@ -62,7 +62,7 @@ void main() {
   downsample += (a+c+g+i)*0.03125;
   downsample += (b+d+f+h)*0.0625;
   downsample += (j+k+l+m)*0.125;
-  downsample = max(downsample, 0.0001f); // Avoid 0 multiplications causing artifacts
+  downsample = max(downsample, 0.00001f); // Avoid 0 multiplications causing artifacts
 
   // Write downsample to output
   vec3 test = vec3(0.0,1.0,0.0);
