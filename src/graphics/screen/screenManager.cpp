@@ -261,9 +261,6 @@ void ScreenManager::renderToScreen(float deltaT) {
   glActiveTexture(GL_TEXTURE4);
   glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[3]);
 
-  //glEnable(GL_BLEND); // Blend with background (or skybox)
-  glDisable(GL_DEPTH_TEST);
-
   // Render the frame on the quad with post processing
   ShaderManager* shaderManager = ShaderManager::getInstance();
   unsigned int shaderProgram = shaderManager->getBoundShader();
@@ -271,9 +268,6 @@ void ScreenManager::renderToScreen(float deltaT) {
   glUniform1fv(exposureLoc, 1, &m_prevExposure);
 
   glDrawArrays(GL_TRIANGLES, 0, 6);
-
-  glDisable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
 
 }
 

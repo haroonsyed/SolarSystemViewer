@@ -255,17 +255,17 @@ void GameController::render(float deltaT) {
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
 
+
   screenManager->bindSceneBuffer();
   screenManager->clearScreenBuffer();
 
+  m_boundScene->renderSkybox();
   m_boundScene->render();
 
   // Bind screen (default) buffer
   screenManager->bindDefaultBuffer();
   screenManager->clearScreenBuffer();
 
-  // Render the skybox (unaffected by automatic exposure)
-  m_boundScene->renderSkybox();
 
   // Render to screen
   screenManager->renderToScreen(deltaT);
