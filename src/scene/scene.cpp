@@ -64,15 +64,14 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   // Get units
   m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
-  float physicsDistanceFactor = jScene["PhysicsDistanceFactor"].get<float>();
-  float physicsMassFactor = jScene["PhysicsMassFactor"].get<float>();
+  float SIUnitScaleFactor = jScene["SIUnitScaleFactor"].get<float>();
 
   // Setup camera
   m_camera.setCameraPosition(
     glm::vec3(
-      jScene["CameraPosition"]["x"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["y"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
+      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
+      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
+      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
     )
   );
 
@@ -80,17 +79,13 @@ void Scene::loadScene(std::string sceneFilePath) {
   m_ambientStrength = jScene["ambientStrength"].get<float>();
   m_specularStrength = jScene["specularStrength"].get<float>();
   m_phongExponent = jScene["phongExponent"].get<float>();
-  m_kc = jScene["kc"].get<float>();
-  m_kl = jScene["kl"].get<float>();
-  m_kq = jScene["kq"].get<float>();
 
   // Setup physics
-  m_physicsSystem.setPhysicsDistanceFactor(physicsDistanceFactor);
-  m_physicsSystem.setPhysicsMassFactor(physicsMassFactor);
+  m_physicsSystem.setSIUnitScaleFactor(SIUnitScaleFactor);
 
   // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
-    GravBody* body = new GravBody(physicsDistanceFactor, physicsMassFactor, gravBodyJSON);
+    GravBody* body = new GravBody(SIUnitScaleFactor, gravBodyJSON);
     m_physicsSystem.addBody(body); // Add gravBody to physics system
 
     // Tell scene to register this object
@@ -103,9 +98,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
-      lightJSON["position"]["y"].get<float>() / physicsDistanceFactor / m_universeScaleFactor,
-      lightJSON["position"]["z"].get<float>() / physicsDistanceFactor / m_universeScaleFactor
+      lightJSON["position"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
+      lightJSON["position"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
+      lightJSON["position"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
     );
 
     light.setColor(
@@ -138,7 +133,6 @@ std::vector<glm::mat4> Scene::getModelMatrices(Object* obj) {
   glm::mat4 rotation = obj->getRotationMat();
   glm::mat4 translation = glm::mat4(1.0f);
   translation = glm::translate(translation, obj->getPosition() / m_universeScaleFactor);
-
 
   return { scale, rotation, translation };
 
@@ -248,7 +242,7 @@ void Scene::render() {
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1e-5f, 1e5f);
 
   // Setup light data
   // x,y,z,type(point/spotlight),r,g,b,strength
@@ -270,15 +264,12 @@ void Scene::render() {
   glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uniformBuffer);
   glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &view);
   glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &projection);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(float) * 0, sizeof(float), &m_ambientStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(float) * 1, sizeof(float), &m_specularStrength);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(float) * 2, sizeof(float), &m_phongExponent);
   unsigned int numOfLights = m_lights.size();
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), sizeof(unsigned int), &numOfLights);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4), sizeof(float) * lightData.size(), &(lightData[0]));
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (1 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_ambientStrength);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (2 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_specularStrength);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (3 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_phongExponent);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (4 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kc);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (5 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kl);
-  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(glm::vec4) * (6 + m_MAX_NUM_LIGHTS * 2), sizeof(float), &m_kq);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(float) * 3, sizeof(unsigned int), &numOfLights);
+  glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4) + sizeof(float) * 4, sizeof(float) * lightData.size(), &(lightData[0]));
 
   // Loop through the groups, then calculate their model matrices and render
   for (auto const& itr : m_objects_map) {

@@ -17,5 +17,5 @@ public:
   static TextureManager* getInstance();
   unsigned int getBoundTexture();
   std::string getMapTypeFromLocation(int location);
-  void bindTextures(std::vector<std::string>& textureFilePaths);
+  void bindTextures(std::vector<std::string>& textureFilePaths, std::vector<float>& textureStrengths = std::vector<float>{ 1.0,1.0,1.0,1.0 });
 };

@@ -162,7 +162,7 @@ void GameController::updateFocusedPlanet() {
 
       camera->setUp(glm::vec3(0.0f, 0.0f, 1.0f));
 
-      float physicsDistanceFactor = physicsSystem->getPhysicsDistanceFactor();
+      float physicsDistanceFactor = physicsSystem->getSIUnitScaleFactor();
       float universeScaleFactor = m_boundScene->getUniverseScaleFactor();
 
       glm::vec3 scaledTargetPos = target->getPosition() / universeScaleFactor;
@@ -255,17 +255,17 @@ void GameController::render(float deltaT) {
   // Create framebuffer and setup screen to render to
   ScreenManager* screenManager = ScreenManager::getInstance();
 
+
   screenManager->bindSceneBuffer();
   screenManager->clearScreenBuffer();
 
+  m_boundScene->renderSkybox(); //Gets blown out with bloom enabled
   m_boundScene->render();
 
   // Bind screen (default) buffer
   screenManager->bindDefaultBuffer();
   screenManager->clearScreenBuffer();
 
-  // Render the skybox (unaffected by automatic exposure)
-  m_boundScene->renderSkybox();
 
   // Render to screen
   screenManager->renderToScreen(deltaT);

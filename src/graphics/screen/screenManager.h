@@ -8,13 +8,15 @@ private:
   // Contains all frameBuffers and their textures
   static ScreenManager* m_instance;
   Object m_screenQuad;
-  unsigned int m_sceneFBO;
-  unsigned int m_sceneHDRTexture;
-  unsigned int m_sceneBloomTexture;
+  unsigned int m_screenFBO;
+  unsigned int m_screenHDRTexture;
+  std::vector<unsigned int> m_screenBloomTextures = {0,0,0,0,0,0,0,0,0,0,0,0}; // 4k resolution max
   unsigned int m_screenSSBO;
   float m_prevExposure;
   ScreenManager();
-  void calculateExposure(float deltaT);
+  float calculateLuminance();
+  void calculateExposure(float deltaT, float luminance);
+  void applyBloom();
   void genScreenSSBO();
   void generateFrameBuffers();
 

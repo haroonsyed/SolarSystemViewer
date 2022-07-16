@@ -6,26 +6,16 @@
 
 System::System() {
   m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
-  m_physicsDistanceFactor = 1.0f;
-  m_physicsMassFactor = 1.0f;
+  m_SIUnitScaleFactor = 1e6f;
 }
 
-float System::getPhysicsDistanceFactor() {
-  return m_physicsDistanceFactor;
+float System::getSIUnitScaleFactor() {
+  return m_SIUnitScaleFactor;
 }
 
-void System::setPhysicsDistanceFactor(float physicsDistanceFactor) {
-  m_physicsDistanceFactor = physicsDistanceFactor;
-  G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
-}
-
-float System::getPhysicsMassFactor() {
-  return m_physicsMassFactor;
-}
-
-void System::setPhysicsMassFactor(float physicsMassFactor) {
-  m_physicsMassFactor = physicsMassFactor;
-  G = 6.67430e-11 / m_physicsDistanceFactor / m_physicsMassFactor;
+void System::setSIUnitScaleFactor(float SIUnitScaleFactor) {
+  m_SIUnitScaleFactor = SIUnitScaleFactor;
+  G = 6.67430e-11 / SIUnitScaleFactor / SIUnitScaleFactor; // Since newton is kg*m
 }
 
 void System::addBody(GravBody* body) {

@@ -21,9 +21,6 @@ class Scene {
     float m_ambientStrength;
     float m_specularStrength;
     float m_phongExponent;
-    float m_kc; // Light dropoff constants
-    float m_kl;
-    float m_kq;
 
     unsigned int m_numFloatsPerModelData;
     // The m_objects_map contains all objects registered to render in the scene, as well as their offset in the modelBuffer

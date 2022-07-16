@@ -4,6 +4,7 @@
 #include <utility>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include "nlohmann/json.hpp"
 
 class Object {
   private:
@@ -11,9 +12,13 @@ class Object {
     std::string m_vertexShaderPath;
     std::string m_fragShaderPath;
     std::string m_diffuseMapFilePath;
+    float m_diffuseMapStrength;
     std::string m_normalMapFilePath;
+    float m_normalMapStrength;
     std::string m_specularMapFilePath;
+    float m_specularMapStrength;
     std::string m_emissiveMapFilePath;
+    float m_emissiveMapStrength;
 
 
     std::string m_name;
@@ -26,6 +31,7 @@ class Object {
 
   public:
     Object();
+    void setParamsFromJSON(float SIUnitScaleFactor, nlohmann::json jsonData);
     void setName(std::string name);
     std::string getName();
     glm::vec3 getPosition();
@@ -46,7 +52,12 @@ class Object {
     void setNormalMap(std::string normalMapFilePath);
     void setSpecularMap(std::string specularMapFilePath);
     void setEmissiveMap(std::string emissiveMapFilePath);
+    void setDiffuseMapStrength(int strength);
+    void setNormalMapStrength(int strength);
+    void setSpecularMapStrength(int strength);
+    void setEmissiveMapStrength(int strength);
     std::vector<std::string> getTextures();
+    std::vector<float> getTextureStrengths();
 
     void bind();
     glm::mat4 getModelMatrix();

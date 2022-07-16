@@ -3,6 +3,8 @@
 #include "../mesh/meshManager.h"
 #include "../shader/shaderManager.h"
 #include "../texture/textureManager.h"
+#include <iostream>
+using namespace nlohmann;
 
 Object::Object() {
   m_position = glm::vec3(0.0);
@@ -15,7 +17,58 @@ Object::Object() {
   m_normalMapFilePath = "";
   m_specularMapFilePath = "";
   m_emissiveMapFilePath = "";
+  m_diffuseMapStrength = 1.0f;
+  m_normalMapStrength = 1.0f;
+  m_specularMapStrength = 1.0f;
+  m_emissiveMapStrength = 1.0f;
   m_isParticle = false;
+}
+
+void Object::setParamsFromJSON(float SIUnitScaleFactor, json jsonData) {
+  std::string name = jsonData["name"].get<std::string>();
+  setName(name);
+  setScale(jsonData["radius"].get<float>() / SIUnitScaleFactor);
+  setPosition(
+    jsonData["position"]["x"].get<float>() / SIUnitScaleFactor,
+    jsonData["position"]["y"].get<float>() / SIUnitScaleFactor,
+    jsonData["position"]["z"].get<float>() / SIUnitScaleFactor
+  );
+  setMesh(jsonData["meshFilePath"].get<std::string>());
+  setShaders(
+    jsonData["vertexShaderPath"].get<std::string>(),
+    jsonData["fragmentShaderPath"].get<std::string>()
+  );
+  if (jsonData.contains("diffuseMap")) {
+    setDiffuseMap(jsonData["diffuseMap"].get<std::string>());
+  }
+  if (jsonData.contains("normalMap")) {
+    setNormalMap(jsonData["normalMap"].get<std::string>());
+  }
+  if (jsonData.contains("specularMap")) {
+    setSpecularMap(jsonData["specularMap"].get<std::string>());
+  }
+  if (jsonData.contains("emissiveMap")) {
+    setEmissiveMap(jsonData["emissiveMap"].get<std::string>());
+  }
+  if (jsonData.contains("diffuseMapStrength")) {
+    setDiffuseMapStrength(jsonData["diffuseMapStrength"].get<float>());
+  }
+  if (jsonData.contains("normalMapStrength")) {
+    setNormalMapStrength(jsonData["normalMapStrength"].get<float>());
+  }
+  if (jsonData.contains("specularMapStrength")) {
+    setSpecularMapStrength(jsonData["specularMapStrength"].get<float>());
+  }
+  if (jsonData.contains("emissiveMapStrength")) {
+    setEmissiveMapStrength(jsonData["emissiveMapStrength"].get<float>());
+  }
+  if (jsonData.contains("isParticle")) {
+    setIsParticle(jsonData["isParticle"].get<bool>());
+  }
+
+  // Rotate model to begin with north pole facing upward
+  const glm::vec3 defaultRotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+  rotate(glm::angleAxis(3.14159f / 2, defaultRotationAxis));
 }
 
 void Object::setName(std::string name) {
@@ -101,6 +154,22 @@ void Object::setEmissiveMap(std::string emissiveMapFilePath) {
   m_emissiveMapFilePath = emissiveMapFilePath;
 }
 
+void Object::setDiffuseMapStrength(int strength) {
+  m_diffuseMapStrength = strength;
+}
+
+void Object::setNormalMapStrength(int strength) {
+  m_normalMapStrength = strength;
+}
+
+void Object::setSpecularMapStrength(int strength) {
+  m_specularMapStrength = strength;
+}
+
+void Object::setEmissiveMapStrength(int strength) {
+  m_emissiveMapStrength = strength;
+}
+
 std::vector<std::string> Object::getTextures() {
   return
   {
@@ -108,6 +177,15 @@ std::vector<std::string> Object::getTextures() {
     m_normalMapFilePath,
     m_specularMapFilePath,
     m_emissiveMapFilePath
+  };
+}
+
+std::vector<float> Object::getTextureStrengths() {
+  return {
+    m_diffuseMapStrength,
+    m_normalMapStrength,
+    m_specularMapStrength,
+    m_emissiveMapStrength
   };
 }
 
@@ -124,7 +202,8 @@ void Object::bind() {
   // Now bind textures
   TextureManager* textureManager = TextureManager::getInstance();
   std::vector<std::string > textures = getTextures();
-  textureManager->bindTextures(textures);
+  std::vector<float> textureStrengths = getTextureStrengths();
+  textureManager->bindTextures(textures, textureStrengths);
 
 }
 
