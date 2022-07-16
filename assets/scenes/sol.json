@@ -31,7 +31,7 @@
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/sun.jpg",
       "emissiveMap": "../assets/textures/sun_emissive.jpg",
-      "emissiveMapStrength":  1e4
+      "emissiveMapStrength":  5e4
     },
     {
       "name": "Mercury",
@@ -287,7 +287,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 1e3
+      "intensity": 5e3
     }
   ]
 }

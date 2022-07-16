@@ -84,9 +84,6 @@ void main() {
   switch (mipLevel)
   {
   case 1:
-      // We are writing to mip 0, so we need to apply Karis average to each block
-      // of 4 samples to prevent fireflies (very bright subpixels, leads to pulsating
-      // artifacts).
       groups[0] = (a+b+d+e) * (0.125f/4.0f);
       groups[1] = (b+c+e+f) * (0.125f/4.0f);
       groups[2] = (d+e+g+h) * (0.125f/4.0f);
