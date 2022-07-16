@@ -11,6 +11,7 @@ Config::Config() {
   m_autoExposureEnabled = true;
   m_autoExposureControl = 0.3;
   m_auto_exposure_center_range = 0.20;
+  m_bloomThreshold = 1000.0f;
 }
 
 Config* Config::getInstance() {
@@ -52,4 +53,8 @@ bool Config::getAutoExposureEnabled() {
 
 float Config::getAutoExposureControl() {
   return m_autoExposureControl;
+}
+
+float Config::getBloomThreshold() {
+  return m_bloomThreshold;
 }

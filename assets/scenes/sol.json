@@ -7,8 +7,8 @@
     "z": 3e10
   },
   "ambientStrength": 1e-3,
-  "specularStrength": 0.3,
-  "phongExponent": 100.0,
+  "specularStrength": 0.2,
+  "phongExponent": 50.0,
   "GravBodies": [
     {
       "name": "Sun",
@@ -31,7 +31,7 @@
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/sun.jpg",
       "emissiveMap": "../assets/textures/sun_emissive.jpg",
-      "emissiveMapStrength":  1e1
+      "emissiveMapStrength":  1e4
     },
     {
       "name": "Mercury",

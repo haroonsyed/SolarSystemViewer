@@ -18,7 +18,7 @@ void main() {
 
   // The filter kernel is applied with a radius, specified in texture
   // coordinates, so that the radius will vary across mip resolutions.
-  float filterRadius = 0.0025;
+  float filterRadius = 0.003f;
   float x = filterRadius;
   float y = filterRadius;
 

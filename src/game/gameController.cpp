@@ -259,7 +259,7 @@ void GameController::render(float deltaT) {
   screenManager->bindSceneBuffer();
   screenManager->clearScreenBuffer();
 
-  m_boundScene->renderSkybox();
+  //m_boundScene->renderSkybox(); Gets blown out with bloom enabled
   m_boundScene->render();
 
   // Bind screen (default) buffer

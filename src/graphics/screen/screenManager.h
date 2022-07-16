@@ -10,7 +10,7 @@ private:
   Object m_screenQuad;
   unsigned int m_screenFBO;
   unsigned int m_screenHDRTexture;
-  std::vector<unsigned int> m_screenBloomTextures = {0,0,0,0,0,0,0,0,0,0}; 
+  std::vector<unsigned int> m_screenBloomTextures = {0,0,0,0,0,0,0,0,0,0,0,0}; // 4k resolution max
   unsigned int m_screenSSBO;
   float m_prevExposure;
   ScreenManager();

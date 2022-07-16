@@ -37,13 +37,15 @@ void ScreenManager::genScreenSSBO() {
   const unsigned int width = config->getScreenWidth();
   const unsigned int height = config->getScreenHeight();
   const unsigned int percentRangeFromCenterForLuminanceCalc = config->getAutoExposureRange() * 100;
-  std::vector<GLuint> data = { 0, width, height, percentRangeFromCenterForLuminanceCalc, 0 };
+  const unsigned int bloomThreshold = (unsigned int)(config->getBloomThreshold());
+  std::vector<unsigned int> intData = { 0, width, height, percentRangeFromCenterForLuminanceCalc, 0, bloomThreshold};
 
-  unsigned int ssboSizeBytes = 5 * sizeof(GLuint); // Luminance, Width, Height, Range, blurPassCount
+  unsigned int ssboSizeBytes = intData.size() * sizeof(unsigned int) + 1 * sizeof(float); // Luminance, Width, Height, Range, blurPassCount
 
   glGenBuffers(1, &m_screenSSBO);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_screenSSBO);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, ssboSizeBytes, &data[0], GL_STATIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, ssboSizeBytes, nullptr, GL_STATIC_DRAW);
+  glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, intData.size() * sizeof(unsigned int), &intData[0]);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_screenSSBO);
 
 }
@@ -190,8 +192,10 @@ void ScreenManager::applyBloom() {
                     m_screenBloomTextures[0], GL_TEXTURE_2D, 0, 0, 0, 0,
                     width, height, 1);
 
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_screenSSBO);
   for (int mipMapLevel = 1; mipMapLevel < numOfMipMaps; mipMapLevel++) {
     glActiveTexture(GL_TEXTURE0);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 4 * sizeof(unsigned int), sizeof(unsigned int), &mipMapLevel);
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel - 1]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

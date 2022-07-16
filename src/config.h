@@ -12,6 +12,7 @@ private:
   double m_MOUSE_SENSITIVITY;
 
   bool m_bloomEnabled;
+  float m_bloomThreshold;
   bool m_autoExposureEnabled;
   float m_autoExposureControl;
   double m_auto_exposure_center_range; // Percent of middle of screen to use for AE calculation
@@ -30,6 +31,7 @@ public:
   bool getBloomEnabled();
   bool getAutoExposureEnabled();
   float getAutoExposureControl();
+  float getBloomThreshold();
 
 
 };
