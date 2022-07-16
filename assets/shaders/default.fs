@@ -69,7 +69,7 @@ void main()
 		vec4 specularColor = specularMapStrength==0.0 ? specularMapData : vec4(1.0);
 
 		float distance = length(lightPos - transformedPos);
-		float attenuation = 1.0/( 1.0 ); // Should be distance * distance in denom
+		float attenuation = 1.0/( log(max(10.0,distance)) ); // Should be distance * distance in denom
 		lightStrength *= attenuation;
 		
 		FragColor += lightStrength * ( (ambientStrength + diffuseStrength) * diffuseColor * lightColor + specularStrengthFinal * specular * specularColor );

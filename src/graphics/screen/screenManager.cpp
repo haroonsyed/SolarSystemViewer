@@ -105,7 +105,7 @@ float ScreenManager::calculateLuminance() {
   auto width = config->getScreenWidth();
   auto height = config->getScreenHeight();
 
-  if (!config->getAutoExposureEnabled() && !config->getBloomEnabled()) {
+  if (!config->getAutoExposureEnabled()) {
     // No need to calculate luminance
     return 1.0f;
   }
@@ -118,12 +118,12 @@ float ScreenManager::calculateLuminance() {
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
   shaderManager->bindComputeShader("../assets/shaders/compute/calculateLuminance.comp");
+  
   float workGroupSize = 32;
-
-  unsigned int workGroupSize_X = std::ceil(rangeX / workGroupSize);
-  unsigned int workGroupSize_Y = std::ceil(rangeY / workGroupSize);
+  const unsigned int workGroupSize_X = std::ceil(rangeX / workGroupSize);
+  const unsigned int workGroupSize_Y = std::ceil(rangeY / workGroupSize);
   glDispatchCompute(workGroupSize_X, workGroupSize_Y, 1);
-  glMemoryBarrier(GL_SHADER_STORAGE_BUFFER);
+  glMemoryBarrier(GL_SHADER_STORAGE_BUFFER | GL_TEXTURE_FETCH_BARRIER_BIT);
 
   float luminance = 0.0f;
   unsigned int luminanceRaw = 0;
@@ -248,9 +248,9 @@ void ScreenManager::clearScreenBuffer() {
 }
 
 void ScreenManager::renderToScreen(float deltaT) {
+  applyBloom();
   //float luminance = calculateLuminance();
   //calculateExposure(deltaT, luminance);
-  applyBloom();
 
   // Bind the quad to render screen texture on
   m_screenQuad.bind();

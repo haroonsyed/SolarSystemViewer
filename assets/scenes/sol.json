@@ -7,8 +7,8 @@
     "z": 3e10
   },
   "ambientStrength": 1e-3,
-  "specularStrength": 0.2,
-  "phongExponent": 50.0,
+  "specularStrength": 0.1,
+  "phongExponent": 70.0,
   "GravBodies": [
     {
       "name": "Sun",
@@ -287,7 +287,7 @@
         "green": 1.0,
         "blue": 1.0
       },
-      "intensity": 5e3
+      "intensity": 3e3
     }
   ]
 }

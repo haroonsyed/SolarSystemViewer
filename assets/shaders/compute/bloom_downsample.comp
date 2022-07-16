@@ -95,7 +95,10 @@ void main() {
       groups[3] *= KarisAverage(groups[3]);
       groups[4] *= KarisAverage(groups[4]);
       downsample = groups[0]+groups[1]+groups[2]+groups[3]+groups[4];
-      downsample = length(downsample) > bloomThreshold ? downsample : vec3(0.0); // Hard cutoff for now...
+      if(length(downsample) < 4 * bloomThreshold) {
+        downsample =  smoothstep(bloomThreshold, 2*bloomThreshold, downsample); // Gradient cutoff
+      }
+      
       break;
   default:
   // Apply weighted distribution:
