@@ -5,14 +5,19 @@ Boundary::Boundary(glm::vec2 position, glm::vec2 dimensions) {
 	this->m_dimensions = dimensions;
 }
 
-bool Boundary::containsPoint(glm::vec2 point) {
-	return (point >= m_position) && (point <= (m_position + m_dimensions));
+Boundary::Boundary(const Boundary& old_obj) {
+	m_position = old_obj.m_position;
+	m_dimensions = old_obj.m_dimensions;
 }
 
-bool Boundary::overlapsBoundary(Boundary* range) {
-	const m_maxBounds = m_position + m_dimensions;
-	const range_maxBounds = range->getPosition() + range->getDimensions();
-	return (m_position < range_maxBounds) && (range->getPosition() < m_maxBounds);
+bool Boundary::containsPoint(glm::vec2 point) {
+	return glm::all(glm::greaterThanEqual(point, m_position)) && glm::all(glm::lessThanEqual(point, m_position+m_dimensions));
+}
+
+bool Boundary::overlapsBoundary(Boundary& range) {
+	auto m_maxBounds = m_position + m_dimensions;
+	auto range_maxBounds = range.getPosition() + range.getDimensions();
+	return glm::all(glm::lessThan(m_position,range_maxBounds)) && glm::all(glm::lessThan(range.getPosition(), m_maxBounds));
 }
 
 glm::vec2 Boundary::getPosition() {

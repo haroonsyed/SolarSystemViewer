@@ -3,9 +3,10 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include "../config.h"
+#include "QuadTree/QuadTree.h"
 
 System::System() {
-  m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
+  m_timeFactor = 5 * 60 * 60 * 23.9345; // Default Once earth day per second;
   m_SIUnitScaleFactor = 1e6f;
 }
 
@@ -40,23 +41,40 @@ void System::update(float deltaT) {
   // The physics is made framerate independent by dividing by framerate for deltaT
   float adjustedTimeFactor = m_timeFactor * deltaT;
 
-  // Possible to optimize with dynamic programming/multithreading
+  // Holds the velocity and position as calculated for each object
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
+  // First build the quad tree
+  glm::vec2 boundStart = glm::vec2(-FLT_MAX, -FLT_MAX);
+  glm::vec2 boundRange = glm::vec2(FLT_MAX, FLT_MAX);
+  Boundary bounds(boundStart, boundRange);
+  QuadTree qTree(bounds);
+  
+  // Insert all bodies into quad tree
+  for (auto body : m_bodies) {
+      qTree.insert(body);
+  }
 
+  // Caclulate center of mass and total mass of quad trees
+  qTree.aggregateCenterAndTotalMass();
+
+
+  const float theta = 0.0;
   for(int i=0; i<m_bodies.size(); i++) {
     glm::vec3 force = glm::vec3(0.0);
     const float M1 = m_bodies[i]->getMass();
 
-    for(int j=0; j<m_bodies.size(); j++) {
-      if(i != j) {
+    const auto relevantBodies = qTree.barnesHutQuery(m_bodies[i], theta);
+
+    for(int j = 0; j < relevantBodies.size(); j++) {
+      if(relevantBodies[j] != m_bodies[i]) { // Don't do gravity with itself
         
         // (G*M1*M2)/R^2
-        float M2 = m_bodies[j]->getMass();
+        float M2 = relevantBodies[j]->getMass();
         
         // Below avoids sqrt (otherwise one can use distance)
-        glm::vec3 temp = m_bodies[j]->getPosition() - m_bodies[i]->getPosition();
-        float r2 = glm::dot(temp, temp);
+        glm::vec3 r = relevantBodies[j]->getPosition() - m_bodies[i]->getPosition();
+        float r2 = glm::dot(r, r);
         if (r2 < 25) {
             // Clamp force if two bodies pass close (5 megaM/5000km) to each other.
             // Effect is that they will continue current velocity.
@@ -65,7 +83,7 @@ void System::update(float deltaT) {
         float magnitude = (G*M1*M2)/r2;
 
 
-        glm::vec3 direction = glm::normalize(temp);
+        glm::vec3 direction = glm::normalize(r);
 
         force = force + (magnitude * direction); // Sum up all forces on object
 
