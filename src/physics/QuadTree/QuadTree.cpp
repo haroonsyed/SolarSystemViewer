@@ -71,6 +71,11 @@ void QuadTree::subdivide() {
 
 }
 
+std::vector<GravBody*> QuadTree::query(Boundary& range) {
+	std::vector<GravBody*> result;
+	return query(range, result);
+}
+
 // Gets all gravBodies in the range (ignores aggregate bodies)
 std::vector<GravBody*> QuadTree::query(Boundary& range, std::vector<GravBody*>& result) {
 	if (range.overlapsBoundary(m_boundary)) {
@@ -133,6 +138,10 @@ GravBody* QuadTree::aggregateCenterAndTotalMass() {
 	return m_body;
 }
 
+std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta) {
+	std::vector<GravBody*> result;
+	return barnesHutQuery(body, theta, result);
+}
 
 std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result) {
 	
