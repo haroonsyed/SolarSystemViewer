@@ -66,21 +66,17 @@ void System::update(float deltaT) {
 
     const auto relevantBodies = qTree.barnesHutQuery(m_bodies[i], theta);
 
-    std::cout << "Relevant bodies for: " << m_bodies[i]->getName() << std::endl;
     for(int j = 0; j < relevantBodies.size(); j++) {
-        std::cout << relevantBodies[j]->getName() << " " << std::endl;
       if(relevantBodies[j] != m_bodies[i]) { // Don't do gravity with itself
 
-          
-        
         // (G*M1*M2)/R^2
         float M2 = relevantBodies[j]->getMass();
         
         // Below avoids sqrt (otherwise one can use distance)
         glm::vec3 r = relevantBodies[j]->getPosition() - m_bodies[i]->getPosition();
         float r2 = glm::dot(r, r);
-        if (r2 < 25) {
-            // Clamp force if two bodies pass close (5 megaM/5000km) to each other.
+        if (r2 < (1e14 / (m_SIUnitScaleFactor * m_SIUnitScaleFactor))) {
+            // Clamp force if two bodies pass close (1e7m) to each other.
             // Effect is that they will continue current velocity.
             continue;
         }
