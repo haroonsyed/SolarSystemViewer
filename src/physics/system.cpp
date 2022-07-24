@@ -6,7 +6,7 @@
 #include "QuadTree/QuadTree.h"
 
 System::System() {
-  m_timeFactor = 5 * 60 * 60 * 23.9345; // Default Once earth day per second;
+  m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
   m_SIUnitScaleFactor = 1e6f;
 }
 
@@ -45,8 +45,8 @@ void System::update(float deltaT) {
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
   // First build the quad tree
-  glm::vec2 boundStart = glm::vec2(-FLT_MAX, -FLT_MAX);
-  glm::vec2 boundRange = glm::vec2(FLT_MAX, FLT_MAX);
+  glm::vec2 boundStart = glm::vec2(-1e3, -1e3);
+  glm::vec2 boundRange = glm::abs(boundStart * 2.0f);
   Boundary bounds(boundStart, boundRange);
   QuadTree qTree(bounds);
   
@@ -59,15 +59,19 @@ void System::update(float deltaT) {
   qTree.aggregateCenterAndTotalMass();
 
 
-  const float theta = 0.0;
+  const float theta = 1.0;
   for(int i=0; i<m_bodies.size(); i++) {
     glm::vec3 force = glm::vec3(0.0);
     const float M1 = m_bodies[i]->getMass();
 
     const auto relevantBodies = qTree.barnesHutQuery(m_bodies[i], theta);
 
+    std::cout << "Relevant bodies for: " << m_bodies[i]->getName() << std::endl;
     for(int j = 0; j < relevantBodies.size(); j++) {
+        std::cout << relevantBodies[j]->getName() << " " << std::endl;
       if(relevantBodies[j] != m_bodies[i]) { // Don't do gravity with itself
+
+          
         
         // (G*M1*M2)/R^2
         float M2 = relevantBodies[j]->getMass();

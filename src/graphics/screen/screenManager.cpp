@@ -249,8 +249,6 @@ void ScreenManager::clearScreenBuffer() {
 
 void ScreenManager::renderToScreen(float deltaT) {
   applyBloom();
-  //float luminance = calculateLuminance();
-  //calculateExposure(deltaT, luminance);
 
   // Bind the quad to render screen texture on
   m_screenQuad.bind();

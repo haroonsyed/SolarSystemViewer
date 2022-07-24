@@ -18,7 +18,7 @@ public:
     QuadTree(Boundary& boundary);
     bool insert(GravBody* bodyToInsert);
     void subdivide();
-    std::vector<GravBody*> query(Boundary& range, std::vector<GravBody*> result = {});
+    std::vector<GravBody*> query(Boundary& range, std::vector<GravBody*>& result = std::vector<GravBody*>());
     GravBody* aggregateCenterAndTotalMass();
-    std::vector<GravBody*> barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*> result = {});
+    std::vector<GravBody*> barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result = std::vector<GravBody*>());
 };

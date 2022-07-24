@@ -72,7 +72,7 @@ void QuadTree::subdivide() {
 }
 
 // Gets all gravBodies in the range (ignores aggregate bodies)
-std::vector<GravBody*> QuadTree::query(Boundary& range, std::vector<GravBody*> result) {
+std::vector<GravBody*> QuadTree::query(Boundary& range, std::vector<GravBody*>& result) {
 	if (range.overlapsBoundary(m_boundary)) {
 		if ((m_body != nullptr && m_Q1 == nullptr) && (range.containsPoint(m_body->getPosition())) ) {
 			result.push_back(m_body);
@@ -134,19 +134,23 @@ GravBody* QuadTree::aggregateCenterAndTotalMass() {
 }
 
 
-std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*> result) {
+std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result) {
 	
 	// At leaf node
 	if (m_Q1 == nullptr) {
 		// Check if leaf node has a value
-		if (m_body != nullptr) result.push_back(m_body);
+		if (m_body != nullptr) {
+			result.push_back(m_body);
+		};
 		return result;
 	}
 	
-	// Decide if we should go further in tree based on theta
+	// Decide if we should go further in tree based on theta=width/distanceToCellCenter
 	glm::vec2 centerOfCell = m_boundary.getPosition() + (m_boundary.getDimensions() / 2.0f);
 	glm::vec2 bodyPosition = glm::vec2(m_body->getPosition());
-	float thisTheta = glm::length(centerOfCell - bodyPosition);
+	float distanceToCenterOfCell = glm::length(centerOfCell - bodyPosition);
+	float cellWidth = m_boundary.getDimensions().x;
+	float thisTheta = cellWidth/distanceToCenterOfCell;
 
 	if (thisTheta < theta) {
 		// Return the aggregate body

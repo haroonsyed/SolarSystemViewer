@@ -1,6 +1,6 @@
 {
   "SIUnitScaleFactor" :  1e10,
-  "UniverseScaleFactor": 1.0,
+  "UniverseScaleFactor": 40.0,
   "CameraPosition": {
     "x": 0.0,
     "y": 0.0,
