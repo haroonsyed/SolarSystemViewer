@@ -45,7 +45,7 @@ void System::update(float deltaT) {
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
   // First build the quad tree
-  glm::vec2 boundStart = glm::vec2(-1e3, -1e3);
+  glm::vec2 boundStart = glm::vec2(-1e15, -1e15);
   glm::vec2 boundRange = glm::abs(boundStart * 2.0f);
   Boundary bounds(boundStart, boundRange);
   QuadTree qTree(bounds);
@@ -59,7 +59,7 @@ void System::update(float deltaT) {
   qTree.aggregateCenterAndTotalMass();
 
 
-  const float theta = 1.0;
+  const float theta = 2.0;
   for(int i=0; i<m_bodies.size(); i++) {
     glm::vec3 force = glm::vec3(0.0);
     const float M1 = m_bodies[i]->getMass();

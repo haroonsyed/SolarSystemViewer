@@ -284,9 +284,9 @@ void Scene::render() {
 
     // Update vram if the object is not a particles
     if (!instance->isParticle()) {
-      for (const auto& itr : objs) {
-        updateObjectInScene(itr.first);
-      }
+      //for (const auto& itr : objs) {
+      //  updateObjectInScene(itr.first);
+      //}
     }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
