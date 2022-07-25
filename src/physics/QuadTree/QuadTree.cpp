@@ -154,10 +154,10 @@ std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std
 		return result;
 	}
 	
-	// Decide if we should go further in tree based on theta=width/distanceToCellCenter
-	glm::vec2 centerOfCell = m_boundary.getPosition() + (m_boundary.getDimensions() / 2.0f);
-	glm::vec2 bodyPosition = glm::vec2(m_body->getPosition());
-	float distanceToCenterOfCell = glm::length(centerOfCell - bodyPosition);
+	// Decide if we should go further in tree based on theta=width/COM
+	glm::vec2 COM = m_body->getPosition();
+	glm::vec2 bodyPosition = glm::vec2(body->getPosition());
+	float distanceToCenterOfCell = glm::length(COM - bodyPosition);
 	float cellWidth = m_boundary.getDimensions().x;
 	float thisTheta = cellWidth/distanceToCenterOfCell;
 

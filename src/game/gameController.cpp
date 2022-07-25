@@ -148,7 +148,10 @@ void GameController::updateFocusedPlanet() {
 
   
   if (m_focusedBody == bodies.size()) {
+
     camera->setUp(glm::vec3(0.0f, 1.0f, 0.0f));
+    camera->setCameraTarget(glm::vec3(0.0f));
+    camera->setCameraPosition(glm::vec3(0.0f, 0.0f, 1e5f));
     m_focusedBody = -1;
   }
 
@@ -162,13 +165,12 @@ void GameController::updateFocusedPlanet() {
 
       camera->setUp(glm::vec3(0.0f, 0.0f, 1.0f));
 
-      float physicsDistanceFactor = physicsSystem->getSIUnitScaleFactor();
       float universeScaleFactor = m_boundScene->getUniverseScaleFactor();
 
       glm::vec3 scaledTargetPos = target->getPosition() / universeScaleFactor;
       float radius = target->getScale();
       float tanFov = glm::tan(glm::radians(camera->getFov() / 2.0f));
-      float camDistance = 3 * radius / tanFov; // 3 accounts for most screen aspect ratios
+      float camDistance = 1.6 * radius / tanFov; // multiplier accounts for most screen aspect ratios
 
       camera->setCameraTarget(scaledTargetPos);
       camera->setCameraPosition(scaledTargetPos + glm::vec3(0.0f, camDistance, 0.0f));

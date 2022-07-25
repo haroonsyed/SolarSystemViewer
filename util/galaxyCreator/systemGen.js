@@ -1,18 +1,18 @@
 class GravBody {
   name;
-  radius = 800e6;
-  mass = 2e30;
+  radius = 7e8;
+  mass = 2e5;
   position;
   velocity;
   tilt = 0.0;
-  rotationPeriod = 100000.0;
+  rotationPeriod = 0.0;
   meshFilePath = "../assets/models/cube.obj";
   vertexShaderPath = "../assets/shaders/default.vs";
   fragmentShaderPath = "../assets/shaders/default.fs";
   diffuseMap = "../assets/textures/blue.jpg";
   emissiveMap = "../assets/textures/blue.jpg";
   emissiveMapStrength = 1e5;
-  isParticle = false;
+  //isParticle = false;
 }
 
 class Light {
@@ -26,13 +26,13 @@ class Light {
     green: 1.0,
     blue: 1.0,
   };
-  intensity = 1e2;
+  intensity = 1e10;
 }
 
 class Header {
-  SIUnitScaleFactor = 1e10;
+  SIUnitScaleFactor = 1e12;
   UniverseScaleFactor = 1.0;
-  ambientStrength = 1e-3;
+  ambientStrength = 1.0;
   specularStrength = 0.0;
   phongExponent = 0.0;
   CameraPosition;
@@ -45,10 +45,10 @@ header.CameraPosition = {
   z: 3e11,
 };
 
-let numberOfStars = 1000;
+let numberOfStars = 100;
 let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
 let yRange = (2 * xRange) / (16.0 / 9);
-let baseVelocity = 0.0;//xRange / 1000;
+let baseVelocity = 0.0; //xRange / 1000;
 let outputFileName = "../../assets/scenes/galaxy.json";
 generationType = "random";
 

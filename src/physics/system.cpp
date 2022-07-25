@@ -45,21 +45,29 @@ void System::update(float deltaT) {
   std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
   // First build the quad tree
-  glm::vec2 boundStart = glm::vec2(-1e15, -1e15);
+  glm::vec2 boundStart = glm::vec2(-1e10, -1e10);
   glm::vec2 boundRange = glm::abs(boundStart * 2.0f);
   Boundary bounds(boundStart, boundRange);
   QuadTree qTree(bounds);
   
+  double startTime = glfwGetTime();
+
   // Insert all bodies into quad tree
   for (auto body : m_bodies) {
       qTree.insert(body);
   }
 
+  std::cout << "\nTime to build tree: " << (glfwGetTime() - startTime) * 1000 << " ms" << std::endl;
+  double startAgg = glfwGetTime();
+
+
   // Caclulate center of mass and total mass of quad trees
   qTree.aggregateCenterAndTotalMass();
+  std::cout << "Time to aggregate tree: " << (glfwGetTime() - startAgg) * 1000 << " ms" << std::endl;
 
+  double calculateForceStart = glfwGetTime();
 
-  const float theta = 2.0;
+  const float theta = 1.5;
   for(int i=0; i<m_bodies.size(); i++) {
     glm::vec3 force = glm::vec3(0.0);
     const float M1 = m_bodies[i]->getMass();
@@ -100,6 +108,8 @@ void System::update(float deltaT) {
 
   }
 
+  std::cout << "Time to calculate forces: " << (glfwGetTime() - calculateForceStart) * 1000 << " ms" << std::endl;
+
 
   // Update position and velocity
   for (int i = 0; i < m_bodies.size(); i++) {
@@ -117,6 +127,9 @@ void System::update(float deltaT) {
     ));
 
   }
+
+  double endTime = glfwGetTime();
+  std::cout << "\nTime to process physics: " << (endTime - startTime) * 1000 << " ms" << std::endl;
 
 }
 

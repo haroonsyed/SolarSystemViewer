@@ -242,7 +242,7 @@ void Scene::render() {
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1e-5f, 1e5f);
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1e-1f, 1e10f);
 
   // Setup light data
   // x,y,z,type(point/spotlight),r,g,b,strength
@@ -284,9 +284,9 @@ void Scene::render() {
 
     // Update vram if the object is not a particles
     if (!instance->isParticle()) {
-      //for (const auto& itr : objs) {
-      //  updateObjectInScene(itr.first);
-      //}
+      for (const auto& itr : objs) {
+        updateObjectInScene(itr.first);
+      }
     }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
