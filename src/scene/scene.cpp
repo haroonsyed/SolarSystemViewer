@@ -69,9 +69,9 @@ void Scene::loadScene(std::string sceneFilePath) {
   // Setup camera
   m_camera.setCameraPosition(
     glm::vec3(
-      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
+      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor
     )
   );
 
@@ -98,9 +98,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      lightJSON["position"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      lightJSON["position"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
+      lightJSON["position"]["x"].get<float>() / SIUnitScaleFactor,
+      lightJSON["position"]["y"].get<float>() / SIUnitScaleFactor,
+      lightJSON["position"]["z"].get<float>() / SIUnitScaleFactor
     );
 
     light.setColor(

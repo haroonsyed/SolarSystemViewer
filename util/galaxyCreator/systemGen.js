@@ -1,11 +1,11 @@
 class GravBody {
   name;
   radius = 7e8;
-  mass = 2e5;
+  mass = 2e30;
   position;
   velocity;
   tilt = 0.0;
-  rotationPeriod = 0.0;
+  rotationPeriod = 1000.0;
   meshFilePath = "../assets/models/cube.obj";
   vertexShaderPath = "../assets/shaders/default.vs";
   fragmentShaderPath = "../assets/shaders/default.fs";
@@ -30,7 +30,7 @@ class Light {
 }
 
 class Header {
-  SIUnitScaleFactor = 1e12;
+  SIUnitScaleFactor = 1e10;
   UniverseScaleFactor = 1.0;
   ambientStrength = 1.0;
   specularStrength = 0.0;
@@ -45,7 +45,7 @@ header.CameraPosition = {
   z: 3e11,
 };
 
-let numberOfStars = 100;
+let numberOfStars = 1000;
 let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
 let yRange = (2 * xRange) / (16.0 / 9);
 let baseVelocity = 0.0; //xRange / 1000;
