@@ -140,10 +140,11 @@ GravBody* QuadTree::aggregateCenterAndTotalMass() {
 
 std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta) {
 	std::vector<GravBody*> result;
-	return barnesHutQuery(body, theta, result);
+	barnesHutQuery(body, theta, result);
+	return result;
 }
 
-std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result) {
+void QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result) {
 	
 	// At leaf node
 	if (m_Q1 == nullptr) {
@@ -151,7 +152,7 @@ std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std
 		if (m_body != nullptr) {
 			result.push_back(m_body);
 		};
-		return result;
+		return;
 	}
 	
 	// Decide if we should go further in tree based on theta=width/COM
@@ -171,7 +172,5 @@ std::vector<GravBody*> QuadTree::barnesHutQuery(GravBody* body, float theta, std
 		m_Q3->barnesHutQuery(body, theta, result);
 		m_Q4->barnesHutQuery(body, theta, result);
 	}
-
-	return result;
 }
 

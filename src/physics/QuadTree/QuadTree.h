@@ -22,5 +22,5 @@ public:
     std::vector<GravBody*> query(Boundary& range, std::vector<GravBody*>& result);
     GravBody* aggregateCenterAndTotalMass();
     std::vector<GravBody*> barnesHutQuery(GravBody* body, float theta);
-    std::vector<GravBody*> barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result);
+    void barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result);
 };

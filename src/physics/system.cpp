@@ -72,7 +72,7 @@ void System::update(float deltaT) {
     glm::vec3 force = glm::vec3(0.0);
     const float M1 = m_bodies[i]->getMass();
 
-    const auto relevantBodies = qTree.barnesHutQuery(m_bodies[i], theta);
+    const std::vector<GravBody*> relevantBodies = qTree.barnesHutQuery(m_bodies[i], theta);
 
     for(int j = 0; j < relevantBodies.size(); j++) {
       if(relevantBodies[j] != m_bodies[i]) { // Don't do gravity with itself
