@@ -12,6 +12,9 @@ class System {
     // The scaling factor is needed to avoid float errors with using just SI units.
     float m_SIUnitScaleFactor;
 
+    void updateUsingBarnesHut(float adjustedTimeFactor, std::unordered_map<int, std::pair<glm::vec3, glm::vec3>>& map);
+    void updateUsingNaive(float adjustedTimeFactor, std::unordered_map<int, std::pair<glm::vec3, glm::vec3>>& map);
+
   public:
 	  System();
     float getSIUnitScaleFactor();
