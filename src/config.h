@@ -16,6 +16,7 @@ private:
   bool m_autoExposureEnabled;
   float m_autoExposureControl;
   double m_auto_exposure_center_range; // Percent of middle of screen to use for AE calculation
+  bool m_renderSkyBox;
 
   Config();
 
@@ -32,6 +33,6 @@ public:
   bool getAutoExposureEnabled();
   float getAutoExposureControl();
   float getBloomThreshold();
-
+  bool getSkyBoxEnabled();
 
 };

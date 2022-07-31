@@ -69,9 +69,9 @@ void Scene::loadScene(std::string sceneFilePath) {
   // Setup camera
   m_camera.setCameraPosition(
     glm::vec3(
-      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
+      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor
     )
   );
 
@@ -98,9 +98,9 @@ void Scene::loadScene(std::string sceneFilePath) {
     Light light;
 
     light.setPosition(
-      lightJSON["position"]["x"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      lightJSON["position"]["y"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor,
-      lightJSON["position"]["z"].get<float>() / SIUnitScaleFactor / m_universeScaleFactor
+      lightJSON["position"]["x"].get<float>() / SIUnitScaleFactor,
+      lightJSON["position"]["y"].get<float>() / SIUnitScaleFactor,
+      lightJSON["position"]["z"].get<float>() / SIUnitScaleFactor
     );
 
     light.setColor(
@@ -242,7 +242,7 @@ void Scene::render() {
   Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
-  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1e-5f, 1e5f);
+  glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 1e-1f, 1e10f);
 
   // Setup light data
   // x,y,z,type(point/spotlight),r,g,b,strength
@@ -310,10 +310,15 @@ void Scene::render() {
 
 void Scene::renderSkybox() {
 
+  Config* config = Config::getInstance();
+
+  if (!config->getSkyBoxEnabled()) {
+      return;
+  }
+
   // Get view projection for the entire draw call
   glm::mat4 view = m_camera.getViewTransform();
 
-  Config* config = Config::getInstance();
   unsigned int SCR_WIDTH = config->getScreenWidth();
   unsigned int SCR_HEIGHT = config->getScreenHeight();
   glm::mat4 projection = glm::perspective(glm::radians(m_camera.getFov() / 2.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1e20f);

@@ -21,7 +21,7 @@ int main()
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     #ifdef __APPLE__
@@ -36,7 +36,7 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/sol.json");
+    scene.loadScene("../assets/scenes/galaxy.json");
 
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);

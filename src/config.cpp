@@ -7,8 +7,9 @@ Config::Config() {
   m_SCR_HEIGHT = 600;
   m_TARGET_FRAMERATE = 60;
   m_MOUSE_SENSITIVITY = 0.8;
-  m_bloomEnabled = true;
-  m_autoExposureEnabled = true;
+  m_bloomEnabled = false;
+  m_autoExposureEnabled = false;
+  m_renderSkyBox = false;
   m_autoExposureControl = 1e-2;
   m_auto_exposure_center_range = 0.20;
   m_bloomThreshold = 150.0f;
@@ -57,4 +58,8 @@ float Config::getAutoExposureControl() {
 
 float Config::getBloomThreshold() {
   return m_bloomThreshold;
+}
+
+bool Config::getSkyBoxEnabled() {
+    return m_renderSkyBox;
 }
