@@ -117,7 +117,7 @@ float ScreenManager::calculateLuminance() {
   glBindImageTexture(2, m_screenHDRTexture, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
 
   ShaderManager* shaderManager = ShaderManager::getInstance();
-  shaderManager->bindComputeShader("../assets/shaders/compute/calculateLuminance.comp");
+  shaderManager->bindComputeShader("../assets/shaders/compute/post_processing/calculateLuminance.comp");
   
   float workGroupSize = 32;
   const unsigned int workGroupSize_X = std::ceil(rangeX / workGroupSize);
@@ -184,7 +184,7 @@ void ScreenManager::applyBloom() {
 
   
   // Downsample hdr buffer into its mipmaps
-  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_downsample.comp");
+  shaderManager->bindComputeShader("../assets/shaders/compute/post_processing/bloom_downsample.comp");
   glActiveTexture(GL_TEXTURE0);
    
   // Copy hdrRender into bloom level 0
@@ -213,7 +213,7 @@ void ScreenManager::applyBloom() {
   }
 
   // Now upsample and blur back up
-  shaderManager->bindComputeShader("../assets/shaders/compute/bloom_blur_upsample.comp");
+  shaderManager->bindComputeShader("../assets/shaders/compute/post_processing/bloom_blur_upsample.comp");
   for (int mipMapLevel = numOfMipMaps-1; mipMapLevel > 0; mipMapLevel--) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_screenBloomTextures[mipMapLevel]);

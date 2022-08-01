@@ -292,7 +292,7 @@ void Scene::render() {
     // Bind and calculate the model matrix for all objects in this instanceGroup
     unsigned int workerGroupSize = 1;
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO);
-    shaderManager->bindComputeShader("../assets/shaders/compute/calculateModel.comp");
+    shaderManager->bindComputeShader("../assets/shaders/compute/model/calculateModel.comp");
     glDispatchCompute(objs.size(), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 

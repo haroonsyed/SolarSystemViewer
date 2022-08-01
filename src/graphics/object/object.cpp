@@ -8,8 +8,10 @@ using namespace nlohmann;
 
 Object::Object() {
   m_position = glm::vec3(0.0);
+  m_velocity = glm::vec3(1.0);
   m_rotation = glm::angleAxis(0.0f, glm::vec3(0.0, 1.0, 0.0));
   m_scale = 70e3/1e3;
+  m_mass = 1.0f;
   m_meshFilePath = "../assets/models/sphere.obj";
   m_vertexShaderPath = "../shaders/phong.vs";
   m_fragShaderPath = "../shaders/phong.fs";
@@ -83,6 +85,18 @@ glm::vec3 Object::getPosition() {
   return m_position;
 }
 
+glm::vec3 Object::getVelocity() {
+  return m_velocity;
+}
+
+void Object::setVelocity(float x, float y, float z) {
+  m_velocity = glm::vec3(x, y, z);
+}
+
+void Object::setVelocity(glm::vec3 velocity) {
+  m_velocity = velocity;
+}
+
 void Object::setPosition(float x, float y, float z) {
   m_position = glm::vec3(x, y, z);
 }
@@ -119,6 +133,14 @@ float Object::getAxis()
 void Object::setAxis(float axis)
 {
 	m_axis = axis;
+}
+
+float Object::getMass() {
+  return m_mass;
+}
+
+void Object::setMass(float mass) {
+  m_mass = mass;
 }
 
 void Object::setMesh(std::string meshFilePath) {

@@ -23,7 +23,9 @@ class Object {
 
     std::string m_name;
     glm::vec3 m_position;
+    glm::vec3 m_velocity;
     glm::quat m_rotation;
+    float m_mass;
     float m_scale;
     float m_axis;
 
@@ -38,12 +40,17 @@ class Object {
     void setPosition(float x, float y, float z);
     void setPosition(glm::vec3 position);
     void setRotation(float angle, glm::vec3 axis);
+    glm::vec3 getVelocity();
+    void setVelocity(float x, float y, float z);
+    void setVelocity(glm::vec3 velocity);
     void rotate(glm::quat quat);
     glm::mat4 getRotationMat();
     float getScale();
     void setScale(float scale);
     float getAxis();
     void setAxis(float axis);
+    float getMass();
+    void setMass(float mass);
     void setMesh(std::string meshFilePath);
     std::string getMesh();
     std::pair<std::string, std::string> getShaders();
