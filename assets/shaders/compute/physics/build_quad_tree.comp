@@ -31,6 +31,15 @@ coherent layout(std140, binding = 5) buffer treeBuffer {
 
 };
 
+const vec2 boundStart = vec2(-1e10, -1e10);
+const vec2 boundRange = abs(boundStart * 2.0f);
+
+int getChildIndex(int level, Body body) {
+
+  // Determine if we should insert into Q1,Q2,Q3,Q4 (offsets of 1,2,3,4). Corresponds to cartesian quadrants.
+
+}
+
 void main() {
 
   uint gid = gl_GlobalInvocationID.x;
@@ -38,6 +47,18 @@ void main() {
   // This will be the body this invocation will place in tree
   Body body = bodies[gid];
   
+  bool successfullyInserted = false;
+ 
+ // Used to track where we are while traversing the tree
+  int index = 0;
+  int level = 0;
+
+  while(!successfullyInserted) {
+    
+    // Figure out where in this level we have to insert
+    int childIndex = 
+
+  }
 
 
 
