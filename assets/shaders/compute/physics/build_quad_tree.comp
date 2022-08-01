@@ -31,12 +31,29 @@ coherent layout(std140, binding = 5) buffer treeBuffer {
 
 };
 
-const vec2 boundStart = vec2(-1e10, -1e10);
-const vec2 boundRange = abs(boundStart * 2.0f);
-
-int getChildIndex(int level, Body body) {
-
+// Assumes the bounds contain the body!
+int getChildIndex(vec2 boundStart, vec2 boundRange, Body body) {
+                  
   // Determine if we should insert into Q1,Q2,Q3,Q4 (offsets of 1,2,3,4). Corresponds to cartesian quadrants.
+
+  vec2 center = boundStart + (boundRange/2.0);
+
+  if(body.position.x >= center.x) { // X direction (Q1 || Q4)
+    if(body.position.y >= center.y) { // Q1
+      return 0;
+    }
+    else{ // Q4
+      return 3;
+    }
+  }
+  else{  // (Q2 || Q3)
+    if(body.position.y >= center.y) { // Q2
+      return 1;
+    }
+    else{ // Q3
+      return 2;
+    }
+  }
 
 }
 
@@ -50,13 +67,15 @@ void main() {
   bool successfullyInserted = false;
  
  // Used to track where we are while traversing the tree
-  int index = 0;
+  int treeIndex = 0;
   int level = 0;
+  vec2 boundStart = vec2(-1e10, -1e10);
+  vec2 boundRange = abs(boundStart * 2.0f);
 
   while(!successfullyInserted) {
     
     // Figure out where in this level we have to insert
-    int childIndex = 
+    int childIndex = getChildIndex(boundStart, boundRange, body);
 
   }
 
