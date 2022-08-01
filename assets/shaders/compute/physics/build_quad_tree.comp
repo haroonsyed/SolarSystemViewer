@@ -10,7 +10,22 @@ struct Body {
   float mass;
 }
 
-coherent layout(std140, binding = 4) buffer matrices {
+struct TreeCell {
+  Body body;
+  int childIndex; // Is used to indicate lock and state of the cell
+                  // -1: Unlocked/null (insert body here)
+                  // -2: Locked (try again)
+                  // -3: Leaf node (Insert body and the body at the cell here to children)
+                  // pos #: Non-leaf node (Continue traversal)
+}
+
+readonly layout(std140, binding = 4) buffer bodies {
+
+  Body bodies[];
+
+};
+
+coherent layout(std140, binding = 5) buffer tree {
 
   Body bodies[];
 
@@ -20,7 +35,10 @@ void main() {
 
   uint gid = gl_GlobalInvocationID.x;
   
+  // This will be the body this invocation will place in tree
+  Body body = bodies[gid];
   
+
 
 
 }
