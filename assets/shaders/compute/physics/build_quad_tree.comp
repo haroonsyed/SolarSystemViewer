@@ -19,15 +19,15 @@ struct TreeCell {
                   // pos #: Non-leaf node (Continue traversal)
 }
 
-readonly layout(std140, binding = 4) buffer bodies {
+readonly layout(std140, binding = 4) buffer bodiesBuffer {
 
   Body bodies[];
 
 };
 
-coherent layout(std140, binding = 5) buffer tree {
+coherent layout(std140, binding = 5) buffer treeBuffer {
 
-  Body bodies[];
+  TreeCell tree[];
 
 };
 
