@@ -73,6 +73,16 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "x64-test",
+      "displayName": "x64 Test",
+      "description": "Target Windows (64-bit) with the Visual Studio development environment. (RelWithDebInfo)",
+      "inherits": "windows-default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "RUN_TESTS": "ON"
+      }
     }
   ]
 }
