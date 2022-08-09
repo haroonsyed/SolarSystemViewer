@@ -3,9 +3,11 @@ name: CI
 #Credit for the outline of this workflow goes to Iqra Ali at Code Project: https://www.codeproject.com/Articles/5265628/Writing-CI-Pipeline-using-GitHub-Actions-to-Build
 on:
   push:
-    branches: [master]
+    branches: 
+      - "main"
   pull_request: 
-    branches: [master]
+    branches:
+      - "main"
 
 jobs:
   build:
