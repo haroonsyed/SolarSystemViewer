@@ -13,27 +13,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Getting submodule
-      uses: actions/checkout@v2
-      with:
-          submodules: recursive
+    #steps:
+    #- name: Getting submodule
+    #  uses: actions/checkout@v2
+    #  with:
+    #      submodules: recursive
 
-    - name: Installing Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install libxmu-dev libxi-dev libgl-dev
-        sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+    #- name: Installing Dependencies
+    #  run: |
+    #    sudo apt-get update
+    #    sudo apt-get install libxmu-dev libxi-dev libgl-dev
+    #    sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
 
-    - name: Running cmake
-      run: |
-        cd ${{ github.workspace }}
-        mkdir build
-        cd build
-        cmake .. -DRUN_TESTS=ON
-        make
+    #- name: Running cmake
+    #  run: |
+    #    cd ${{ github.workspace }}
+    #    mkdir build
+    #    cd build
+    #    cmake .. -DRUN_TESTS=ON
+    #    make
 
-    - name: Run tests
-      run: |
-        cd build
-        ./main
+    #- name: Run tests
+    #  run: |
+    #    cd build
+    #    ./main

@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 2.9)
 
 IF(UNIX)
 message("Running on Linux")
-#Install dependencies
-#may need the following:
-#libxmu-dev libxi-dev libgl-dev
-#libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
 
 #Install VCPKG
 execute_process(COMMAND ../vcpkg/bootstrap-vcpkg.sh -disableMetrics)
@@ -23,10 +19,11 @@ message(${CMAKE_TOOLCHAIN_FILE})
 
 #Decide to run in test mode
 OPTION(RUN_TESTS "Run unit tests" OFF)
-IF(RUN_TESTS)
+IF(RUN_TESTS MATCHES ON)
     message("====================================\nRunning With Unit Tests...\n====================================")
     ADD_DEFINITIONS(-DRUN_TESTS)
 ENDIF()
+unset(RUN_TESTS CACHE)
 
 project(main)
 file(GLOB_RECURSE SRC

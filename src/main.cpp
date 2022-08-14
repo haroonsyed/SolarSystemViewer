@@ -18,7 +18,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 //Uses pre-processor to avoid main conflict when in test mode
 #ifdef RUN_TESTS 
 #define CATCH_CONFIG_MAIN  // This tells Catch2 to provide a main()
-#include <catch2/catch.hpp>
 #include "tests/tests.h" //Include tests
 #else
 int main()

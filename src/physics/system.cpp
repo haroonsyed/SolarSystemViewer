@@ -1,9 +1,11 @@
+#include <gl/glew.h>
 #include "system.h"
 #include <unordered_map>
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include "../config.h"
 #include "QuadTree/QuadTree.h"
+#include "../graphics/shader/shaderManager.h"
 
 System::System() {
   m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
