@@ -11,22 +11,22 @@
 struct Body {
 	glm::vec4 position;
 	glm::vec4 velocity;
-	float mass;
-	int align1;
-	int align2;
-	int align3;
+	GLfloat mass;
+	GLint align1;
+	GLint align2;
+	GLint align3;
 };
 
 struct TreeCell {
 	glm::vec4 position;
 	glm::vec4 velocity;
-	float mass;
-	int childIndex; // Is used to indicate lock and state of the cell
+	GLfloat mass;
+	GLint childIndex; // Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)
-	int align1;     // Simply used for alignment
-	int align2;     // Simply used for alignment
+	GLint align1;     // Simply used for alignment
+	GLint align2;     // Simply used for alignment
 };
 
 // These are adjusted for std:430 alignment
@@ -78,7 +78,7 @@ TEST_CASE("Test clearing of tree") {
 	std::vector<TreeCell> tree(treeSize);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeOfTreeCell * treeSize, &tree[0]);
 
-	for (auto& const cell : tree) {
+	for (const auto& cell : tree) {
 		REQUIRE(cell.mass == -1);
 		REQUIRE(cell.childIndex == -1);
 	}
@@ -86,11 +86,62 @@ TEST_CASE("Test clearing of tree") {
 }
 
 TEST_CASE("Test creation of tree. Single body.") {
-	const unsigned int treeSize = 1;
+	
+	for (int i = 0; i < 50; i++) {
+
+		const unsigned int treeSize = 5;
+
+		// Create input data
+		std::vector<Body> bodies{
+			Body{glm::vec4(5.0f), glm::vec4(7.0f), 51.0f}
+		};
+
+
+		// Create SSBO_BODIES
+		glGenBuffers(1, &SSBO_BODIES);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * treeSize, &bodies[0], GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+		// Create SSBO_TREE
+		glGenBuffers(1, &SSBO_TREE);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+		ShaderManager* shaderManager = ShaderManager::getInstance();
+		shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
+		glDispatchCompute(treeSize, 1, 1);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+		glDispatchCompute(bodies.size(), 1, 1);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+		// Check results
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+		std::vector<TreeCell> tree(treeSize);
+		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeOfTreeCell * treeSize, &tree[0]);
+
+		for (int i = 0; i < bodies.size(); i++) {
+			Body body = bodies[i];
+			TreeCell cell = tree[i];
+			REQUIRE(cell.position == body.position);
+			REQUIRE(cell.velocity == body.velocity);
+			REQUIRE(cell.mass == body.mass);
+		}
+
+	}
+
+}
+
+TEST_CASE("Test creation of tree. 2 bodies.") {
+	const unsigned int treeSize = 100;
 
 	// Create input data
 	std::vector<Body> bodies{
-		Body{glm::vec4(5.0f), glm::vec4(7.0f), 51.0f}
+		Body{glm::vec4(1.0f), glm::vec4(3.0f), 51.0f},
+		Body{glm::vec4(-1.0f), glm::vec4(3.0f), 51.0f},
 	};
 
 
@@ -112,7 +163,7 @@ TEST_CASE("Test creation of tree. Single body.") {
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-	glDispatchCompute(treeSize, 1, 1);
+	glDispatchCompute(bodies.size(), 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 	// Check results
@@ -120,13 +171,13 @@ TEST_CASE("Test creation of tree. Single body.") {
 	std::vector<TreeCell> tree(treeSize);
 	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeOfTreeCell * treeSize, &tree[0]);
 
-	for (int i = 0; i < bodies.size(); i++) {
-		Body body = bodies[i];
-		TreeCell cell = tree[i];
-		REQUIRE(cell.mass == body.mass);
-		REQUIRE(cell.position == body.position);
-		REQUIRE(cell.velocity == body.velocity);
-	}
+	REQUIRE(tree[1].position == bodies[0].position);
+	REQUIRE(tree[1].velocity == bodies[0].velocity);
+	REQUIRE(tree[1].mass == bodies[0].mass);
+
+	REQUIRE(tree[3].position == bodies[1].position);
+	REQUIRE(tree[3].velocity == bodies[1].velocity);
+	REQUIRE(tree[3].mass == bodies[1].mass);
 
 }
 
