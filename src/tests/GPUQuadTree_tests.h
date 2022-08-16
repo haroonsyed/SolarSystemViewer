@@ -83,6 +83,9 @@ TEST_CASE("Test clearing of tree") {
 		REQUIRE(cell.childIndex == -1);
 	}
 
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
+
 }
 
 TEST_CASE("Test creation of tree. Single body.") {
@@ -119,9 +122,8 @@ TEST_CASE("Test creation of tree. Single body.") {
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 		// Check results
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
 		std::vector<TreeCell> tree(treeSize);
-		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeOfTreeCell * treeSize, &tree[0]);
+		glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
 
 		for (int i = 0; i < bodies.size(); i++) {
 			Body body = bodies[i];
@@ -131,24 +133,82 @@ TEST_CASE("Test creation of tree. Single body.") {
 			REQUIRE(cell.mass == body.mass);
 		}
 
+		glDeleteBuffers(1, &SSBO_BODIES);
+		glDeleteBuffers(1, &SSBO_TREE);
+	}
+
+
+}
+
+TEST_CASE("Test creation of tree. 2 bodies, different quadrants.") {
+
+	for (int i = 0; i < 100; i++) {
+
+		const unsigned int treeSize = 100;
+
+		// Create input data
+		std::vector<Body> bodies{
+			Body{glm::vec4(1.0f), glm::vec4(3.0f), 51.0f},
+			Body{glm::vec4(-1.0f), glm::vec4(3.0f), 51.0f},
+		};
+
+
+		// Create SSBO_BODIES
+		glGenBuffers(1, &SSBO_BODIES);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+		// Create SSBO_TREE
+		glGenBuffers(1, &SSBO_TREE);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+		ShaderManager* shaderManager = ShaderManager::getInstance();
+		shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
+		glDispatchCompute(treeSize, 1, 1);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+		glDispatchCompute(bodies.size(), 1, 1);
+		glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+		// Check results
+		std::vector<TreeCell> tree(treeSize);
+		glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+
+		REQUIRE(tree[1].position == bodies[0].position);
+		REQUIRE(tree[1].velocity == bodies[0].velocity);
+		REQUIRE(tree[1].mass == bodies[0].mass);
+
+		REQUIRE(tree[3].position == bodies[1].position);
+		REQUIRE(tree[3].velocity == bodies[1].velocity);
+		REQUIRE(tree[3].mass == bodies[1].mass);
+
+		glDeleteBuffers(1, &SSBO_BODIES);
+		glDeleteBuffers(1, &SSBO_TREE);
+
 	}
 
 }
 
-TEST_CASE("Test creation of tree. 2 bodies.") {
+TEST_CASE("Test creation of tree. 4 bodies, different quadrants.") {
 	const unsigned int treeSize = 100;
 
 	// Create input data
 	std::vector<Body> bodies{
 		Body{glm::vec4(1.0f), glm::vec4(3.0f), 51.0f},
-		Body{glm::vec4(-1.0f), glm::vec4(3.0f), 51.0f},
+		Body{glm::vec4(-1.0f, 1.0f, 1.0f, 1.0f), glm::vec4(3.0f), 51.0f},
+		Body{glm::vec4(-1.0f, -1.0f, 1.0f, 1.0f), glm::vec4(3.0f), 51.0f},
+		Body{glm::vec4(1.0f, -1.0f, 1.0f, 1.0f), glm::vec4(3.0f), 51.0f},
 	};
 
 
 	// Create SSBO_BODIES
 	glGenBuffers(1, &SSBO_BODIES);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * treeSize, &bodies[0], GL_DYNAMIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
 
 	// Create SSBO_TREE
@@ -161,25 +221,33 @@ TEST_CASE("Test creation of tree. 2 bodies.") {
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
 	glDispatchCompute(treeSize, 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
 	glDispatchCompute(bodies.size(), 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 	// Check results
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
 	std::vector<TreeCell> tree(treeSize);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeOfTreeCell * treeSize, &tree[0]);
+	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
 
 	REQUIRE(tree[1].position == bodies[0].position);
 	REQUIRE(tree[1].velocity == bodies[0].velocity);
 	REQUIRE(tree[1].mass == bodies[0].mass);
+	
+	REQUIRE(tree[2].position == bodies[1].position);
+	REQUIRE(tree[2].velocity == bodies[1].velocity);
+	REQUIRE(tree[2].mass == bodies[1].mass);
+	
+	REQUIRE(tree[3].position == bodies[2].position);
+	REQUIRE(tree[3].velocity == bodies[2].velocity);
+	REQUIRE(tree[3].mass == bodies[2].mass);
+	
+	REQUIRE(tree[4].position == bodies[3].position);
+	REQUIRE(tree[4].velocity == bodies[3].velocity);
+	REQUIRE(tree[4].mass == bodies[3].mass);
 
-	REQUIRE(tree[3].position == bodies[1].position);
-	REQUIRE(tree[3].velocity == bodies[1].velocity);
-	REQUIRE(tree[3].mass == bodies[1].mass);
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
 
 }
-
 
 

@@ -16,8 +16,8 @@ struct TreeCell {
 	float mass;
 	int childIndex; // Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
-					// -2: Locked (try again)
-					// pos #: Non-leaf node (Continue traversal)
+					// -2: Non-leaf node
+					// gid #: Lock node
 };
 
 readonly layout(std430, binding = 4) buffer bodiesBuffer {
@@ -99,49 +99,50 @@ void main() {
     TreeCell cell = tree[treeIndex];
   
     // Traverse down tree
-    if(cell.childIndex > -1) {
+    if(cell.childIndex == -2) {
         treeIndex = treeIndex * 4 + offsetIndex;
         boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
         boundRange /= 2;
     }
-    // Attempt to insert in unlocked node
-    else if(cell.childIndex == -1) {
-        // Aquire a lock
-        if(-1 == atomicCompSwap(tree[treeIndex].childIndex, -1, -2)) {
-            // If new leaf node, just insert body
-            if(cell.mass == -1) {
-                tree[treeIndex] = cellFromBody;
-            }
-            // Insert the new and existing body into child indexes
-            else {
-                // Travel to the level where we insert the new bodies
-                int subTreeIndex = treeIndex;
-                int offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
-                int offsetExisting = getOffsetIndex(boundStart, boundRange, cell.position);
-                
-                while(offsetBody == offsetExisting) {
-                    tree[subTreeIndex].childIndex = subTreeIndex * 4 + 1;
-                    tree[subTreeIndex].mass = 1;
-                    subTreeIndex = subTreeIndex * 4 + offsetBody;
-                    boundStart = boundStartFromOffset(boundStart, boundRange, offsetBody);
-                    boundRange /= 2;
-                    
-                    // Update offsets for next iteration/insertion point
-                    offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
-                    offsetExisting = getOffsetIndex(boundStart, boundRange, cell.position);
-                }
-                
-                // Insert both cells
-                tree[subTreeIndex * 4 + offsetBody] = cellFromBody;
-                tree[subTreeIndex * 4 + offsetExisting] = cell;
-                
-                // Free lock
-                tree[treeIndex].childIndex = treeIndex * 4 + 1;
-                memoryBarrier();
-            
-            }
-            successfullyInserted = true;
+    // Attempt to aquire a lock ot insert
+    else if(gid == atomicCompSwap(tree[treeIndex].childIndex, -1, int(gid))) {
+        // If new leaf node, just insert body
+        if(cell.mass < 0) {
+            tree[treeIndex] = cellFromBody; // Also frees lock
         }
+        // Insert the new and existing body into child indexes
+        else {
+            // Travel to the level where we insert the new bodies
+            int subTreeIndex = treeIndex * 4;
+            int offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
+            int offsetExisting = getOffsetIndex(boundStart, boundRange, cell.position);
+            boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
+            boundRange /= 2;
+                
+            while(offsetBody == offsetExisting) {
+                tree[subTreeIndex + offsetBody].childIndex = -2;
+                tree[subTreeIndex + offsetBody].mass = 0;
+                subTreeIndex = subTreeIndex * 4;
+
+                // Update offsets for next iteration/insertion point
+                offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
+                offsetExisting = getOffsetIndex(boundStart, boundRange, cell.position);
+
+                boundStart = boundStartFromOffset(boundStart, boundRange, offsetBody);
+                boundRange /= 2;
+                    
+            }
+                
+            // Insert both cells
+            tree[subTreeIndex + offsetBody] = cellFromBody;
+            tree[subTreeIndex + offsetExisting] = cell;
+            tree[subTreeIndex + offsetExisting].childIndex = -1;
+
+            // Free lock
+            tree[treeIndex].childIndex = -2;
+        }
+        memoryBarrier();
+        successfullyInserted = true;
     }
   
     // Else try again (locked)
