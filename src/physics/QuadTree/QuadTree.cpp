@@ -197,7 +197,7 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 		glm::vec4 position = glm::vec4(root->m_body->getPosition(), 0);
 		glm::vec4 velocity = glm::vec4(root->m_body->getVelocity(), 0);
 		float mass = root->m_body->getMass();
-		int childIndex = m_Q1 == nullptr ? -1 : -2;
+		int childIndex = root->m_Q1 == nullptr ? -1 : -2;
 		treeArr[index] = { position, velocity, mass, childIndex };
 	}
 

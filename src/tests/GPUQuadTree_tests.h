@@ -28,9 +28,24 @@ void testTreesAreEqual(std::vector<TreeCell>& tree, std::vector<TreeCell>& expec
 	for (int i = 0; i < tree.size(); i++) {
 		TreeCell cell = tree[i];
 		TreeCell expectedCell = expected[i];
+		REQUIRE(cell.childIndex == expectedCell.childIndex);
 		REQUIRE(aboutEqualsVector(glm::vec2(cell.position), glm::vec2(expectedCell.position)));
 		REQUIRE(aboutEqualsVector(glm::vec2(cell.velocity), glm::vec2(expectedCell.velocity)));
 		REQUIRE(aboutEqualsFloat(cell.mass, expectedCell.mass));
+	}
+}
+
+void testLeavesAreEqual(std::vector<TreeCell>& tree, std::vector<TreeCell>& expected) {
+	REQUIRE(tree.size() == expected.size());
+	for (int i = 0; i < tree.size(); i++) {
+		TreeCell cell = tree[i];
+		TreeCell expectedCell = expected[i];
+		REQUIRE(cell.childIndex == expectedCell.childIndex);
+		if (expectedCell.childIndex == -1) {
+			REQUIRE(aboutEqualsVector(glm::vec2(cell.position), glm::vec2(expectedCell.position)));
+			REQUIRE(aboutEqualsVector(glm::vec2(cell.velocity), glm::vec2(expectedCell.velocity)));
+			REQUIRE(aboutEqualsFloat(cell.mass, expectedCell.mass));
+		}
 	}
 }
 
@@ -52,6 +67,8 @@ std::vector<TreeCell> createExpectedFromBodies(std::vector<Body>& bodies, int tr
 		GravBody* gravBody = getGravBodyFromBody(body);
 		root.insert(gravBody);
 	}
+
+	root.aggregateCenterAndTotalMass();
 
 	return root.convertQuadTreeObjectToArray(&root, treeSize);
 }
@@ -144,7 +161,7 @@ TEST_CASE("Test creation of tree. Single body.") {
 		glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
 		std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
 
-		testTreesAreEqual(tree, expected);
+		testLeavesAreEqual(tree, expected);
 
 		glDeleteBuffers(1, &SSBO_BODIES);
 		glDeleteBuffers(1, &SSBO_TREE);
@@ -192,7 +209,7 @@ TEST_CASE("Test creation of tree. 2 bodies, different quadrants.") {
 		glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
 		std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
 
-		testTreesAreEqual(tree, expected);
+		testLeavesAreEqual(tree, expected);
 
 		glDeleteBuffers(1, &SSBO_BODIES);
 		glDeleteBuffers(1, &SSBO_TREE);
@@ -238,22 +255,9 @@ TEST_CASE("Test creation of tree. 4 bodies, different quadrants.") {
 		// Check results
 		std::vector<TreeCell> tree(treeSize);
 		glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+		std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
 
-		REQUIRE(tree[1].position == bodies[0].position);
-		REQUIRE(tree[1].velocity == bodies[0].velocity);
-		REQUIRE(tree[1].mass == bodies[0].mass);
-	
-		REQUIRE(tree[2].position == bodies[1].position);
-		REQUIRE(tree[2].velocity == bodies[1].velocity);
-		REQUIRE(tree[2].mass == bodies[1].mass);
-	
-		REQUIRE(tree[3].position == bodies[2].position);
-		REQUIRE(tree[3].velocity == bodies[2].velocity);
-		REQUIRE(tree[3].mass == bodies[2].mass);
-	
-		REQUIRE(tree[4].position == bodies[3].position);
-		REQUIRE(tree[4].velocity == bodies[3].velocity);
-		REQUIRE(tree[4].mass == bodies[3].mass);
+		testLeavesAreEqual(tree, expected);
 
 		glDeleteBuffers(1, &SSBO_BODIES);
 		glDeleteBuffers(1, &SSBO_TREE);
@@ -295,14 +299,9 @@ TEST_CASE("Insertion of two bodies, same quadrant (one level nested deep).") {
 	// Check results
 	std::vector<TreeCell> tree(treeSize);
 	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+	std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
 
-	REQUIRE(tree[7].position == bodies[0].position);
-	REQUIRE(tree[7].velocity == bodies[0].velocity);
-	REQUIRE(tree[7].mass == bodies[0].mass);
-
-	REQUIRE(tree[5].position == bodies[1].position);
-	REQUIRE(tree[5].velocity == bodies[1].velocity);
-	REQUIRE(tree[5].mass == bodies[1].mass);
+	testLeavesAreEqual(tree, expected);
 
 	glDeleteBuffers(1, &SSBO_BODIES);
 	glDeleteBuffers(1, &SSBO_TREE);
