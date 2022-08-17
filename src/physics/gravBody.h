@@ -1,5 +1,4 @@
 #pragma once
-#include <glm/glm.hpp>
 #include "nlohmann/json.hpp"
 #include "../graphics/object/object.h"
 
@@ -10,7 +9,7 @@ class GravBody : public Object {
 		std::vector<std::string> m_planetInfo;
 
 	public:
-	  GravBody();
+		GravBody();
 		GravBody(float SIUnitScaleFactor, nlohmann::json jsonData);
 		glm::vec3 getAxis();
 		void setAxis(float x, float y, float z);

@@ -111,7 +111,7 @@ void main() {
             tree[treeIndex] = cellFromBody; // Also frees lock
         }
         // Insert the new and existing body into child indexes
-        else {
+        else if(cellFromBody.position != cell.position) {
             // Travel to the level where we insert the new bodies
             int subTreeIndex = treeIndex * 4;
             int offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
@@ -122,7 +122,7 @@ void main() {
             while(offsetBody == offsetExisting) {
                 tree[subTreeIndex + offsetBody].childIndex = -2;
                 tree[subTreeIndex + offsetBody].mass = 0;
-                subTreeIndex = subTreeIndex * 4;
+                subTreeIndex = (subTreeIndex + offsetBody) * 4;
 
                 // Update offsets for next iteration/insertion point
                 offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);

@@ -174,3 +174,37 @@ void QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*
 	}
 }
 
+std::vector<TreeCell> QuadTree::convertQuadTreeObjectToArray(QuadTree* root, int size) {
+
+	std::vector<TreeCell> treeArr(size);
+
+	// Init with -1
+	for (int i = 0; i < treeArr.size(); i++) {
+		treeArr[i] = { glm::vec4(0.0), glm::vec4(0.0), -1, -1, 0, 0 };
+	}
+
+	// Recursively convert TreeCells to array
+	convertQuadTreeObjectToArrayHelper(treeArr, root, 0);
+
+	return treeArr;
+}
+
+void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index) {
+
+	if (root == nullptr) return;
+
+	if (root->m_body != nullptr) {
+		glm::vec4 position = glm::vec4(root->m_body->getPosition(), 0);
+		glm::vec4 velocity = glm::vec4(root->m_body->getVelocity(), 0);
+		float mass = root->m_body->getMass();
+		int childIndex = m_Q1 == nullptr ? -1 : -2;
+		treeArr[index] = { position, velocity, mass, childIndex };
+	}
+
+
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q1, index * 4 + 1);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q2, index * 4 + 2);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q3, index * 4 + 3);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q4, index * 4 + 4);
+
+}
