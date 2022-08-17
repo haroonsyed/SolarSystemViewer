@@ -13,7 +13,7 @@ private:
     QuadTree* m_Q2;
     QuadTree* m_Q3;
     QuadTree* m_Q4;
-    void convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index);
+    void convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index, int maxSize);
 
 public:
     ~QuadTree();

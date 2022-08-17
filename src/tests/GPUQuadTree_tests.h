@@ -8,11 +8,29 @@
 #include <glm/glm.hpp>
 #include "../graphics/shader/shaderManager.h"
 #include "../physics/QuadTree/QuadTree.h"
+#include <random>
+
+
+glm::vec2 boundStart = glm::vec2(-1e10, -1e10);
+glm::vec2 boundRange = abs(boundStart * 2.0f);
+Boundary boundary(boundStart, boundRange);
+
+// Random num generation
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<> dist(boundStart.x, abs(boundStart.x));
 
 unsigned int SSBO_BODIES;
 unsigned int SSBO_TREE;
 
-const GLfloat epsilon = 1e-5;
+const GLfloat epsilon = 1e-2;
+
+std::string printTreeCell(TreeCell& cell) {
+	return ("POSITION: " + std::to_string(cell.position.x) + " " + std::to_string(cell.position.y) + " " + std::to_string(cell.position.z) + "\n"
+		+ "VELOCITY: " + std::to_string(cell.velocity.x) + " " + std::to_string(cell.velocity.y) + " " + std::to_string(cell.velocity.z) + "\n"
+		+ "MASS:" + std::to_string(cell.mass) + "\n"
+		+ "CHILD_INDEX" + std::to_string(cell.childIndex) + "\n");
+}
 
 template <typename T>
 bool aboutEqualsVector(T a, T b) {
@@ -40,6 +58,9 @@ void testLeavesAreEqual(std::vector<TreeCell>& tree, std::vector<TreeCell>& expe
 	for (int i = 0; i < tree.size(); i++) {
 		TreeCell cell = tree[i];
 		TreeCell expectedCell = expected[i];
+		INFO("INDEX: " + std::to_string(i));
+		INFO(printTreeCell(cell));
+		INFO(printTreeCell(expectedCell));
 		REQUIRE(cell.childIndex == expectedCell.childIndex);
 		if (expectedCell.childIndex == -1) {
 			REQUIRE(aboutEqualsVector(glm::vec2(cell.position), glm::vec2(expectedCell.position)));
@@ -58,9 +79,6 @@ GravBody* getGravBodyFromBody(Body body) {
 }
 
 std::vector<TreeCell> createExpectedFromBodies(std::vector<Body>& bodies, int treeSize) {
-	glm::vec2 boundStart = glm::vec2(-1e10, -1e10);
-	glm::vec2 boundRange = abs(boundStart * 2.0f);
-	Boundary boundary(boundStart, boundRange);
 	QuadTree root(boundary);
 
 	for (const auto& body : bodies) {
@@ -153,6 +171,8 @@ TEST_CASE("Test creation of tree. Single body.") {
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+		unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+		glUniform1ui(treeSizeLoc, treeSize);
 		glDispatchCompute(bodies.size(), 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -201,6 +221,8 @@ TEST_CASE("Test creation of tree. 2 bodies, different quadrants.") {
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
 		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+		unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+		glUniform1ui(treeSizeLoc, treeSize);
 		glDispatchCompute(bodies.size(), 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -249,6 +271,8 @@ TEST_CASE("Test creation of tree. 4 bodies, different quadrants.") {
 		glDispatchCompute(treeSize, 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+		unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+		glUniform1ui(treeSizeLoc, treeSize);
 		glDispatchCompute(bodies.size(), 1, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -293,6 +317,95 @@ TEST_CASE("Insertion of two bodies, same quadrant (one level nested deep).") {
 	glDispatchCompute(treeSize, 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
+	glDispatchCompute(bodies.size(), 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Check results
+	std::vector<TreeCell> tree(treeSize);
+	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+	std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
+
+	testLeavesAreEqual(tree, expected);
+
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
+
+}
+
+TEST_CASE("Insertion of two bodies, same exact position. (Get rid of one)") {
+	const unsigned int treeSize = 100;
+
+	// Create input data
+	std::vector<Body> bodies{
+		Body{glm::vec4(1.0f), glm::vec4(3.0f), 51.0f},
+		Body{glm::vec4(1.0f), glm::vec4(3.0f), 51.0f},
+	};
+
+
+	// Create SSBO_BODIES
+	glGenBuffers(1, &SSBO_BODIES);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+	// Create SSBO_TREE
+	glGenBuffers(1, &SSBO_TREE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+	ShaderManager* shaderManager = ShaderManager::getInstance();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
+	glDispatchCompute(treeSize, 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
+	glDispatchCompute(bodies.size(), 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Check results
+	std::vector<TreeCell> tree(treeSize);
+	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+	std::vector<TreeCell> expected = createExpectedFromBodies(bodies, treeSize);
+
+	testLeavesAreEqual(tree, expected);
+
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
+
+}
+
+TEST_CASE("Insertion of 1000 random bodies.") {
+	const unsigned int treeSize = 10000;
+
+	// Create input data
+	std::vector<Body> bodies(15);
+	for (int i = 0; i < bodies.size(); i++) {
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 51.0f };
+	}
+
+	// Create SSBO_BODIES
+	glGenBuffers(1, &SSBO_BODIES);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+	// Create SSBO_TREE
+	glGenBuffers(1, &SSBO_TREE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+	ShaderManager* shaderManager = ShaderManager::getInstance();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
+	glDispatchCompute(treeSize, 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, 1);
 	glDispatchCompute(bodies.size(), 1, 1);
 	glMemoryBarrier(GL_ALL_BARRIER_BITS);
 

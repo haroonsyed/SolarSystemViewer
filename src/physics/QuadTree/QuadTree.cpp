@@ -1,4 +1,5 @@
 #include "QuadTree.h"
+#include <iostream>
 
 QuadTree::~QuadTree() {
 	// Delete all the aggregate bodies (non-leaf nodes)
@@ -184,16 +185,22 @@ std::vector<TreeCell> QuadTree::convertQuadTreeObjectToArray(QuadTree* root, int
 	}
 
 	// Recursively convert TreeCells to array
-	convertQuadTreeObjectToArrayHelper(treeArr, root, 0);
+	convertQuadTreeObjectToArrayHelper(treeArr, root, 0, size);
 
 	return treeArr;
 }
 
-void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index) {
+void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index, int maxSize) {
 
 	if (root == nullptr) return;
 
 	if (root->m_body != nullptr) {
+
+		if (index > maxSize) {
+			std::cout << "OUT OF BOUNDS INDEX" << std::endl;
+			return;
+		}
+
 		glm::vec4 position = glm::vec4(root->m_body->getPosition(), 0);
 		glm::vec4 velocity = glm::vec4(root->m_body->getVelocity(), 0);
 		float mass = root->m_body->getMass();
@@ -202,9 +209,9 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 	}
 
 
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q1, index * 4 + 1);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q2, index * 4 + 2);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q3, index * 4 + 3);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q4, index * 4 + 4);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q1, index * 4 + 1, maxSize);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q2, index * 4 + 2, maxSize);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q3, index * 4 + 3, maxSize);
+	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q4, index * 4 + 4, maxSize);
 
 }

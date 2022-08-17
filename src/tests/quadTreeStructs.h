@@ -1,6 +1,8 @@
 #pragma once
 #include <gl/glew.h>
 #include <glm/glm.hpp>
+#include <string>
+#include <iostream>
 
 // These are adjusted for std:430 alignment
 const unsigned int sizeOfBody = sizeof(GLfloat) * (4 + 4 + 4);

@@ -32,6 +32,8 @@ coherent layout(std140, binding = 5) buffer treeBuffer {
 
 };
 
+uniform uint treeSize;
+
 // Assumes the bounds contain the body!
 int getOffsetIndex(vec2 boundStart, vec2 boundRange, vec4 bodyPosition) {
                   
@@ -107,22 +109,26 @@ void main() {
     // Attempt to aquire a lock ot insert
     else if(gid == atomicCompSwap(tree[treeIndex].childIndex, -1, int(gid))) {
         // If new leaf node, just insert body
-        if(cell.mass < 0) {
+        if(cell.mass < 0 || cellFromBody.position == cell.position) {
             tree[treeIndex] = cellFromBody; // Also frees lock
         }
         // Insert the new and existing body into child indexes
-        else if(cellFromBody.position != cell.position) {
+        else {
             // Travel to the level where we insert the new bodies
             int subTreeIndex = treeIndex * 4;
             int offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
             int offsetExisting = getOffsetIndex(boundStart, boundRange, cell.position);
             boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
             boundRange /= 2;
-                
-            while(offsetBody == offsetExisting) {
+
+            bool validIndex = (subTreeIndex + 4) < treeSize;
+            
+            // TODO: Add check we don't go out of bounds
+            while(offsetBody == offsetExisting && validIndex == true) {
                 tree[subTreeIndex + offsetBody].childIndex = -2;
                 tree[subTreeIndex + offsetBody].mass = 0;
                 subTreeIndex = (subTreeIndex + offsetBody) * 4;
+                validIndex = (subTreeIndex + 4) < treeSize;
 
                 // Update offsets for next iteration/insertion point
                 offsetBody = getOffsetIndex(boundStart, boundRange, cellFromBody.position);
@@ -141,6 +147,7 @@ void main() {
             // Free lock
             tree[treeIndex].childIndex = -2;
         }
+
         memoryBarrier();
         successfullyInserted = true;
     }
