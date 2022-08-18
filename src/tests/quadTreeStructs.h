@@ -21,7 +21,7 @@ struct TreeCell {
 	glm::vec4 position;
 	glm::vec4 velocity;
 	GLfloat mass;
-	GLint childIndex; // Is used to indicate lock and state of the cell
+	GLint lock; // Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)

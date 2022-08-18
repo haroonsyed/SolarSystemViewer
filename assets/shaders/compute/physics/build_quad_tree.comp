@@ -1,6 +1,4 @@
 #version 430 core
-#extension GL_ARB_compute_shader : enable
-#extension GL_ARB_shader_storage_buffer_object : enable
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
@@ -14,7 +12,7 @@ struct TreeCell {
 	vec4 position;
 	vec4 velocity;
 	float mass;
-	int childIndex; // Is used to indicate lock and state of the cell
+	int lock; // Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Non-leaf node
 					// gid #: Lock node
@@ -101,13 +99,13 @@ void main() {
     TreeCell cell = tree[treeIndex];
   
     // Traverse down tree
-    if(cell.childIndex == -2) {
+    if(cell.lock == -2) {
         treeIndex = treeIndex * 4 + offsetIndex;
         boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
         boundRange /= 2;
     }
     // Attempt to aquire a lock ot insert
-    else if(gid == atomicCompSwap(tree[treeIndex].childIndex, -1, int(gid))) {
+    else if(gid == atomicCompSwap(tree[treeIndex].lock, -1, int(gid))) {
         // If new leaf node, just insert body
         if(cell.mass < 0 || cellFromBody.position == cell.position) {
             tree[treeIndex] = cellFromBody; // Also frees lock
@@ -125,7 +123,7 @@ void main() {
             
             // TODO: Add check we don't go out of bounds
             while(offsetBody == offsetExisting && validIndex == true) {
-                tree[subTreeIndex + offsetBody].childIndex = -2;
+                tree[subTreeIndex + offsetBody].lock = -2;
                 tree[subTreeIndex + offsetBody].mass = 0;
                 subTreeIndex = (subTreeIndex + offsetBody) * 4;
                 validIndex = (subTreeIndex + 4) < treeSize;
@@ -140,12 +138,18 @@ void main() {
             }
                 
             // Insert both cells
-            tree[subTreeIndex + offsetBody] = cellFromBody;
-            tree[subTreeIndex + offsetExisting] = cell;
-            tree[subTreeIndex + offsetExisting].childIndex = -1;
+            if(validIndex == true) {            
+                tree[subTreeIndex + offsetBody] = cellFromBody;
+                tree[subTreeIndex + offsetExisting] = cell;
+                tree[subTreeIndex + offsetExisting].lock = -1;
 
-            // Free lock
-            tree[treeIndex].childIndex = -2;
+                // Free lock
+                tree[treeIndex].lock = -2;
+            }
+            else {
+                // Set lock back to leaf mode
+                tree[treeIndex].lock = -1;
+            }
         }
 
         memoryBarrier();

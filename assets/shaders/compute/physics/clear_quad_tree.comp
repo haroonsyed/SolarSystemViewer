@@ -14,7 +14,7 @@ struct TreeCell {
 	vec4 position;
 	vec4 velocity;
 	float mass;
-	int childIndex; // Is used to indicate lock and state of the cell
+	int lock; // Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)
@@ -37,7 +37,7 @@ void main() {
   uint gid = gl_GlobalInvocationID.x;
   TreeCell cell = tree[gid];
   tree[gid].mass = -1;
-  tree[gid].childIndex = -1;
+  tree[gid].lock = -1;
 
 }
 

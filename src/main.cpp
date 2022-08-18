@@ -1,4 +1,3 @@
-// template based on material from learnopengl.com
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
 
@@ -10,6 +9,13 @@
 #include "config.h"
 #include "./game/gameController.h"
 #include "./graphics/screen/screenManager.h"
+
+// Use dGPU on windows. (IDK how on linux)
+#ifdef _WIN32
+#include <windows.h>
+extern "C" __declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
+#endif
 
 // Prototypes
 GLFWwindow* createWindow();
