@@ -4,10 +4,6 @@
 #include <string>
 #include <iostream>
 
-// These are adjusted for std:430 alignment
-const unsigned int sizeOfBody = sizeof(GLfloat) * (4 + 4 + 4);
-const unsigned int sizeOfTreeCell = sizeof(GLfloat) * (4 + 4 + 4);
-
 struct Body {
 	glm::vec4 position;
 	glm::vec4 velocity;
@@ -25,6 +21,22 @@ struct TreeCell {
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)
-	GLint align1;     // Simply used for alignment
-	GLint align2;     // Simply used for alignment
+	GLint align1;
+	GLint align2;
 };
+
+const unsigned int numOfBodies = 5;
+const unsigned int alignmentOffset = (16 - (sizeof(Body) * numOfBodies + sizeof(GLint))%16)/4.0;
+struct TreeCellMultiBody {
+	Body bodies[numOfBodies];
+	GLint lock;		// Is used to indicate lock and state of the cell
+					// -1: Unlocked/null (insert body here)
+					// -2: Locked (try again)
+					// pos #: Non-leaf node (Continue traversal)
+	GLint align[alignmentOffset];
+};
+
+// These are adjusted for std:430 alignment
+const unsigned int sizeOfBody = sizeof(Body);
+const unsigned int sizeOfTreeCell = sizeof(TreeCell);
+const unsigned int sizeOfTreeCellMultiBody = sizeof(TreeCellMultiBody);

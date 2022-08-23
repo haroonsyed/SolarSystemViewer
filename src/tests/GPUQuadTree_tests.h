@@ -25,6 +25,18 @@ unsigned int SSBO_TREE;
 
 const GLfloat epsilon = 1e-2;
 
+void clearGLErrors() {
+	while (glGetError() != GL_NO_ERROR);
+}
+
+void printErrors() {
+	GLenum error = glGetError();
+	while (error != GL_NO_ERROR) {
+		std::cout << "OGL_ERROR: " << error << std::endl;
+		error = glGetError();
+	}
+}
+
 std::string printTreeCell(TreeCell& cell) {
 	return ("POSITION: " + std::to_string(cell.position.x) + " " + std::to_string(cell.position.y) + " " + std::to_string(cell.position.z) + "\n"
 		+ "VELOCITY: " + std::to_string(cell.velocity.x) + " " + std::to_string(cell.velocity.y) + " " + std::to_string(cell.velocity.z) + "\n"
@@ -101,6 +113,8 @@ TEST_CASE("INIT_TESTS") {
 
 	// glew: load all OpenGL function pointers
 	glewInit();
+
+	// Clear errors
 
 	REQUIRE(window != nullptr);
 }
@@ -376,9 +390,8 @@ TEST_CASE("Insertion of two bodies, same exact position. (Get rid of one)") {
 
 }
 
-TEST_CASE("Insertion of 1000 random bodies.") {
-	//const unsigned int treeSize = 25000000;
-	const unsigned int treeSize = 10000;
+TEST_CASE("Insertion of 10000 random bodies.") {
+	const unsigned int treeSize = 25000;
 
 	// Create input data
 	std::vector<Body> bodies(1000);
@@ -445,7 +458,160 @@ TEST_CASE("Insertion of 1000 random bodies.") {
 	msg += "\nLEAF COUNT IN CPU_COMPUTE: " + std::to_string(count);
 
 	std::cout << msg << std::endl;
-	testLeavesAreEqual(tree, expected);
+	//testLeavesAreEqual(tree, expected);
+
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
+
+}
+
+TEST_CASE("Clear multi-tree cell.") {
+	const unsigned int treeSize = 100;
+
+	// Create SSBO_TREE
+	glGenBuffers(1, &SSBO_TREE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCellMultiBody * treeSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+	double startTime = glfwGetTime();
+	ShaderManager* shaderManager = ShaderManager::getInstance();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree_multi.comp");
+	glDispatchCompute(treeSize, 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
+	// Check results
+	std::vector<TreeCellMultiBody> tree(treeSize);
+	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCellMultiBody * treeSize, &tree[0]);
+	for (const auto& cell : tree) {
+		for (int i = 0; i < numOfBodies; i++) {
+			REQUIRE(cell.bodies[i].mass == -1.0);
+			REQUIRE(cell.lock == -1);
+		}
+	}
+
+	glDeleteBuffers(1, &SSBO_TREE);
+
+}
+
+TEST_CASE("No nesting fill parent cell.") {
+	const unsigned int treeSize = 1000;
+
+	// Create input data
+	std::vector<Body> bodies(numOfBodies);
+	for (int i = 0; i < bodies.size(); i++) {
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 51.0f };
+	}
+
+	// Create SSBO_BODIES
+	glGenBuffers(1, &SSBO_BODIES);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+	// Create SSBO_TREE
+	glGenBuffers(1, &SSBO_TREE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCellMultiBody * treeSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+	ShaderManager* shaderManager = ShaderManager::getInstance();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree_multi.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
+
+	double startTime = glfwGetTime();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree_multi.comp");
+	glDispatchCompute(treeSize, 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree_multi.comp");
+	glDispatchCompute(bodies.size(), 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	std::cout << sizeOfBody << " " << sizeOfTreeCell << " " << sizeOfTreeCellMultiBody << std::endl;
+	std::cout << "Time to calculate physics (MULTI): " << (glfwGetTime() - startTime) << std::endl;
+
+	// Check results
+	std::vector<TreeCellMultiBody> tree(treeSize);
+	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCellMultiBody * treeSize, &tree[0]);
+
+	std::string msg = "";
+
+	// Count number of bodies in each
+	int count = 0;
+	for (int i = 0; i < tree.size(); i++) {
+		for (const auto& body : tree[i].bodies) {
+			if (body.mass > 0.0 && tree[i].lock == -1) {
+				count++;
+			}
+		}
+	}
+	msg += "\n\nLEAF COUNT IN GPU_COMPUTE: " + std::to_string(count);
+
+	std::cout << msg << std::endl;
+	REQUIRE(count == bodies.size());
+
+	glDeleteBuffers(1, &SSBO_BODIES);
+	glDeleteBuffers(1, &SSBO_TREE);
+
+}
+
+TEST_CASE("Random body 1000 multi-tree cell.") {
+	const unsigned int treeSize = 10000000;
+	clearGLErrors();
+
+	// Create input data
+	std::vector<Body> bodies(1000000);
+	for (int i = 0; i < bodies.size(); i++) {
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 51.0f };
+	}
+
+	// Create SSBO_BODIES
+	glGenBuffers(1, &SSBO_BODIES);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
+
+	// Create SSBO_TREE
+	glGenBuffers(1, &SSBO_TREE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCellMultiBody * treeSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
+
+	ShaderManager* shaderManager = ShaderManager::getInstance();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree_multi.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
+
+	double startTime = glfwGetTime();
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree_multi.comp");
+	glDispatchCompute(treeSize, 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree_multi.comp");
+	glDispatchCompute(bodies.size(), 1, 1);
+	glMemoryBarrier(GL_ALL_BARRIER_BITS);
+	std::cout << sizeOfBody << " " << sizeOfTreeCell << " " << sizeOfTreeCellMultiBody << std::endl;
+	std::cout << "Time to calculate physics (MULTI): " << (glfwGetTime() - startTime) << std::endl;
+	printErrors();
+
+	// Check results
+	std::vector<TreeCellMultiBody> tree(treeSize);
+	//glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCellMultiBody * treeSize, &tree[0]);
+
+	std::string msg = "";
+
+	// Count number of bodies in each
+	int count = 0;
+	for (int i = 0; i < tree.size(); i++) {
+		for (const auto& body : tree[i].bodies) {
+			if (body.mass >= 0.0 && tree[i].lock == -1) {
+				count++;
+			}
+		}
+	}
+	msg += "\n\nLEAF COUNT IN GPU_COMPUTE: " + std::to_string(count);
+
+	std::cout << msg << std::endl;
+	REQUIRE(count == bodies.size());
 
 	glDeleteBuffers(1, &SSBO_BODIES);
 	glDeleteBuffers(1, &SSBO_TREE);

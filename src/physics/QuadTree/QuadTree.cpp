@@ -181,7 +181,7 @@ std::vector<TreeCell> QuadTree::convertQuadTreeObjectToArray(QuadTree* root, int
 
 	// Init with -1
 	for (int i = 0; i < treeArr.size(); i++) {
-		treeArr[i] = { glm::vec4(0.0), glm::vec4(0.0), -1, -1, 0, 0 };
+		treeArr[i] = { glm::vec4(0.0), glm::vec4(0.0), -1, -1 };
 	}
 
 	// Recursively convert TreeCells to array
