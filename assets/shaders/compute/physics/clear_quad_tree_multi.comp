@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
 struct Body {
 	vec4 position;
@@ -9,7 +9,7 @@ struct Body {
 };
 
 struct TreeCell {
-	Body bodies[5];
+	Body bodies[20];
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
