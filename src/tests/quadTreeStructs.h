@@ -25,14 +25,15 @@ struct TreeCell {
 	GLint align2;
 };
 
-const unsigned int numOfBodies = 20;
-const unsigned int alignmentOffset = (16 - (sizeof(Body) * numOfBodies + sizeof(GLint))%16)/4.0;
+const unsigned int numOfBodies = 5;
+const unsigned int alignmentOffset = (16 - (sizeof(Body) * numOfBodies + 2 * sizeof(GLint))%16)/4.0;
 struct TreeCellMultiBody {
 	Body bodies[numOfBodies];
 	GLint lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)
+	GLint numberOfBodies;
 	GLint align[alignmentOffset];
 };
 

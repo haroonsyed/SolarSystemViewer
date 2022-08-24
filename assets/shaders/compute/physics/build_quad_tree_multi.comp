@@ -9,11 +9,11 @@ struct Body {
 };
 
 struct TreeCell {
-	Body bodies[20];
+	Body bodies[5];
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
 					// -2: Locked (try again)
-    int numberOfBodies;
+	int numberOfBodies;
 };
 
 readonly layout(std430, binding = 4) buffer bodiesBuffer {
@@ -29,6 +29,7 @@ coherent layout(std140, binding = 5) buffer treeBuffer {
 };
 
 uniform uint treeSize;
+uniform uint bodySize;
 
 // Assumes the bounds contain the body!
 int getOffsetIndex(vec2 boundStart, vec2 boundRange, vec4 bodyPosition) {
@@ -93,6 +94,10 @@ void main() {
   uint gid = gl_GlobalInvocationID.x;
   
   // This will be the body this invocation will place in tree
+  if (gid >= bodySize) {
+    return;
+  }
+
   Body body = bodies[gid];
   bool successfullyInserted = false;
  
@@ -101,11 +106,7 @@ void main() {
   vec2 boundStart = vec2(-1e10, -1e10);
   vec2 boundRange = abs(boundStart * 2.0f);
 
-  while(!successfullyInserted) {
-    
-    if(treeIndex > treeSize) {
-        return;
-    }
+  while( (successfullyInserted == false) && (treeIndex < treeSize) ) {
 
     // Figure out where in the next level we have to insert
     int offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
@@ -119,6 +120,7 @@ void main() {
     }
     // Attempt to aquire a lock to insert
     else if(gid == atomicCompSwap(tree[treeIndex].lock, -1, int(gid))) {
+
         // If new leaf node, just insert body
         if(cell.numberOfBodies < cell.bodies.length()) {
             // Find empty index to insert at
@@ -133,6 +135,8 @@ void main() {
             int subTreeIndex = treeIndex * 4;
             boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
             boundRange /= 2;
+
+            // Calculate the total mass and center of mass (before division)
             
             while(allOffsetsEqual(cell, body, boundStart, boundRange) == true && subTreeIndex < treeSize) {
                 int offset = getOffsetIndex(boundStart, boundRange, body.position);
@@ -146,8 +150,8 @@ void main() {
                     
             }
 
-            // Bounds check. Don't do anything if body is outside tree
-            if(subTreeIndex > treeSize) {
+            // Bounds check. Don't do anything if body is outside tree.
+            if(subTreeIndex+4 > treeSize) {
                 tree[treeIndex].lock = -1;
                 return;
             }
@@ -161,18 +165,14 @@ void main() {
             Qpos[3] = 0;
 
             int offset = getOffsetIndex(boundStart, boundRange, body.position);
-            if( (subTreeIndex + offset) < treeSize) {            
-                tree[subTreeIndex + offset].bodies[Qpos[offset-1]] = body;
-                Qpos[offset-1] += 1;
-            }
+            tree[subTreeIndex + offset].bodies[Qpos[offset-1]] = body;
+            Qpos[offset-1] += 1;
             
             // Insert existing
             for(int i=0; i<cell.bodies.length(); i++) {
                 offset = getOffsetIndex(boundStart, boundRange, cell.bodies[i].position);
-                if( (subTreeIndex + offset) < treeSize) {            
-                    tree[subTreeIndex + offset].bodies[Qpos[offset-1]] = cell.bodies[i];
-                    Qpos[offset-1] += 1;
-                }
+                tree[subTreeIndex + offset].bodies[Qpos[offset-1]] = cell.bodies[i];
+                Qpos[offset-1] += 1;
             }
 
             // Write the numberOfBodies to each index
@@ -187,7 +187,6 @@ void main() {
             tree[treeIndex] = cell;
 
         }
-        memoryBarrier();
         successfullyInserted = true;
     }
   
