@@ -41,3 +41,17 @@ struct TreeCellMultiBody {
 const unsigned int sizeOfBody = sizeof(Body);
 const unsigned int sizeOfTreeCell = sizeof(TreeCell);
 const unsigned int sizeOfTreeCellMultiBody = sizeof(TreeCellMultiBody);
+
+/*
+Level 2 : 5
+Level 3 : 17
+Level 4 : 65
+Level 5 : 257
+Level 6 : 1025
+Level 7 : 4097
+Level 8 : 16385
+Level 9 : 65537
+Level 10 : 262145
+Level 11 : 1048577
+Level 12 : 4194305
+*/

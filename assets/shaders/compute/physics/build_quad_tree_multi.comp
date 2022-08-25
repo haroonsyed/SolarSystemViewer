@@ -2,6 +2,8 @@
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
+uniform unsigned int bodiesPerCell = 5;
+
 struct Body {
 	vec4 position;
 	vec4 velocity;
@@ -9,10 +11,11 @@ struct Body {
 };
 
 struct TreeCell {
-	Body bodies[5];
+	Body bodies[bodiesPerCell];
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
-					// -2: Locked (try again)
+					// -2: Not leaf node (continue traversal)
+                    // natural number: locked
 	int numberOfBodies;
 };
 
@@ -79,14 +82,13 @@ vec2 boundStartFromOffset(vec2 prevBoundStart, vec2 boundRange, int offset) {
 bool allOffsetsEqual(TreeCell existing, Body newBody, vec2 boundStart, vec2 boundRange) {
     
     int offset = getOffsetIndex(boundStart, boundRange, newBody.position);
+    bool allEqual = true;
 
     for(int i=0; i<existing.bodies.length(); i++) {
-        if(getOffsetIndex(boundStart, boundRange, existing.bodies[i].position) != offset) {
-            return false;
-        }
+        allEqual = allEqual && ( getOffsetIndex(boundStart, boundRange, existing.bodies[i].position) == offset );
     }
 
-    return true;
+    return allEqual;
 }
 
 void main() {
@@ -99,6 +101,7 @@ void main() {
   }
 
   Body body = bodies[gid];
+  vec4 pre_div_COM = body.mass * body.position;
   bool successfullyInserted = false;
  
   // Used to track where we are while traversing the tree
@@ -182,8 +185,8 @@ void main() {
             tree[subTreeIndex + 4].numberOfBodies = Qpos[3];
 
             // Set lock to non-leaf mode
-            cell.lock = -2;
             cell.numberOfBodies += 1;
+            cell.lock = -2;
             tree[treeIndex] = cell;
 
         }
