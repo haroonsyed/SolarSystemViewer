@@ -558,7 +558,7 @@ TEST_CASE("Random body 500k multi-tree cell. Also ensures no random runtime erro
 	clearGLErrors();
 
 	// Create input data
-	std::vector<Body> bodies(500000);
+	std::vector<Body> bodies(1000000);
 	for (int i = 0; i < bodies.size(); i++) {
 		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 51.0f };
 	}

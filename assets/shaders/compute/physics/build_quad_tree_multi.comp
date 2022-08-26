@@ -2,7 +2,7 @@
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
-uniform unsigned int bodiesPerCell = 5;
+const unsigned int bodiesPerCell = 5;
 
 struct Body {
 	vec4 position;
@@ -17,6 +17,8 @@ struct TreeCell {
 					// -2: Not leaf node (continue traversal)
                     // natural number: locked
 	int numberOfBodies;
+	float mass;
+	vec4 COM;
 };
 
 readonly layout(std430, binding = 4) buffer bodiesBuffer {
@@ -111,18 +113,21 @@ void main() {
 
   while( (successfullyInserted == false) && (treeIndex < treeSize) ) {
 
+    int lockValue = tree[treeIndex].lock;
+
     // Figure out where in the next level we have to insert
     int offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
-    TreeCell cell = tree[treeIndex];
   
     // Traverse down tree
-    if(cell.lock == -2) {
+    if(lockValue == -2) {
         treeIndex = treeIndex * 4 + offsetIndex;
         boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
         boundRange /= 2;
     }
     // Attempt to aquire a lock to insert
     else if(gid == atomicCompSwap(tree[treeIndex].lock, -1, int(gid))) {
+
+        TreeCell cell = tree[treeIndex];
 
         // If new leaf node, just insert body
         if(cell.numberOfBodies < cell.bodies.length()) {
