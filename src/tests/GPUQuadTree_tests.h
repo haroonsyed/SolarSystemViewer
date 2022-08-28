@@ -639,7 +639,7 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 	// Create input data
 	std::vector<Body> bodies(1000000);
 	for (int i = 0; i < bodies.size(); i++) {
-		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 51.0f };
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 1.0f };
 	}
 
 	// Create SSBO_BODIES
@@ -701,12 +701,14 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 	glm::vec4 centerOfMass = glm::vec4(0.0);
 	for (const auto& cell : tree) {
 		if (cell.lock == -1) {
-			for (const auto& body : cell.bodies) {
-				totalMass == body.mass;
+			for (int i = 0; i < cell.numberOfBodies; i++) {
+				Body body = cell.bodies[i];
+				totalMass += body.mass;
 				centerOfMass += body.mass * body.position;
 			}
 		}
 	}
+	centerOfMass /= totalMass;
 
 	// Okay if a couple bodies are too nested (say they are flung out of tree)
 	REQUIRE(totalMass == tree[0].mass);
