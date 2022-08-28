@@ -45,7 +45,7 @@ void main() {
 	// JUST ADD A MASS FIELD. USE RUNNING COM CALCULATION. THEN sum regardless if not leaf or leaf
 	for(int i=0; i<4; i++) {
 		float cellMass = tree[startIndex + i].mass;
-		COM += cellMass * [startIndex + i].COM;
+		COM += cellMass * tree[startIndex + i].COM;
 		totalMass += cellMass;
 	}
 
