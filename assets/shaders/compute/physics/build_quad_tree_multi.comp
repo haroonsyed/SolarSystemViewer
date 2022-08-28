@@ -202,19 +202,19 @@ void main() {
             // Write the numberOfBodies, mass, COM to each index
             tree[subTreeIndex + 1].numberOfBodies = Qcount[0];
             tree[subTreeIndex + 1].mass = Qmass[0];
-            tree[subTreeIndex + 1].COM /= Qmass[0] == 0.0 ? 1.0 : Qmass[0];
+            tree[subTreeIndex + 1].COM /= Qmass[0] < 1e-5 ? 1.0 : Qmass[0];
             
             tree[subTreeIndex + 2].numberOfBodies = Qcount[1];
             tree[subTreeIndex + 2].mass = Qmass[1];
-            tree[subTreeIndex + 2].COM /= Qmass[1] == 0.0 ? 1.0 : Qmass[1];
+            tree[subTreeIndex + 2].COM /= Qmass[1] < 1e-5 ? 1.0 : Qmass[1];
             
             tree[subTreeIndex + 3].numberOfBodies = Qcount[2];
             tree[subTreeIndex + 3].mass = Qmass[2];
-            tree[subTreeIndex + 3].COM /= Qmass[2] == 0.0 ? 1.0 : Qmass[2];
+            tree[subTreeIndex + 3].COM /= Qmass[2] < 1e-5 ? 1.0 : Qmass[2];
             
             tree[subTreeIndex + 4].numberOfBodies = Qcount[3];
             tree[subTreeIndex + 4].mass = Qmass[3];
-            tree[subTreeIndex + 4].COM /= Qmass[3] == 0.0 ? 1.0 : Qmass[3];
+            tree[subTreeIndex + 4].COM /= Qmass[3] < 1e-5 ? 1.0 : Qmass[3];
 
             // Set lock to non-leaf mode
             tree[treeIndex].lock = -2;

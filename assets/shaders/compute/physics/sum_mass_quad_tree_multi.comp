@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 const unsigned int bodiesPerCell = 5;
 
@@ -42,7 +42,7 @@ void main() {
 	vec4 COM = vec4(0.0);
 
 	// Make sure to start moving up tree from valid leafs only
-	if( startIndex > treeSize || tree[parent].lock != -2) {
+	if( tree[parent].lock != -2) {
 		return;
 	}
 
@@ -53,7 +53,7 @@ void main() {
 		totalMass += cellMass;
 	}
 
-	COM /= totalMass;
+	COM /= (totalMass < 1e-5 ? 1.0 : totalMass);
 
 	// Write to parent
 	tree[parent].mass = totalMass;
