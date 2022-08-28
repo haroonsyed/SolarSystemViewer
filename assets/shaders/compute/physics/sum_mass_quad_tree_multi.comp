@@ -12,13 +12,13 @@ struct Body {
 
 struct TreeCell {
 	Body bodies[bodiesPerCell];
+	vec4 COM;
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
 					// -2: Not leaf node (continue traversal)
                     // natural number: locked
 	int numberOfBodies;
 	float mass;
-	vec4 COM;
 };
 
 coherent layout(std430, binding = 5) buffer treeBuffer {
@@ -33,12 +33,16 @@ uniform uint bodySize;
 
 void main() {
 
-	float totalMass = 0.0;
-	vec4 COM = vec4(0.0);
 	uint gid = gl_GlobalInvocationID.x;
 
 	uint startIndex = levelStart + (gid * 4);
-	if( startIndex > treeSize) {
+	uint parent = (startIndex-1)/4;
+
+	float totalMass = 0.0;
+	vec4 COM = vec4(0.0);
+
+	// Make sure to start moving up tree from valid leafs only
+	if( startIndex > treeSize || tree[parent].lock != -2) {
 		return;
 	}
 
@@ -52,7 +56,6 @@ void main() {
 	COM /= totalMass;
 
 	// Write to parent
-	uint parent = (startIndex-1)/4;
 	tree[parent].mass = totalMass;
 	tree[parent].COM = COM;
 

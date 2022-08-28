@@ -29,12 +29,12 @@ const unsigned int numOfBodies = 5;
 const unsigned int alignmentOffset = (16 - (sizeof(Body) * numOfBodies + 2 * sizeof(GLint) + sizeof(GLfloat) + sizeof(glm::vec4)) % 16) / 4.0;
 struct TreeCellMultiBody {
 	Body bodies[numOfBodies];
+	glm::vec4 COM;
 	GLint lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked/null (insert body here)
 					// -2: Locked (try again)
 					// pos #: Non-leaf node (Continue traversal)
 	GLint numberOfBodies;
 	GLfloat mass;
-	glm::vec4 COM;
 	GLint align[alignmentOffset];
 };

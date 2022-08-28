@@ -12,13 +12,13 @@ struct Body {
 
 struct TreeCell {
 	Body bodies[bodiesPerCell];
+	vec4 COM;
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
 					// -2: Not leaf node (continue traversal)
                     // natural number: locked
 	int numberOfBodies;
 	float mass;
-	vec4 COM;
 };
 
 coherent layout(std430, binding = 5) buffer treeBuffer {

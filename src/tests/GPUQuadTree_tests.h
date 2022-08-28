@@ -50,8 +50,17 @@ bool aboutEqualsVector(T a, T b) {
 	return glm::all( glm::epsilonEqual(a, b, epsilon) );
 }
 
+template <typename T>
+bool aboutEqualsVector(T a, T b, float epsilon) {
+	return glm::all(glm::epsilonEqual(a, b, epsilon));
+}
+
 bool aboutEqualsFloat(float a, float b) {
 	return abs(a-b) < epsilon;
+}
+
+bool aboutEqualsFloat(float a, float b, float epsilon) {
+	return abs(a - b) < epsilon;
 }
 
 void testTreesAreEqual(std::vector<TreeCell>& tree, std::vector<TreeCell>& expected) {
@@ -486,6 +495,8 @@ TEST_CASE("Clear multi-tree cell.") {
 	std::vector<TreeCellMultiBody> tree(treeSize);
 	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCellMultiBody * treeSize, &tree[0]);
 	for (const auto& cell : tree) {
+		REQUIRE(cell.mass == 0);
+		REQUIRE(aboutEqualsVector(cell.COM, glm::vec4(0.0)));
 		REQUIRE(cell.numberOfBodies == 0);
 		REQUIRE(cell.lock == -1);
 	}
@@ -637,9 +648,9 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 	clearGLErrors();
 
 	// Create input data
-	std::vector<Body> bodies(1000000);
+	std::vector<Body> bodies(100000);
 	for (int i = 0; i < bodies.size(); i++) {
-		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 1.0f };
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), (float)abs(dist(gen)/ 1e9) };
 	}
 
 	// Create SSBO_BODIES
@@ -674,8 +685,10 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
 		shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree_multi.comp");
+		unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+		glUniform1ui(treeSizeLoc, treeSize);
 		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
-		for (int i = numberOfLevelsInTree - 1; i >= 0; i--) {
+		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
 			// Set level
 			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
 
@@ -697,7 +710,7 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 	glFinish();
 
 	//Check size and COM
-	double totalMass = 0.0;
+	float totalMass = 0.0;
 	glm::vec4 centerOfMass = glm::vec4(0.0);
 	for (const auto& cell : tree) {
 		if (cell.lock == -1) {
@@ -711,8 +724,13 @@ TEST_CASE("Test aggregation to non-leaf cells of COM and total mass.") {
 	centerOfMass /= totalMass;
 
 	// Okay if a couple bodies are too nested (say they are flung out of tree)
-	REQUIRE(totalMass == tree[0].mass);
-	REQUIRE(aboutEqualsVector(centerOfMass, tree[0].COM));
+	std::string info = "Computed mass: " + std::to_string(tree[0].mass);
+	info += "\nComputed COM: " + std::to_string(tree[0].COM.x) + " " + std::to_string(tree[0].COM.y);
+	info += "\nExpected mass: " + std::to_string(totalMass);
+	info += "\nExpected COM: " + std::to_string(centerOfMass.x) + " " + std::to_string(centerOfMass.y);
+	INFO(info);
+	REQUIRE(aboutEqualsFloat(totalMass, tree[0].mass, 1e2));
+	REQUIRE(aboutEqualsVector(centerOfMass, tree[0].COM, 1e4));
 
 	glDeleteBuffers(1, &SSBO_BODIES);
 	glDeleteBuffers(1, &SSBO_TREE);
