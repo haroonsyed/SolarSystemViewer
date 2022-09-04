@@ -199,8 +199,8 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 
 	if (root->m_body != nullptr) {
 
-		if (index > maxSize) {
-			//std::cout << "OUT OF BOUNDS INDEX " << index << std::endl;
+		if (index >= maxSize) {
+			std::cout << "OUT OF BOUNDS INDEX " << index << std::endl;
 			return;
 		}
 
@@ -210,8 +210,11 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 		int lock = root->m_Q1 == nullptr ? -1 : -2;
 
 		treeArr[index].lock = lock;
+		treeArr[index].numberOfBodies = 1;
 		if (lock == -1) {
 			treeArr[index].bodies[0] = {position, velocity, mass};
+			treeArr[index].COM = position;
+			treeArr[index].mass = mass;
 		}
 		else {
 			treeArr[index].COM = position;
