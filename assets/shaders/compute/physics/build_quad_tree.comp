@@ -154,16 +154,16 @@ void main() {
 
             // Travel down tree levels while bodies are in same quadrant
             while(allOffsetsEqual(cell, body, boundStart, boundRange) == true && subTreeIndex < treeSize) {
+                boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
+                boundRange /= 2;
+
                 tree[subTreeIndex + offsetIndex].lock = -2;
                 subTreeIndex = (subTreeIndex + offsetIndex) * 4;
                 offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
-            
-                boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
-                boundRange /= 2;
             }
 
             // Bounds check. Don't do anything if level is outside tree.
-            if( (subTreeIndex + 3) > treeSize) {
+            if( (subTreeIndex + 4) >= treeSize) {
                 tree[treeIndex].lock = -1;
                 return;
             }
