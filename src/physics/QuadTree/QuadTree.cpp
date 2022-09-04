@@ -181,7 +181,10 @@ std::vector<TreeCell> QuadTree::convertQuadTreeObjectToArray(QuadTree* root, int
 
 	// Init with -1
 	for (int i = 0; i < treeArr.size(); i++) {
-		treeArr[i] = { glm::vec4(0.0), glm::vec4(0.0), -1, -1 };
+		treeArr[i].COM = glm::vec4(0.0);
+		treeArr[i].lock = -1;
+		treeArr[i].mass = 0.0;
+		treeArr[i].numberOfBodies = 0;
 	}
 
 	// Recursively convert TreeCells to array
@@ -204,8 +207,17 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 		glm::vec4 position = glm::vec4(root->m_body->getPosition(), 0);
 		glm::vec4 velocity = glm::vec4(root->m_body->getVelocity(), 0);
 		float mass = root->m_body->getMass();
-		int childIndex = root->m_Q1 == nullptr ? -1 : -2;
-		treeArr[index] = { position, velocity, mass, childIndex };
+		int lock = root->m_Q1 == nullptr ? -1 : -2;
+
+		treeArr[index].lock = lock;
+		if (lock == -1) {
+			treeArr[index].bodies[0] = {position, velocity, mass};
+		}
+		else {
+			treeArr[index].COM = position;
+			treeArr[index].mass = mass;
+		}
+
 	}
 
 

@@ -115,11 +115,11 @@ void main() {
     const int lockValue = tree[treeIndex].lock;
 
     // Figure out where in the next level we have to insert
-    const int offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
+    int offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
   
     // Traverse down tree
     if(lockValue == -2) {
-        treeIndex = treeIndex * 4 + offsetIndex;
+        treeIndex = ( treeIndex * 4 ) + offsetIndex;
         boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
         boundRange /= 2;
     }
@@ -147,24 +147,20 @@ void main() {
             const TreeCell cell = tree[treeIndex];
 
             // Travel to the level where we insert the new bodies
-            int subTreeIndex = treeIndex * 4;
-            boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
-            boundRange /= 2;
+            int subTreeIndex = ( treeIndex * 4 );
 
-            // Calculate the total mass and center of mass (before division)
-            
+            // Travel down tree levels while bodies are in same quadrant
             while(allOffsetsEqual(cell, body, boundStart, boundRange) == true && subTreeIndex < treeSize) {
-                int offset = getOffsetIndex(boundStart, boundRange, body.position);
-                tree[subTreeIndex + offset].lock = -2;
-                subTreeIndex = (subTreeIndex + offset) * 4;
+                tree[subTreeIndex + offsetIndex].lock = -2;
+                subTreeIndex = (subTreeIndex + offsetIndex) * 4;
+                offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
             
-                boundStart = boundStartFromOffset(boundStart, boundRange, offset);
+                boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
                 boundRange /= 2;
-                    
             }
 
-            // Bounds check. Don't do anything if body is outside tree.
-            if(subTreeIndex+4 > treeSize) {
+            // Bounds check. Don't do anything if level is outside tree.
+            if( (subTreeIndex + 3) > treeSize) {
                 tree[treeIndex].lock = -1;
                 return;
             }
@@ -184,19 +180,19 @@ void main() {
             Qmass[2] = 0;
             Qmass[3] = 0;
             
-            int offset = getOffsetIndex(boundStart, boundRange, body.position);
-            tree[subTreeIndex + offset].bodies[Qcount[offset-1]] = body;
-            Qmass[offset-1] += body.mass;
-            tree[subTreeIndex + offset].COM = body.position * body.mass;
-            Qcount[offset-1] += 1;
+            offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
+            tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = body;
+            Qmass[offsetIndex-1] += body.mass;
+            tree[subTreeIndex + offsetIndex].COM = body.position * body.mass;
+            Qcount[offsetIndex-1] += 1;
             
             // Insert existing
-            for(int i=0; i<5; i++) {
-                offset = getOffsetIndex(boundStart, boundRange, cell.bodies[i].position);
-                tree[subTreeIndex + offset].bodies[Qcount[offset-1]] = cell.bodies[i];
-                Qmass[offset-1] += cell.bodies[i].mass;
-                tree[subTreeIndex + offset].COM += cell.bodies[i].position * cell.bodies[i].mass;
-                Qcount[offset-1] += 1;
+            for(int i=0; i<bodiesPerCell; i++) {
+                offsetIndex = getOffsetIndex(boundStart, boundRange, cell.bodies[i].position);
+                tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = cell.bodies[i];
+                Qmass[offsetIndex-1] += cell.bodies[i].mass;
+                tree[subTreeIndex + offsetIndex].COM += cell.bodies[i].position * cell.bodies[i].mass;
+                Qcount[offsetIndex-1] += 1;
             }
             
             // Write the numberOfBodies, mass, COM to each index
