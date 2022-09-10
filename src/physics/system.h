@@ -16,9 +16,10 @@ class System {
     void updateUsingNaive(float adjustedTimeFactor, std::unordered_map<int, std::pair<glm::vec3, glm::vec3>>& map);
 
   public:
-	  System();
+    System();
     float getSIUnitScaleFactor();
     void setSIUnitScaleFactor(float physicsDistanceFactor);
+    void setTimeFactor(float timeFactor);
     void addBody(GravBody* body);
     std::vector<GravBody*> getBodies();
     void update(float deltaT);

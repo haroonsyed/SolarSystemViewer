@@ -1,0 +1,106 @@
+#version 430 core
+
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+const unsigned int bodiesPerCell = 1;
+
+struct Body {
+	vec4 position;
+	vec4 velocity;
+	float mass;
+	int align1;
+	int align2;
+	int align3;
+};
+
+struct TreeCell {
+	Body bodies[bodiesPerCell];
+	vec4 COM;
+	int lock;		// Is used to indicate lock and state of the cell
+					// -1: Unlocked
+					// -2: Not leaf node (continue traversal)
+                    // natural number: locked
+	int numberOfBodies;
+	float mass;
+};
+
+coherent layout(std430, binding = 4) buffer bodiesBuffer {
+
+  Body bodies[];
+
+};
+
+readonly layout(std140, binding = 5) buffer treeBuffer {
+
+  TreeCell tree[];
+
+};
+
+uniform uint bodySize;
+uniform float deltaT;
+uniform float G;
+
+void main() {
+
+	const uint gid = gl_GlobalInvocationID.x;
+
+	if(gid >= bodySize) {
+		return;
+	}
+
+	const vec4 bodyPosition = bodies[gid].position;
+	const float m1 = bodies[gid].mass;
+	const vec4 bodyVelocity = bodies[gid].velocity;
+
+	const float theta = 1.5;
+
+	vec4 force = vec4(0.0);
+
+	uint stack[56];
+	stack[0] = 0;
+	int stackPosition = 0;
+	const vec2 boundStart = vec2(-1e10, -1e10);
+	float boundRange = abs(boundStart.x * 2.0f);
+
+	// Traverse tree and sum force according to F = Gm1m2/r2
+	while(stackPosition >= 0) {
+		
+		// pop off the stack
+		const uint cellIndex = stack[stackPosition];
+		const uint childIndex = cellIndex * 4 + 1;
+		const vec4 secondBodyPosition = tree[cellIndex].COM;
+
+		// calculate distance and theta
+		const float distance = distance(bodyPosition, secondBodyPosition);
+		const float thisTheta = boundRange / distance;
+
+		// add force if theta is small enough (ignore multi cell for now)
+		if(thisTheta < theta) {
+			const float forceMag = (G * tree[cellIndex].mass * m1) / (distance * distance);
+			force += forceMag * normalize(secondBodyPosition - bodyPosition);
+			boundRange *= 2;
+		}
+
+		// add the children to the stack and update boundary
+		else if(tree[cellIndex].lock == -2 && distance > 0.5) {
+			stack[stackPosition] = childIndex;
+			stack[stackPosition + 1] = childIndex + 1;
+			stack[stackPosition + 2] = childIndex + 2;
+			stack[stackPosition + 3] = childIndex + 3;
+			boundRange /= 2;
+		}
+
+		stackPosition--;
+
+	}
+
+	// Recalculate the velocity of the body from the force
+	// vf=vi+a*t where a=F/bodies
+	const vec4 acceleration = force / m1;
+	const vec4 velocity = bodyVelocity + acceleration * deltaT;
+	bodies[gid].velocity = velocity;
+	bodies[gid].position = bodyPosition + velocity * deltaT;
+
+}
+
+

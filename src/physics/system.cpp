@@ -21,6 +21,10 @@ void System::setSIUnitScaleFactor(float SIUnitScaleFactor) {
   G = 6.67430e-11 / SIUnitScaleFactor / SIUnitScaleFactor; // Since newton is kg*m
 }
 
+void System::setTimeFactor(float timeFactor) {
+    m_timeFactor = timeFactor;
+}
+
 void System::addBody(GravBody* body) {
   m_bodies.push_back(body);
 }
@@ -148,9 +152,9 @@ void System::update(float deltaT) {
   }
 
   // Let compute shader calculate large simulations
-  if (m_bodies.size() > 1000) {
-    return;
-  }
+  //if (m_bodies.size() > 1000) {
+  //  return;
+  //}
 
   // The physics is made framerate independent by dividing by framerate for deltaT
   float adjustedTimeFactor = m_timeFactor * deltaT;

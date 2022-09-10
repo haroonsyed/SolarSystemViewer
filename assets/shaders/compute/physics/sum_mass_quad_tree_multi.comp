@@ -2,12 +2,15 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-const unsigned int bodiesPerCell = 5;
+const unsigned int bodiesPerCell = 3;
 
 struct Body {
 	vec4 position;
 	vec4 velocity;
 	float mass;
+	int align1;
+	int align2;
+	int align3;
 };
 
 struct TreeCell {
@@ -33,10 +36,10 @@ uniform uint bodySize;
 
 void main() {
 
-	uint gid = gl_GlobalInvocationID.x;
+	const uint gid = gl_GlobalInvocationID.x;
 
-	uint startIndex = levelStart + (gid * 4);
-	uint parent = (startIndex-1)/4;
+	const uint startIndex = levelStart + (gid * 4);
+	const uint parent = (startIndex-1)/4;
 
 	float totalMass = 0.0;
 	vec4 COM = vec4(0.0);
@@ -48,7 +51,7 @@ void main() {
 
 	// JUST ADD A MASS FIELD. USE RUNNING COM CALCULATION. THEN sum regardless if not leaf or leaf
 	for(int i=0; i<4; i++) {
-		float cellMass = tree[startIndex + i].mass;
+		const float cellMass = tree[startIndex + i].mass;
 		COM += cellMass * tree[startIndex + i].COM;
 		totalMass += cellMass;
 	}

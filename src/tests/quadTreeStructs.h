@@ -27,7 +27,7 @@ struct TreeCell {
 	GLint align[alignmentOffsetSingle];
 };
 
-const unsigned int numOfBodies = 5;
+const unsigned int numOfBodies = 3;
 // Align multi tree cell to 16 byte boundary
 const unsigned int alignmentOffset = (16 - (sizeof(Body) * numOfBodies + sizeof(glm::vec4) + 2 * sizeof(GLint) + sizeof(GLfloat)) % 16) / 4.0;
 struct TreeCellMultiBody {

@@ -24,7 +24,7 @@ struct TreeCell {
 	float mass;
 };
 
-coherent layout(std430, binding = 5) buffer treeBuffer {
+layout(std430, binding = 5) buffer treeBuffer {
 
   TreeCell tree[];
 
@@ -32,7 +32,7 @@ coherent layout(std430, binding = 5) buffer treeBuffer {
 
 void main() {
 
-  uint gid = gl_GlobalInvocationID.x;
+  const uint gid = gl_GlobalInvocationID.x;
 
   tree[gid].lock = -1;
   tree[gid].numberOfBodies = 0;
