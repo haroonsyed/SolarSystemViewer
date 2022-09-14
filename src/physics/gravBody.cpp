@@ -64,12 +64,9 @@ void GravBody::setRotationSpeedFromPeriod(float hours) {
 }
 
 void GravBody::print() {
-	const float vx = getVelocity().x;
-	const float vy = getVelocity().y;
-	const float vz = getVelocity().z;
-	const float px = getPosition().x;
-	const float py = getPosition().y;
-	const float pz = getPosition().z;
+    std::cout << ("BODY_POSITION: " + std::to_string(getPosition().x) + " " + std::to_string(getPosition().y) + " " + std::to_string(getPosition().z) + "\n"
+        + "BODY_VELOCITY: " + std::to_string(getVelocity().x) + " " + std::to_string(getVelocity().y) + " " + std::to_string(getVelocity().z) + "\n"
+        + "BODY_MASS: " + std::to_string(getMass()) + "\n\n") << std::endl;
 }
 
 void GravBody::addPlanetInfo(std::string info)

@@ -48,11 +48,11 @@ void System::updateUsingNaive(float adjustedTimeFactor, std::unordered_map<int, 
         // Below avoids sqrt (otherwise one can use distance)
         glm::vec3 r = m_bodies[j]->getPosition() - m_bodies[i]->getPosition();
         float r2 = glm::dot(r, r);
-        if (r2 < (1e14 / (m_SIUnitScaleFactor * m_SIUnitScaleFactor))) {
-          // Clamp force if two bodies pass close (1e7m) to each other.
-          // Effect is that they will continue current velocity.
-          continue;
-        }
+        //if (r2 < (1e14 / (m_SIUnitScaleFactor * m_SIUnitScaleFactor))) {
+        //  // Clamp force if two bodies pass close (1e7m) to each other.
+        //  // Effect is that they will continue current velocity.
+        //  continue;
+        //}
         float magnitude = (G * M1 * M2) / r2;
 
 
