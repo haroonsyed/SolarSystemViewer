@@ -698,9 +698,9 @@ TEST_CASE("Final Test.") {
 	const float timeFactor = 60; // n years per second
 
 	// Create input data
-	std::vector<Body> bodies(10000);
+	std::vector<Body> bodies(1000);
 	for (int i = 0; i < bodies.size(); i++) {
-		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0) / 1e9f, glm::vec4(0.0), 1e27 };
+		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0) / 1e5f, glm::vec4(0.0), 1e27 };
 	}
 
 	// Create input data
@@ -742,6 +742,8 @@ TEST_CASE("Final Test.") {
 	glUniform1ui(treeSizeLoc, treeSize);
 
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
+	treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
 	bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
 	glUniform1ui(bodySizeLoc, bodies.size());
 	unsigned int deltaTLoc = glGetUniformLocation(shaderManager->getBoundShader(), "deltaT");
@@ -812,9 +814,11 @@ TEST_CASE("Final Test.") {
 		INFO("VELOCITY: \n")
 		INFO(result[i].velocity.x);
 		INFO(result[i].velocity.y);
+
 		INFO("\n")
 		INFO(expected[i]->getVelocity().x);
 		INFO(expected[i]->getVelocity().y);
+
 
 		REQUIRE(aboutEqualsVector(result[i].position, glm::vec4(expected[i]->getPosition(), 0.0), 1));
 		REQUIRE(aboutEqualsVector(result[i].velocity, glm::vec4(expected[i]->getVelocity(), 0.0), 1));

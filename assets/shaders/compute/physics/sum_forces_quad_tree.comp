@@ -33,6 +33,7 @@ readonly layout(std140, binding = 5) buffer treeBuffer {
 
 };
 
+uniform uint treeSize;
 uniform uint bodySize;
 uniform float deltaT;
 uniform float G;
@@ -63,6 +64,7 @@ void main() {
 
 		// pop off the stack
 		const uint cellIndex = stack[stackPosition];
+		const uint childIndex = cellIndex * 4 + 1;
 		const uint level = levelStack[stackPosition];
 		const vec4 secondBodyPosition = tree[cellIndex].COM;
 
@@ -80,8 +82,7 @@ void main() {
 			}
 	
 			// add the children to the stack and update boundary
-			else {
-				const uint childIndex = cellIndex * 4 + 1;
+			else if (childIndex < treeSize) {
 				stack[stackPosition] = childIndex;
 				stack[stackPosition + 1] = childIndex + 1;
 				stack[stackPosition + 2] = childIndex + 2;
