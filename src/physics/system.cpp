@@ -6,6 +6,7 @@
 #include "../config.h"
 #include "QuadTree/QuadTree.h"
 #include "../graphics/shader/shaderManager.h"
+#include "QuadTreeGPU/quadTreeUtil.h"
 
 System::System() {
   m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
@@ -29,11 +30,37 @@ void System::addBody(GravBody* body) {
   m_bodies.push_back(body);
 }
 
+// Sets all bodies in gpu. 
+void System::setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree) {
+    
+    // Determine the size of the tree to create based on numberofLevels
+    const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+
+    // Create SSBO_BODIES
+    glGenBuffers(1, &m_SSBO_BODIES);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_BODIES);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_SSBO_BODIES);
+
+    // Create SSBO_TREE
+    glGenBuffers(1, &m_SSBO_TREE);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_TREE);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_SSBO_TREE);
+
+    m_SSBO_BODIES_COUNT = bodies.size();
+    m_SSBO_TREE_COUNT = treeSize;
+
+}
+
 std::vector<GravBody*> System::getBodies() {
   return m_bodies;
 }
 
-void System::updateUsingNaive(float adjustedTimeFactor, std::unordered_map<int, std::pair<glm::vec3, glm::vec3>>& map) {
+void System::updateUsingNaive(float adjustedTimeFactor) {
+
+  // Holds the velocity and position as calculated for each object
+  std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
   for (int i = 0; i < m_bodies.size(); i++) {
     glm::vec3 force = glm::vec3(0.0);
@@ -73,10 +100,30 @@ void System::updateUsingNaive(float adjustedTimeFactor, std::unordered_map<int, 
 
   }
 
+  // Update position and velocity
+  for (int i = 0; i < m_bodies.size(); i++) {
+
+      GravBody* body = m_bodies[i];
+
+      float period = (2 * 3.14159265f) / body->getRotationSpeed();
+      float rotSpeed = body->getRotationSpeed() * period;
+
+      body->setVelocity(map[i].first);
+      body->setPosition(map[i].second);
+      body->rotate(glm::angleAxis(
+          body->getRotationSpeed() * adjustedTimeFactor,
+          body->getAxis()
+      ));
+
+  }
+
 }
 
 
-void System::updateUsingBarnesHut(float adjustedTimeFactor, std::unordered_map<int, std::pair<glm::vec3, glm::vec3>>& map) {
+void System::updateUsingBarnesHut(float adjustedTimeFactor) {
+
+  // Holds the velocity and position as calculated for each object
+  std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
 
   // First build the quad tree
   glm::vec2 boundStart = glm::vec2(-1e10, -1e10);
@@ -141,8 +188,34 @@ void System::updateUsingBarnesHut(float adjustedTimeFactor, std::unordered_map<i
     map[i] = std::make_pair(velocity, position);
 
   }
-
   std::cout << "Time to calculate forces: " << (glfwGetTime() - calculateForceStart) * 1000 << " ms" << std::endl;
+
+  // Update position and velocity
+  for (int i = 0; i < m_bodies.size(); i++) {
+
+      GravBody* body = m_bodies[i];
+
+      float period = (2 * 3.14159265f) / body->getRotationSpeed();
+      float rotSpeed = body->getRotationSpeed() * period;
+
+      body->setVelocity(map[i].first);
+      body->setPosition(map[i].second);
+      body->rotate(glm::angleAxis(
+          body->getRotationSpeed() * adjustedTimeFactor,
+          body->getAxis()
+      ));
+
+  }
+
+  double endTime = glfwGetTime();
+  std::cout << "\nTime to process physics (CPU): " << (endTime - startTime) * 1000 << " ms" << std::endl;
+
+}
+
+void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
+
+
+
 }
 
 void System::update(float deltaT) {
@@ -151,41 +224,11 @@ void System::update(float deltaT) {
     return;
   }
 
-  // Let compute shader calculate large simulations
-  //if (m_bodies.size() > 1000) {
-  //  return;
-  //}
-
   // The physics is made framerate independent by dividing by framerate for deltaT
   float adjustedTimeFactor = m_timeFactor * deltaT;
 
-  // Holds the velocity and position as calculated for each object
-  std::unordered_map<int, std::pair<glm::vec3, glm::vec3>> map;
-
-  double startTime = glfwGetTime();
-
   // Calculate physics
-  updateUsingBarnesHut(adjustedTimeFactor, map);
-
-  // Update position and velocity
-  for (int i = 0; i < m_bodies.size(); i++) {
-
-    GravBody* body = m_bodies[i];
-
-    float period = (2 * 3.14159265f) / body->getRotationSpeed();
-    float rotSpeed = body->getRotationSpeed() * period;
-
-    body->setVelocity(map[i].first);
-    body->setPosition(map[i].second);
-    body->rotate(glm::angleAxis(
-      body->getRotationSpeed() * adjustedTimeFactor,
-      body->getAxis()
-    ));
-
-  }
-
-  double endTime = glfwGetTime();
-  std::cout << "\nTime to process physics: " << (endTime - startTime) * 1000 << " ms" << std::endl;
+  updateUsingBarnesHut(adjustedTimeFactor);
 
 }
 

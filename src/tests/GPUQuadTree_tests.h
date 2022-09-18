@@ -4,8 +4,8 @@
 #include <catch2/catch.hpp>
 #include <iostream>
 #include <GLFW/glfw3.h>
-#include "quadTreeStructs.h"
-#include "quadTreeUtil.h"
+#include "../physics/QuadTreeGPU/quadTreeStructs.h"
+#include "../physics/QuadTreeGPU/quadTreeUtil.h"
 #include <glm/glm.hpp>
 #include "../graphics/shader/shaderManager.h"
 #include "../physics/QuadTree/QuadTree.h"
@@ -36,25 +36,6 @@ void printErrors() {
 		std::cout << "OGL_ERROR: " << error << std::endl;
 		error = glGetError();
 	}
-}
-
-std::string printBody(Body& body) {
-	return ("BODY_POSITION: " + std::to_string(body.position.x) + " " + std::to_string(body.position.y) + " " + std::to_string(body.position.z) + "\n"
-		+ "BODY_VELOCITY: " + std::to_string(body.velocity.x) + " " + std::to_string(body.velocity.y) + " " + std::to_string(body.velocity.z) + "\n"
-		+ "BODY_MASS: " + std::to_string(body.mass) + "\n\n");
-}
-
-std::string printTreeCell(TreeCell& cell) {
-	return (printBody(cell.bodies[0])
-		+ "CELL_MASS: " + std::to_string(cell.mass) + "\n"
-		+ "CELL_COM: " + std::to_string(cell.COM.x) + " " + std::to_string(cell.COM.y) + " " + std::to_string(cell.COM.z) + "\n"
-		+ "LOCK: " + std::to_string(cell.lock) + "\n\n");
-}
-
-std::string printTreeCellMultiBody(TreeCellMultiBody& cell) {
-	return ("COM: " + std::to_string(cell.COM.x) + " " + std::to_string(cell.COM.y) + " " + std::to_string(cell.COM.z) + "\n"
-		+ "MASS: " + std::to_string(cell.mass) + "\n"
-		+ "LOCK: " + std::to_string(cell.lock) + "\n\n");
 }
 
 template <typename T>
@@ -685,7 +666,20 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //	
 //}
 
-TEST_CASE("Final Test.") {
+TEST_CASE("Test small amount of bodies full force calculation matches.") {
+
+	// I may need to remap the ranges here (nvm this is adjusted for with G multiplication):
+	// MASS: 2e29 (small star) - 2e40 (close to theoretical limit)
+	// If everything is in units of a small star (2e29). Then range of values is
+	// 1-2e11 for small star vs the largest black hole. When doing G * m1 * m2, this is "safe"
+
+	// This would require G = 6.67e-11 / 2e29...
+
+	// Distance: 
+	// Let's use ~0.1 light year = 1e15. A galaxy width is 100k light years
+	// This would give us a range with plenty of headroom (around 1e16 light years) for interactions
+
+	// The G for this = 6.67e-11 / 2e29 / 1e15 = 3.335e-55
 
 	const unsigned int numberOfLevelsInTree = 12;
 	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
@@ -698,16 +692,18 @@ TEST_CASE("Final Test.") {
 	const float timeFactor = 60; // n years per second
 
 	// Create input data
-	std::vector<Body> bodies(1000);
-	for (int i = 0; i < bodies.size(); i++) {
-		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0) / 1e5f, glm::vec4(0.0), 1e27 };
-	}
+	//std::vector<Body> bodies(100);
+	//for (int i = 0; i < bodies.size(); i++) {
+	//	bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0), glm::vec4(0.0), 2e13 };
+	//}
 
-	// Create input data
-	//std::vector<Body> bodies{
-	//	Body{ glm::vec4(1,0,0,0), glm::vec4(0.0), 1e29 },
-	//	Body{ glm::vec4(-1,0,0,0), glm::vec4(0.0), 1e29 }
-	//};
+	// Create input data (Basically 4 black holes within 0.2 light years of each other (pretty extreme conditions)
+	std::vector<Body> bodies{
+		Body{ glm::vec4(1,1,0,0), glm::vec4(0.0), 1e30 },
+		Body{ glm::vec4(-1,-1,0,0), glm::vec4(0.0), 1e30 },
+		Body{ glm::vec4(-1,1,0,0), glm::vec4(0.0), 1e30 },
+		Body{ glm::vec4(1,-1,0,0), glm::vec4(0.0), 1e30 },
+	};
 
 	//Create system to check expected against
 	System system;
@@ -800,6 +796,7 @@ TEST_CASE("Final Test.") {
 		system.update(deltaT);
 	}
 
+	createExpectedFromBodies(bodies, treeSize);
 	std::vector<GravBody*> expected = system.getBodies();
 
 	for (int i = 0; i < bodies.size(); i++) {
@@ -828,258 +825,4 @@ TEST_CASE("Final Test.") {
 	glDeleteBuffers(1, &SSBO_TREE);
 
 }
-
-// BEFORE BREAKING
-//TEST_CASE("Final Test.") {
-//
-//	const unsigned int numberOfLevelsInTree = 12;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
-//	clearGLErrors();
-//
-//	// Constants for the time-step
-//	const float SIUnitScaleFactor = 1e10;
-//	const float G = 6.67430e-11 / SIUnitScaleFactor / SIUnitScaleFactor;
-//	float deltaT = 0.016f; // Can be anything, this corresponds to 60fps
-//	const float timeFactor = 1000000 * 365 * 60 * 60 * 23.9345; // n years per second
-//
-//	// Create input data
-//	std::vector<Body> bodies(100000);
-//	for (int i = 0; i < bodies.size(); i++) {
-//		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0) / 1e10f, glm::vec4(0.0), 2e30 / SIUnitScaleFactor };
-//	}
-//
-//	// Create SSBO_BODIES
-//	glGenBuffers(1, &SSBO_BODIES);
-//	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
-//	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
-//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
-//
-//	// Create SSBO_TREE
-//	glGenBuffers(1, &SSBO_TREE);
-//	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
-//	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
-//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
-//
-//	printErrors();
-//
-//	ShaderManager* shaderManager = ShaderManager::getInstance();
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-//	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-//	glUniform1ui(treeSizeLoc, treeSize);
-//	unsigned int bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-//	glUniform1ui(bodySizeLoc, bodies.size());
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
-//	treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-//	glUniform1ui(treeSizeLoc, treeSize);
-//
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
-//	bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-//	glUniform1ui(bodySizeLoc, bodies.size());
-//	unsigned int deltaTLoc = glGetUniformLocation(shaderManager->getBoundShader(), "deltaT");
-//	glUniform1f(deltaTLoc, deltaT * timeFactor);
-//	unsigned int GLoc = glGetUniformLocation(shaderManager->getBoundShader(), "G");
-//	glUniform1f(GLoc, G);
-//
-//	const int numberOfIterations = 100;
-//	double startTime = glfwGetTime();
-//	for (int i = 0; i < numberOfIterations; i++) {
-//		startTime = glfwGetTime();
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
-//		glDispatchCompute(ceil(treeSize / 32.0), 1, 1);
-//		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-//		glDispatchCompute(ceil(bodies.size() / 32.0), 1, 1);
-//		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
-//		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
-//		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
-//			// Set level
-//			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
-//
-//			// Dispatch compute for that level of tree
-//			int numberOfParentCells = numberOfCellsInLevel(i - 1);
-//			glDispatchCompute(numberOfParentCells, 1, 1);
-//			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//		}
-//		glFinish();
-//		std::cout << "Time to clear, build and aggregate tree: " << (glfwGetTime() - startTime) << std::endl;
-//
-//	}
-//
-//
-//	printErrors();
-//
-//	// Get results
-//	std::vector<Body> result(bodies.size());
-//	glGetNamedBufferSubData(SSBO_BODIES, 0, sizeOfBody * bodies.size(), &result[0]);
-//	glFinish();
-//
-//	//Check with expected
-//	System system;
-//	system.setSIUnitScaleFactor(SIUnitScaleFactor);
-//	system.setTimeFactor(timeFactor);
-//	for (auto const& body : bodies) {
-//		system.addBody(getGravBodyFromBody(body));
-//	}
-//	
-//	for (int i = 0; i < numberOfIterations; i++) {
-//		system.update(deltaT);
-//	}
-//	
-//	std::vector<GravBody*> expected = system.getBodies();
-//	
-//	for (int i = 0; i < bodies.size(); i++) {
-//		INFO(i);
-//		INFO("POSITION: \n")
-//		INFO(result[i].position.x);
-//		INFO(result[i].position.y);
-//		INFO("\n")
-//		INFO(expected[i]->getPosition().x);
-//		INFO(expected[i]->getPosition().y);
-//		INFO("\n")
-//		INFO("VELOCITY: \n")
-//		INFO(result[i].velocity.x);
-//		INFO(result[i].velocity.y);
-//		INFO("\n")
-//		INFO(expected[i]->getVelocity().x);
-//		INFO(expected[i]->getVelocity().y);
-//		
-//		REQUIRE(aboutEqualsVector(result[i].position, glm::vec4(expected[i]->getPosition(), 0.0), 1));
-//		REQUIRE(aboutEqualsVector(result[i].velocity, glm::vec4(expected[i]->getVelocity(), 0.0), 1));
-//	}
-//
-//	glDeleteBuffers(1, &SSBO_BODIES);
-//	glDeleteBuffers(1, &SSBO_TREE);
-//
-//}
-
-//TEST_CASE("Test barnes-hut traversal and force calculation on bodies.") {
-//
-//	const unsigned int numberOfLevelsInTree = 12;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
-//	clearGLErrors();
-//
-//	// Constants for the time-step
-//	const float SIUnitScaleFactor = 1e10;
-//	const float G = 6.67430e-11 / SIUnitScaleFactor / SIUnitScaleFactor;
-//	float deltaT = 0.016f; // Can be anything, this corresponds to 60fps
-//	const float timeFactor = 1000000 * 365 * 60 * 60 * 23.9345; // n years per second
-//
-//	// Create input data
-//	std::vector<Body> bodies(100000);
-//	for (int i = 0; i < bodies.size(); i++) {
-//		bodies[i] = Body{ glm::vec4(dist(gen),dist(gen),0,0) / 1e10f, glm::vec4(0.0), 2e30 / SIUnitScaleFactor };
-//	}
-//
-//	// Create SSBO_BODIES
-//	glGenBuffers(1, &SSBO_BODIES);
-//	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_BODIES);
-//	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
-//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, SSBO_BODIES);
-//
-//	// Create SSBO_TREE
-//	glGenBuffers(1, &SSBO_TREE);
-//	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE);
-//	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
-//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
-//
-//	printErrors();
-//
-//	ShaderManager* shaderManager = ShaderManager::getInstance();
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-//	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-//	glUniform1ui(treeSizeLoc, treeSize);
-//	unsigned int bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-//	glUniform1ui(bodySizeLoc, bodies.size());
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
-//	treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-//	glUniform1ui(treeSizeLoc, treeSize);
-//
-//	shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
-//	bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-//	glUniform1ui(bodySizeLoc, bodies.size());
-//	unsigned int deltaTLoc = glGetUniformLocation(shaderManager->getBoundShader(), "deltaT");
-//	glUniform1f(deltaTLoc, deltaT * timeFactor);
-//	unsigned int GLoc = glGetUniformLocation(shaderManager->getBoundShader(), "G");
-//	glUniform1f(GLoc, G);
-//
-//	double startTime = glfwGetTime();
-//	const int numberOfIterations = 5;
-//	for (int i = 0; i < numberOfIterations; i++) {
-//		startTime = glfwGetTime();
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
-//		glDispatchCompute(ceil(treeSize / 32.0), 1, 1);
-//		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-//		glDispatchCompute(ceil(bodies.size() / 32.0), 1, 1);
-//		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
-//		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
-//		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
-//			// Set level
-//			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
-//
-//			// Dispatch compute for that level of tree
-//			int numberOfParentCells = numberOfCellsInLevel(i - 1);
-//			glDispatchCompute(numberOfParentCells, 1, 1);
-//			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//		}
-//
-//		shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
-//		glDispatchCompute(ceil(bodies.size() / 32.0), 1, 1);
-//		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-//
-//		glFinish();
-//		std::cout << "Time to clear, build, aggregate tree, calculate forces and update bodies: " << (glfwGetTime() - startTime) << std::endl;
-//
-//	}
-//
-//
-//	printErrors();
-//
-//	// Check results
-//	std::vector<Body> result(bodies.size());
-//	glGetNamedBufferSubData(SSBO_BODIES, 0, sizeOfBody * bodies.size(), &result[0]);
-//	glFinish();
-//
-//	//Check with expected
-//	System system;
-//	system.setSIUnitScaleFactor(SIUnitScaleFactor);
-//	system.setTimeFactor(timeFactor);
-//	for (auto const& body : bodies) {
-//		system.addBody(getGravBodyFromBody(body));
-//	}
-//
-//	for (int i = 0; i < numberOfIterations; i++) {
-//		system.update(deltaT);
-//	}
-//
-//	std::vector<GravBody*> expected = system.getBodies();
-//
-//	for (int i = 0; i < bodies.size(); i++) {
-//		INFO(i);
-//		INFO("POSITION: \n")
-//		INFO(result[i].position.x);
-//		INFO(result[i].position.y);
-//		INFO("\n")
-//		INFO(expected[i]->getPosition().x);
-//		INFO(expected[i]->getPosition().y);
-//		INFO("\n")
-//		INFO("VELOCITY: \n")
-//		INFO(result[i].velocity.x);
-//		INFO(result[i].velocity.y);
-//		INFO("\n")
-//		INFO(expected[i]->getVelocity().x);
-//		INFO(expected[i]->getVelocity().y);
-//		
-//		REQUIRE(aboutEqualsVector(result[i].position, glm::vec4(expected[i]->getPosition(), 0.0), 1));
-//		REQUIRE(aboutEqualsVector(result[i].velocity, glm::vec4(expected[i]->getVelocity(), 0.0), 1));
-//	}
-//
-//	glDeleteBuffers(1, &SSBO_BODIES);
-//	glDeleteBuffers(1, &SSBO_TREE);
-//
-//}
 

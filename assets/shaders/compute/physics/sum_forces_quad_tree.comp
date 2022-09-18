@@ -56,7 +56,7 @@ void main() {
 	levelStack[0] = 0;
 	int stackPosition = 0;
 
-	const float theta = 1.5;
+	const float theta = 0.0;
 	vec2 force = vec2(0.0);
 
 	// Traverse tree and sum force according to F = Gm1m2/r2
