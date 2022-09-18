@@ -1,8 +1,9 @@
 #pragma once
-#include <GLFW/glfw3.h>
-#include <unordered_set>
+#include <gl/glew.h>
 #include "../scene/scene.h"
 #include "../graphics/gui/gui.h"
+#include <unordered_set>
+#include <GLFW/glfw3.h>
 
 // Registers all key presses and updates camera accordingly
 class GameController {

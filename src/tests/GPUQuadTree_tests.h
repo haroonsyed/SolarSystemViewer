@@ -1,15 +1,13 @@
 #pragma once
 #define GLFW_INCLUDE_NONE
 #include <GL/glew.h>
+#include <random>
+#include <GLFW/glfw3.h>
 #include <catch2/catch.hpp>
 #include <iostream>
-#include <GLFW/glfw3.h>
-#include "../physics/QuadTreeGPU/quadTreeStructs.h"
-#include "../physics/QuadTreeGPU/quadTreeUtil.h"
-#include <glm/glm.hpp>
-#include "../graphics/shader/shaderManager.h"
 #include "../physics/QuadTree/QuadTree.h"
-#include <random>
+#include "../graphics/shader/shaderManager.h"
+#include "../physics/QuadTreeGPU/quadTreeUtil.cpp"
 
 
 glm::vec2 boundStart = glm::vec2(-1e10, -1e10);
@@ -56,6 +54,12 @@ bool aboutEqualsFloat(float a, float b, float epsilon) {
 	return abs(a - b) < epsilon;
 }
 
+QuadTreeUtil qUtil;
+const unsigned int sizeOfBody = qUtil.sizeOfBody;
+const unsigned int sizeOfTreeCell = qUtil.sizeOfTreeCell;
+const unsigned int sizeOfTreeCellMultiBody = qUtil.sizeOfTreeCellMultiBody;
+
+
 void testTreesAreEqualSingle(std::vector<TreeCell>& tree, std::vector<TreeCell>& expected) {
 	REQUIRE(tree.size() == expected.size());
 	for (int i = tree.size() - 1; i >= 0; i--) {
@@ -64,8 +68,8 @@ void testTreesAreEqualSingle(std::vector<TreeCell>& tree, std::vector<TreeCell>&
 		INFO(std::to_string(i));
 		REQUIRE(cell.lock == expectedCell.lock);
 		if ( cell.numberOfBodies > 0 ) {
-			INFO("COMPUTED: \n" + printBody(cell.bodies[0]));
-			INFO("EXPECTED: \n" + printTreeCell(expectedCell));
+			INFO("COMPUTED: \n" + qUtil.printBody(cell.bodies[0]));
+			INFO("EXPECTED: \n" + qUtil.printTreeCell(expectedCell));
 			REQUIRE(aboutEqualsVector(glm::vec2(cell.COM), glm::vec2(expectedCell.COM), abs(min(cell.COM.x, expectedCell.COM.y)) * 0.01));
 			REQUIRE(aboutEqualsFloat(cell.mass, expectedCell.mass, expectedCell.mass * 0.01));
 		}
@@ -80,8 +84,8 @@ void testLeavesAreEqualSingle(std::vector<TreeCell>& tree, std::vector<TreeCell>
 		INFO(std::to_string(i));
 		REQUIRE(cell.lock == expectedCell.lock);
 		if (cell.lock == -1 && expectedCell.bodies[0].mass > 0.1) {
-			INFO("COMPUTED: \n" + printBody(cell.bodies[0]));
-			INFO("EXPECTED: \n" + printTreeCell(expectedCell));
+			INFO("COMPUTED: \n" + qUtil.printBody(cell.bodies[0]));
+			INFO("EXPECTED: \n" + qUtil.printTreeCell(expectedCell));
 			REQUIRE(aboutEqualsVector(glm::vec2(cell.bodies[0].position), glm::vec2(expectedCell.bodies[0].position), abs(min(cell.bodies[0].position.x, expectedCell.bodies[0].position.y)) * 0.01));
 			REQUIRE(aboutEqualsFloat(cell.bodies[0].mass, expectedCell.bodies[0].mass, expectedCell.bodies[0].mass * 0.01));
 		}
@@ -256,7 +260,7 @@ TEST_CASE("Place 4 bodies different quadrants single-body-cell.") {
 
 TEST_CASE("Place 2 bodies nested quadrant single-body-cell.") {
 	const unsigned int numberOfLevelsInTree = 3;
-	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 	
 	// Create input data
 	std::vector<Body> bodies{
@@ -304,7 +308,7 @@ TEST_CASE("Place 2 bodies nested quadrant single-body-cell.") {
 
 TEST_CASE("Double nested and single nested in single-body-cell.") {
 	const unsigned int numberOfLevelsInTree = 5;
-	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 
 	// Create input data
 	std::vector<Body> bodies{
@@ -355,7 +359,7 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 
 //TEST_CASE("Random body 1k leaf test in single-body-cell.") {
 //	const unsigned int numberOfLevelsInTree = 12;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+//	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 //
 //	// Create input data
 //	std::vector<Body> bodies(1000);
@@ -405,7 +409,7 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 
 //TEST_CASE("Random body 1 million multi-tree cell. Also ensures no random runtime error.") {
 //	const unsigned int numberOfLevelsInTree = 11;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+//	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 //	clearGLErrors();
 //
 //	// Create input data
@@ -448,10 +452,10 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
 //		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
 //			// Set level
-//			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
+//			glUniform1ui(levelStartLoc, qUtil.startPositionOfLevel(i));
 //
 //			// Dispatch compute for that level of tree
-//			int numberOfParentCells = numberOfCellsInLevel(i - 1);
+//			int numberOfParentCells = qUtil.numberOfCellsInLevel(i - 1);
 //			glDispatchCompute(numberOfParentCells, 1, 1);
 //			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 //		}
@@ -490,7 +494,7 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //TEST_CASE("Test aggregation of total COM and total mass.") {
 //
 //	const unsigned int numberOfLevelsInTree = 11;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+//	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 //	clearGLErrors();
 //
 //	// Create input data
@@ -536,10 +540,10 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
 //		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
 //			// Set level
-//			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
+//			glUniform1ui(levelStartLoc, qUtil.startPositionOfLevel(i));
 //
 //			// Dispatch compute for that level of tree
-//			int numberOfParentCells = numberOfCellsInLevel(i - 1);
+//			int numberOfParentCells = qUtil.numberOfCellsInLevel(i - 1);
 //			glDispatchCompute(numberOfParentCells, 1, 1);
 //			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 //		}
@@ -586,7 +590,7 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //TEST_CASE("Test aggregation to non-leaf cells of COM and total mass and accuracy single-cell-body.") {
 //
 //	const unsigned int numberOfLevelsInTree = 11;
-//	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+//	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 //	clearGLErrors();
 //
 //	// Create input data
@@ -634,10 +638,10 @@ TEST_CASE("Double nested and single nested in single-body-cell.") {
 //		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
 //		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
 //			// Set level
-//			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
+//			glUniform1ui(levelStartLoc, qUtil.startPositionOfLevel(i));
 //
 //			// Dispatch compute for that level of tree
-//			int numberOfParentCells = numberOfCellsInLevel(i - 1);
+//			int numberOfParentCells = qUtil.numberOfCellsInLevel(i - 1);
 //			glDispatchCompute(numberOfParentCells, 1, 1);
 //			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 //		}
@@ -682,7 +686,7 @@ TEST_CASE("Test small amount of bodies full force calculation matches.") {
 	// The G for this = 6.67e-11 / 2e29 / 1e15 = 3.335e-55
 
 	const unsigned int numberOfLevelsInTree = 12;
-	const unsigned int treeSize = sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+	const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 	clearGLErrors();
 
 	// Constants for the time-step
@@ -762,10 +766,10 @@ TEST_CASE("Test small amount of bodies full force calculation matches.") {
 		unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
 		for (int i = numberOfLevelsInTree - 1; i >= 1; i--) {
 			// Set level
-			glUniform1ui(levelStartLoc, startPositionOfLevel(i));
+			glUniform1ui(levelStartLoc, qUtil.startPositionOfLevel(i));
 
 			// Dispatch compute for that level of tree
-			int numberOfParentCells = numberOfCellsInLevel(i - 1);
+			int numberOfParentCells = qUtil.numberOfCellsInLevel(i - 1);
 			glDispatchCompute(numberOfParentCells, 1, 1);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		}

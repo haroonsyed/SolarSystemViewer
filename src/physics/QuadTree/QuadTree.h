@@ -2,7 +2,7 @@
 #include <vector>
 #include "../gravBody.h"
 #include "Boundary.h"
-#include "../../tests/quadTreeStructs.h"
+#include "../QuadTreeGPU/quadTreeStructs.h"
 
 // Could upgrade to use generics, but it's okay
 class QuadTree {
