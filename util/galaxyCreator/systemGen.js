@@ -12,7 +12,7 @@ class GravBody {
   diffuseMap = "../assets/textures/blue.jpg";
   emissiveMap = "../assets/textures/blue.jpg";
   emissiveMapStrength = 1e5;
-  //isParticle = false;
+  isParticle = true;
 }
 
 class Light {
@@ -45,7 +45,7 @@ header.CameraPosition = {
   z: 3e11,
 };
 
-let numberOfStars = 1000;
+let numberOfStars = 10000;
 let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
 let yRange = (2 * xRange) / (16.0 / 9);
 let baseVelocity = 0.0; //xRange / 1000;

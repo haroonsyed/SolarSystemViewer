@@ -34,4 +34,6 @@ class System {
     void setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree);
     std::vector<GravBody*> getBodies();
     void update(float deltaT);
+    unsigned int getNumberOfGPUBodies();
+    unsigned int getBodiesSSBO();
 };

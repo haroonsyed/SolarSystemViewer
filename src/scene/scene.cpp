@@ -82,16 +82,44 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   // Setup physics
   m_physicsSystem.setSIUnitScaleFactor(SIUnitScaleFactor);
-
+  std::vector<Body> gpuBodies;
+  
   // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
-    GravBody* body = new GravBody(SIUnitScaleFactor, gravBodyJSON);
-    m_physicsSystem.addBody(body); // Add gravBody to physics system
+           
+    // Register body as cpu-synced object
+    if (gravBodyJSON["isParticle"].get<bool>() == false) {
+      GravBody* body = new GravBody(SIUnitScaleFactor, gravBodyJSON);
+      m_physicsSystem.addBody(body); // Add gravBody to physics system
 
-    // Tell scene to register this object
-    registerObjectToScene(body);
+      // Tell scene to register this object
+      registerObjectToScene(body);
+    }
+
+    // Register body as gpu-accelerated-particle
+    else {
+      glm::vec4 position;
+      glm::vec4 velocity;
+      GLfloat mass;
+      position.x = gravBodyJSON["position"]["x"].get<float>() / SIUnitScaleFactor;
+      position.y = gravBodyJSON["position"]["y"].get<float>() / SIUnitScaleFactor;
+      position.z = 0.0;
+      position.w = 0.0;
+
+      velocity.x = gravBodyJSON["velocity"]["x"].get<float>() / SIUnitScaleFactor;
+      velocity.y = gravBodyJSON["velocity"]["y"].get<float>() / SIUnitScaleFactor;
+      velocity.z = 0.0;
+      velocity.w = 0.0;
+
+      mass = gravBodyJSON["mass"].get<float>() / SIUnitScaleFactor;
+      Body body{position, velocity, mass};
+      gpuBodies.push_back(body);
+    }
 
   }
+
+  // Add the particles to the physics system
+  m_physicsSystem.setBodiesGPU(gpuBodies, 12);
 
   // Construct lights
   for (auto lightJSON : jScene["Lights"]) {
@@ -283,10 +311,8 @@ void Scene::render() {
     Object* instance = objsItr->first;
 
     // Update vram if the object is not a particles
-    if (!instance->isParticle()) {
-      for (const auto& itr : objs) {
-        updateObjectInScene(itr.first);
-      }
+    for (const auto& itr : objs) {
+      updateObjectInScene(itr.first);
     }
 
     // Bind and calculate the model matrix for all objects in this instanceGroup
@@ -305,6 +331,15 @@ void Scene::render() {
     glDrawArraysInstanced(GL_TRIANGLES, 0, numVertices, objs.size());
 
   }
+
+
+  // Render particles (physics has already been calculated)
+  // Assumed SSBO_BODIES is bound on 4
+  const unsigned int numberOfParticles = m_physicsSystem.getNumberOfGPUBodies();
+  const unsigned int bodiesSSBO = m_physicsSystem.getBodiesSSBO();
+  glBindBuffer(GL_ARRAY_BUFFER, bodiesSSBO);
+  glDrawArraysInstanced(GL_POINTS, 0, sizeof(Body), numberOfParticles);
+
 
 }
 

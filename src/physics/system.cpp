@@ -10,6 +10,11 @@
 System::System() {
   m_timeFactor = 60 * 60 * 23.9345; // Default Once earth day per second;
   m_SIUnitScaleFactor = 1e6f;
+  m_SSBO_BODIES_COUNT = 0;
+  m_SSBO_BODIES = 0;
+  m_SSBO_TREE = 0;
+  m_SSBO_TREE_COUNT = 0;
+  m_SSBO_TREE_HEIGHT = 0;
 }
 
 float System::getSIUnitScaleFactor() {
@@ -39,42 +44,46 @@ void System::addBody(GravBody* body) {
 // Sets all bodies in gpu. 
 void System::setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree) {
     
-    // Determine the size of the tree to create based on numberofLevels
-    QuadTreeUtil qUtil;
-    const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
+  if (bodies.size() == 0) {
+    return;
+  }
 
-    // Create SSBO_BODIES
-    glGenBuffers(1, &m_SSBO_BODIES);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_BODIES);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_SSBO_BODIES);
+  // Determine the size of the tree to create based on numberofLevels
+  QuadTreeUtil qUtil;
+  const unsigned int treeSize = qUtil.sizeOfTreeGivenNumberOfLevels(numberOfLevelsInTree);
 
-    // Create SSBO_TREE
-    glGenBuffers(1, &m_SSBO_TREE);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_TREE);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_SSBO_TREE);
+  // Create SSBO_BODIES
+  glGenBuffers(1, &m_SSBO_BODIES);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_BODIES);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_SSBO_BODIES);
 
-    m_SSBO_BODIES_COUNT = bodies.size();
-    m_SSBO_TREE_COUNT = treeSize;
-    m_SSBO_TREE_HEIGHT = numberOfLevelsInTree;
+  // Create SSBO_TREE
+  glGenBuffers(1, &m_SSBO_TREE);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_TREE);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_SSBO_TREE);
 
-    // Setup shaders with static data
-    ShaderManager* shaderManager = ShaderManager::getInstance();
-    shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
-    unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-    glUniform1ui(treeSizeLoc, treeSize);
-    unsigned int bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-    glUniform1ui(bodySizeLoc, bodies.size());
-    shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
-    treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-    glUniform1ui(treeSizeLoc, treeSize);
+  m_SSBO_BODIES_COUNT = bodies.size();
+  m_SSBO_TREE_COUNT = treeSize;
+  m_SSBO_TREE_HEIGHT = numberOfLevelsInTree;
 
-    shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
-    treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
-    glUniform1ui(treeSizeLoc, treeSize);
-    bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
-    glUniform1ui(bodySizeLoc, bodies.size());
+  // Setup shaders with static data
+  ShaderManager* shaderManager = ShaderManager::getInstance();
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+  unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+  glUniform1ui(treeSizeLoc, treeSize);
+  unsigned int bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
+  glUniform1ui(bodySizeLoc, bodies.size());
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
+  treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+  glUniform1ui(treeSizeLoc, treeSize);
+
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
+  treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+  glUniform1ui(treeSizeLoc, treeSize);
+  bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
+  glUniform1ui(bodySizeLoc, bodies.size());
 
 }
 
@@ -283,7 +292,23 @@ void System::update(float deltaT) {
   float adjustedTimeFactor = m_timeFactor * deltaT;
 
   // Calculate physics
-  updateUsingBarnesHut(adjustedTimeFactor);
+  if (m_SSBO_BODIES_COUNT > 0) {
+    updateUsingBarnesHutGPU(adjustedTimeFactor);
+  }
+  else {
+      std::cout << "Add bodies to system and create SSBO first!" << std::endl;
+  }
 
+  // Also run on non-particle based objects
+  //updateUsingBarnesHut(adjustedTimeFactor);
+
+}
+
+unsigned int System::getNumberOfGPUBodies() {
+  return m_SSBO_BODIES_COUNT;
+}
+
+unsigned int System::getBodiesSSBO() {
+  return m_SSBO_BODIES;
 }
 

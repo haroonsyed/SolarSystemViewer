@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <iostream>
+#include "nlohmann/json.hpp"
 
 struct Body {
 	glm::vec4 position;
