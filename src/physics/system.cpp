@@ -296,11 +296,11 @@ void System::update(float deltaT) {
     updateUsingBarnesHutGPU(adjustedTimeFactor);
   }
   else {
-      std::cout << "Add bodies to system and create SSBO first!" << std::endl;
+    std::cout << "Add bodies to system and create SSBO first!" << std::endl;
   }
 
   // Also run on non-particle based objects
-  //updateUsingBarnesHut(adjustedTimeFactor);
+  updateUsingBarnesHut(adjustedTimeFactor);
 
 }
 

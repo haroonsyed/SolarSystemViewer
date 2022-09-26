@@ -13,6 +13,7 @@ Scene::Scene(GLFWwindow* window) {
   m_universeScaleFactor = 1.0f;
   m_numFloatsPerModelData = 16 * 4; // mat4 (scale, rot, transform, modelMatrix)
   genUniformBuffer();
+  glGenVertexArrays(1, &m_particleVAO);
 }
 
 unsigned int Scene::getUBOSize() {
@@ -264,7 +265,6 @@ void Scene::render() {
 
   // Get view projection for the entire draw call
   glm::mat4 view = m_camera.getViewTransform();
-  glm::mat4 particleView = glm::mat4(1.0f);
 
   // Setup projection matrix for entire draw call
   Config* config = Config::getInstance();
@@ -333,13 +333,19 @@ void Scene::render() {
   }
 
 
-  // Render particles (physics has already been calculated)
+  // Render particles (physics has already been calculated in system.cpp)
   // Assumed SSBO_BODIES is bound on 4
   const unsigned int numberOfParticles = m_physicsSystem.getNumberOfGPUBodies();
   const unsigned int bodiesSSBO = m_physicsSystem.getBodiesSSBO();
+  shaderManager->bindShader("../assets/shaders/particle.vs", "../assets/shaders/particle.fs");
+  glBindVertexArray(m_particleVAO);
   glBindBuffer(GL_ARRAY_BUFFER, bodiesSSBO);
-  glDrawArraysInstanced(GL_POINTS, 0, sizeof(Body), numberOfParticles);
-
+  glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Body), (void*)0); // Position Data
+  glVertexAttribDivisor(0, 1);
+  glEnableVertexAttribArray(0);
+  glDrawArraysInstanced(GL_POINTS, 0, numberOfParticles, numberOfParticles);
+  glBindVertexArray(0);
 
 }
 

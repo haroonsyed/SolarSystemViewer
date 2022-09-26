@@ -16,6 +16,7 @@ class Scene {
     Skybox skybox;
 
     unsigned int m_uniformBuffer;
+    unsigned int m_particleVAO;
 
     /// Uniform Buffer data for this scene
     float m_ambientStrength;
