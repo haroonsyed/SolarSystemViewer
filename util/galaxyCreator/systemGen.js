@@ -42,12 +42,12 @@ let header = new Header();
 header.CameraPosition = {
   x: 0.0,
   y: 0.0,
-  z: 3e11,
+  z: 1e10,
 };
 
-let numberOfStars = 1000;
-let xRange = 2 * header.CameraPosition.z * Math.tan(Math.PI / 4); // 45 degree
-let yRange = (2 * xRange) / (16.0 / 9);
+let numberOfStars = 10000;
+let xRange = header.CameraPosition.z;
+let yRange = (xRange) / (16.0 / 9);
 let baseVelocity = 0.0; //xRange / 1000;
 let outputFileName = "../../assets/scenes/galaxy.json";
 generationType = "random";

@@ -61,7 +61,7 @@ void System::setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree) {
   // Create SSBO_TREE
   glGenBuffers(1, &m_SSBO_TREE);
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_TREE);
-  glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfTreeCellMultiBody * treeSize, nullptr, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_SSBO_TREE);
 
   m_SSBO_BODIES_COUNT = bodies.size();
@@ -252,13 +252,19 @@ void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
     ShaderManager* shaderManager = ShaderManager::getInstance();
 
     double startTime = glfwGetTime();
+    double stageStartTime = startTime;
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
     glDispatchCompute(ceil(m_SSBO_TREE_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    //glFinish();
+    std::cout << "Clear tree Time: " << glfwGetTime() - stageStartTime << std::endl;
+    stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
     glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
+    //glFinish();
+    std::cout << "Build tree Time: " << glfwGetTime() - stageStartTime << std::endl;
+    stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
     unsigned int levelStartLoc = glGetUniformLocation(shaderManager->getBoundShader(), "levelStart");
     for (int i = m_SSBO_TREE_HEIGHT - 1; i >= 1; i--) {
@@ -270,14 +276,16 @@ void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
         glDispatchCompute(numberOfParentCells, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
-
+    //glFinish();
+    std::cout << "Aggregate mass Time: " << glfwGetTime() - stageStartTime << std::endl;
+    stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
     unsigned int deltaTLoc = glGetUniformLocation(shaderManager->getBoundShader(), "deltaT");
     glUniform1f(deltaTLoc, adjustedTimeFactor);
     glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    glFinish();
+    //glFinish();
+    std::cout << "Sum forces Time: " << glfwGetTime() - stageStartTime << std::endl;
     std::cout << "Time to finish calculating physics: " << (glfwGetTime() - startTime) << std::endl;
 
 }
@@ -295,12 +303,9 @@ void System::update(float deltaT) {
   if (m_SSBO_BODIES_COUNT > 0) {
     updateUsingBarnesHutGPU(adjustedTimeFactor);
   }
-  else {
-    std::cout << "Add bodies to system and create SSBO first!" << std::endl;
-  }
 
   // Also run on non-particle based objects
-  updateUsingBarnesHut(adjustedTimeFactor);
+  //updateUsingBarnesHut(adjustedTimeFactor);`
 
 }
 

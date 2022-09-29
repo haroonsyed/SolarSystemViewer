@@ -8,6 +8,7 @@
 #include "../physics/QuadTree/QuadTree.h"
 #include "../graphics/shader/shaderManager.h"
 #include "../physics/QuadTreeGPU/quadTreeUtil.cpp"
+#include "../physics/system.h"
 
 
 glm::vec2 boundStart = glm::vec2(-1e10, -1e10);

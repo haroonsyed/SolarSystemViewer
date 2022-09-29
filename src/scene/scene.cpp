@@ -335,6 +335,7 @@ void Scene::render() {
 
   // Render particles (physics has already been calculated in system.cpp)
   // Assumed SSBO_BODIES is bound on 4
+  double startTime = glfwGetTime();
   const unsigned int numberOfParticles = m_physicsSystem.getNumberOfGPUBodies();
   const unsigned int bodiesSSBO = m_physicsSystem.getBodiesSSBO();
   shaderManager->bindShader("../assets/shaders/particle.vs", "../assets/shaders/particle.fs");
@@ -344,8 +345,10 @@ void Scene::render() {
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Body), (void*)0); // Position Data
   glVertexAttribDivisor(0, 1);
   glEnableVertexAttribArray(0);
-  glDrawArraysInstanced(GL_POINTS, 0, numberOfParticles, numberOfParticles);
+  glDrawArraysInstanced(GL_POINTS, 0, 2, numberOfParticles);
   glBindVertexArray(0);
+  glFinish();
+  std::cout << "Time to render: " << glfwGetTime() - startTime << std::endl;
 
 }
 

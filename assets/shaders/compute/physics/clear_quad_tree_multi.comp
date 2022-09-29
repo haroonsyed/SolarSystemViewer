@@ -37,7 +37,7 @@ void main() {
   tree[gid].lock = -1;
   tree[gid].numberOfBodies = 0;
   tree[gid].mass = 0.0;
-  tree[gid].COM = vec4(0.0);
+  tree[gid].COM.xy = vec2(0.0);
 
 }
 

@@ -139,7 +139,7 @@ void main() {
 
             // Update COM and mass
             float existingMass = tree[treeIndex].mass;
-            tree[treeIndex].COM = (( tree[treeIndex].COM * existingMass ) + ( body.position * body.mass )) / (existingMass + body.mass);
+            tree[treeIndex].COM.xy = (( tree[treeIndex].COM.xy * existingMass ) + ( body.position.xy * body.mass )) / (existingMass + body.mass);
             tree[treeIndex].mass = existingMass + body.mass;
 
             tree[treeIndex].lock = -1;
@@ -186,7 +186,7 @@ void main() {
             offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
             tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = body;
             Qmass[offsetIndex-1] += body.mass;
-            tree[subTreeIndex + offsetIndex].COM = body.position * body.mass;
+            tree[subTreeIndex + offsetIndex].COM.xy = body.position.xy * body.mass;
             Qcount[offsetIndex-1] += 1;
             
             // Insert existing
@@ -194,26 +194,26 @@ void main() {
                 offsetIndex = getOffsetIndex(boundStart, boundRange, cell.bodies[i].position);
                 tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = cell.bodies[i];
                 Qmass[offsetIndex-1] += cell.bodies[i].mass;
-                tree[subTreeIndex + offsetIndex].COM += cell.bodies[i].position * cell.bodies[i].mass;
+                tree[subTreeIndex + offsetIndex].COM.xy += cell.bodies[i].position.xy * cell.bodies[i].mass;
                 Qcount[offsetIndex-1] += 1;
             }
             
             // Write the numberOfBodies, mass, COM to each index
             tree[subTreeIndex + 1].numberOfBodies = Qcount[0];
             tree[subTreeIndex + 1].mass = Qmass[0];
-            tree[subTreeIndex + 1].COM /= Qmass[0] < 1e-5 ? 1.0 : Qmass[0];
+            tree[subTreeIndex + 1].COM.xy /= Qmass[0] < 1e-5 ? 1.0 : Qmass[0];
             
             tree[subTreeIndex + 2].numberOfBodies = Qcount[1];
             tree[subTreeIndex + 2].mass = Qmass[1];
-            tree[subTreeIndex + 2].COM /= Qmass[1] < 1e-5 ? 1.0 : Qmass[1];
+            tree[subTreeIndex + 2].COM.xy /= Qmass[1] < 1e-5 ? 1.0 : Qmass[1];
             
             tree[subTreeIndex + 3].numberOfBodies = Qcount[2];
             tree[subTreeIndex + 3].mass = Qmass[2];
-            tree[subTreeIndex + 3].COM /= Qmass[2] < 1e-5 ? 1.0 : Qmass[2];
+            tree[subTreeIndex + 3].COM.xy /= Qmass[2] < 1e-5 ? 1.0 : Qmass[2];
             
             tree[subTreeIndex + 4].numberOfBodies = Qcount[3];
             tree[subTreeIndex + 4].mass = Qmass[3];
-            tree[subTreeIndex + 4].COM /= Qmass[3] < 1e-5 ? 1.0 : Qmass[3];
+            tree[subTreeIndex + 4].COM.xy /= Qmass[3] < 1e-5 ? 1.0 : Qmass[3];
 
             // Set lock to non-leaf mode
             tree[treeIndex].lock = -2;

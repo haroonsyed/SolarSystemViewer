@@ -24,7 +24,7 @@ struct TreeCell {
 	float mass;
 };
 
-coherent layout(std430, binding = 5) buffer treeBuffer {
+layout(std430, binding = 5) buffer treeBuffer {
 
   TreeCell tree[];
 
@@ -42,7 +42,7 @@ void main() {
 	const uint parent = (startIndex-1)/4;
 
 	float totalMass = 0.0;
-	vec4 COM = vec4(0.0);
+	vec2 COM = vec2(0.0);
 
 	// Make sure to start moving up tree from valid leafs only
 	if( tree[parent].lock != -2) {
@@ -52,7 +52,7 @@ void main() {
 	// JUST ADD A MASS FIELD. USE RUNNING COM CALCULATION. THEN sum regardless if not leaf or leaf
 	for(int i=0; i<4; i++) {
 		const float cellMass = tree[startIndex + i].mass;
-		COM += cellMass * tree[startIndex + i].COM;
+		COM += cellMass * tree[startIndex + i].COM.xy;
 		totalMass += cellMass;
 	}
 
@@ -60,7 +60,7 @@ void main() {
 
 	// Write to parent
 	tree[parent].mass = totalMass;
-	tree[parent].COM = COM;
+	tree[parent].COM.xy = COM;
 
 }
 
