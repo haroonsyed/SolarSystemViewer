@@ -64,15 +64,15 @@ void Scene::loadScene(std::string sceneFilePath) {
   json jScene = json::parse(scene);
 
   // Get units
-  m_universeScaleFactor = jScene["UniverseScaleFactor"].get<float>();
-  float SIUnitScaleFactor = jScene["SIUnitScaleFactor"].get<float>();
+  m_universeScaleFactor = jScene["UniverseScaleFactor"].get<double>();
+  float SIUnitScaleFactor = jScene["SIUnitScaleFactor"].get<double>();
 
   // Setup camera
   m_camera.setCameraPosition(
     glm::vec3(
-      jScene["CameraPosition"]["x"].get<float>() / SIUnitScaleFactor,
-      jScene["CameraPosition"]["y"].get<float>() / SIUnitScaleFactor,
-      jScene["CameraPosition"]["z"].get<float>() / SIUnitScaleFactor
+      jScene["CameraPosition"]["x"].get<double>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["y"].get<double>() / SIUnitScaleFactor,
+      jScene["CameraPosition"]["z"].get<double>() / SIUnitScaleFactor
     )
   );
 
@@ -99,20 +99,20 @@ void Scene::loadScene(std::string sceneFilePath) {
 
     // Register body as gpu-accelerated-particle
     else {
-      glm::vec4 position;
-      glm::vec4 velocity;
-      GLfloat mass;
-      position.x = gravBodyJSON["position"]["x"].get<float>() / SIUnitScaleFactor;
-      position.y = gravBodyJSON["position"]["y"].get<float>() / SIUnitScaleFactor;
+      glm::vec4 position = glm::vec4(0.0);
+      glm::vec4 velocity = glm::vec4(0.0);
+      GLfloat mass = 0.0;
+      position.x = gravBodyJSON["position"]["x"].get<double>() / SIUnitScaleFactor;
+      position.y = gravBodyJSON["position"]["y"].get<double>() / SIUnitScaleFactor;
       position.z = 0.0;
       position.w = 0.0;
 
-      velocity.x = gravBodyJSON["velocity"]["x"].get<float>() / SIUnitScaleFactor;
-      velocity.y = gravBodyJSON["velocity"]["y"].get<float>() / SIUnitScaleFactor;
+      velocity.x = gravBodyJSON["velocity"]["x"].get<double>() / SIUnitScaleFactor;
+      velocity.y = gravBodyJSON["velocity"]["y"].get<double>() / SIUnitScaleFactor;
       velocity.z = 0.0;
       velocity.w = 0.0;
 
-      mass = gravBodyJSON["mass"].get<float>() / SIUnitScaleFactor;
+      mass = gravBodyJSON["mass"].get<double>() / SIUnitScaleFactor;
       Body body{position, velocity, mass};
       gpuBodies.push_back(body);
     }
@@ -345,7 +345,9 @@ void Scene::render() {
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Body), (void*)0); // Position Data
   glVertexAttribDivisor(0, 1);
   glEnableVertexAttribArray(0);
+  glDisable(GL_DEPTH_TEST);
   glDrawArraysInstanced(GL_POINTS, 0, 2, numberOfParticles);
+  glEnable(GL_DEPTH_TEST);
   glBindVertexArray(0);
   glFinish();
   std::cout << "Time to render: " << glfwGetTime() - startTime << std::endl;

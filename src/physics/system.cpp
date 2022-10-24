@@ -256,13 +256,13 @@ void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
     glDispatchCompute(ceil(m_SSBO_TREE_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    //glFinish();
+    glFinish();
     std::cout << "Clear tree Time: " << glfwGetTime() - stageStartTime << std::endl;
     stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
     glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    //glFinish();
+    glFinish();
     std::cout << "Build tree Time: " << glfwGetTime() - stageStartTime << std::endl;
     stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_mass_quad_tree.comp");
@@ -276,7 +276,7 @@ void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
         glDispatchCompute(numberOfParentCells, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
-    //glFinish();
+    glFinish();
     std::cout << "Aggregate mass Time: " << glfwGetTime() - stageStartTime << std::endl;
     stageStartTime = glfwGetTime();
     shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
@@ -284,7 +284,7 @@ void System::updateUsingBarnesHutGPU(float adjustedTimeFactor) {
     glUniform1f(deltaTLoc, adjustedTimeFactor);
     glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    //glFinish();
+    glFinish();
     std::cout << "Sum forces Time: " << glfwGetTime() - stageStartTime << std::endl;
     std::cout << "Time to finish calculating physics: " << (glfwGetTime() - startTime) << std::endl;
 
@@ -305,7 +305,7 @@ void System::update(float deltaT) {
   }
 
   // Also run on non-particle based objects
-  //updateUsingBarnesHut(adjustedTimeFactor);`
+  //updateUsingNaive(adjustedTimeFactor);
 
 }
 

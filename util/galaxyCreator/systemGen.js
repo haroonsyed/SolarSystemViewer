@@ -1,17 +1,8 @@
 class GravBody {
   name;
-  radius = 7e8;
   mass = 2e30;
   position;
   velocity;
-  tilt = 0.0;
-  rotationPeriod = 1000.0;
-  meshFilePath = "../assets/models/cube.obj";
-  vertexShaderPath = "../assets/shaders/default.vs";
-  fragmentShaderPath = "../assets/shaders/default.fs";
-  diffuseMap = "../assets/textures/blue.jpg";
-  emissiveMap = "../assets/textures/blue.jpg";
-  emissiveMapStrength = 1e5;
   isParticle = true;
 }
 
@@ -30,7 +21,7 @@ class Light {
 }
 
 class Header {
-  SIUnitScaleFactor = 1e10;
+  SIUnitScaleFactor = 1e16; // 1 light year (1e16)
   UniverseScaleFactor = 1.0;
   ambientStrength = 1.0;
   specularStrength = 0.0;
@@ -42,14 +33,15 @@ let header = new Header();
 header.CameraPosition = {
   x: 0.0,
   y: 0.0,
-  z: 1e10,
+  z: ( header.SIUnitScaleFactor * 1e10 ), // (width of milky way * 3)
 };
 
-let numberOfStars = 10000;
-let xRange = header.CameraPosition.z;
-let yRange = (xRange) / (16.0 / 9);
-let baseVelocity = 0.0; //xRange / 1000;
-let outputFileName = "../../assets/scenes/galaxy.json";
+let numberOfStars = 100000;
+let xRange = header.CameraPosition.z * 2;
+let yRange = header.CameraPosition.z * 2;
+let baseVelocity = 0.0;
+// let baseVelocity = 1e-10 * xRange;
+let outputFileName = "../../assets/scenes/megaGalaxy.json";
 generationType = "random";
 
 let system = [];
@@ -60,8 +52,8 @@ for (let i = 0; i < numberOfStars; i++) {
     let body = new GravBody();
     body.name = String(i);
     body.position = {
-      x: Math.random() * xRange - xRange / 2.0,
-      y: Math.random() * yRange - yRange / 2.0,
+      x: ( Math.random() * xRange ) - ( xRange / 2.0 ),
+      y: ( Math.random() * yRange ) - ( yRange / 2.0 ),
       z: 0.0,
     };
     body.velocity = {

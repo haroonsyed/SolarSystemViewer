@@ -31,7 +31,8 @@
       "fragmentShaderPath": "../assets/shaders/default.fs",
       "diffuseMap": "../assets/textures/sun.jpg",
       "emissiveMap": "../assets/textures/sun_emissive.jpg",
-      "emissiveMapStrength":  5e4
+      "emissiveMapStrength": 5e4,
+      "isParticle": false
     },
     {
       "name": "Mercury",
@@ -58,7 +59,8 @@
       "Radius": "1,516 mi",
       "Orbital Period": "88 Days",
       "Length of a Day": "58d 15h 30m",
-      "Temperature": "167 C"
+      "Temperature": "167 C",
+      "isParticle": false
     },
     {
       "name": "Venus",
@@ -85,7 +87,8 @@
       "Radius": "3760.4 mi",
       "Orbital Period": "225 Days",
       "Length of a Day": "116d 18h 0m",
-      "Temperature": "475 C"
+      "Temperature": "475 C",
+      "isParticle": false
     },
     {
       "name": "Earth",
@@ -113,7 +116,8 @@
       "Radius": "3958.8 mi",
       "Orbital Period": "365 days",
       "Length of a Day": "24hr 0m 0s",
-      "Temperature": "15 C"
+      "Temperature": "15 C",
+      "isParticle": false
     },
     {
       "name": "Moon",
@@ -140,7 +144,8 @@
       "Radius": "1,079.6 mi",
       "Orbital Period": "27.32 days",
       "Length of a Day": "29.53 days",
-      "Temperature": "-183 C to 106 C"
+      "Temperature": "-183 C to 106 C",
+      "isParticle": false
     },
     {
       "name": "Mars",
@@ -167,7 +172,8 @@
       "Radius": "2106.1 mi",
       "Orbital Period": "687 days",
       "Length of a Day": "24hr 37m 0s",
-      "Temperature": "-60 C"
+      "Temperature": "-60 C",
+      "isParticle": false
     },
     {
       "name": "Jupiter",
@@ -193,7 +199,8 @@
       "Radius": "43441 mi",
       "Orbital Period": "12 years",
       "Length of a Day": "9h 56m 0s",
-      "Temperature": "-145 C"
+      "Temperature": "-145 C",
+      "isParticle": false
     },
     {
       "name": "Saturn",
@@ -219,7 +226,8 @@
       "Radius": "36184 mi",
       "Orbital Period": "29 years",
       "Length of a Day": "10h 42m 0s",
-      "Temperature": "-178 C"
+      "Temperature": "-178 C",
+      "isParticle": false
     },
     {
       "name": "Uranus",
@@ -245,7 +253,8 @@
       "Radius": "15,759 mi",
       "Orbital Period": "84 years",
       "Length of a Day": "17h 14m 0s",
-      "Temperature": "-195 C"
+      "Temperature": "-195 C",
+      "isParticle": false
     },
     {
       "name": "Neptune",
@@ -271,7 +280,8 @@
       "Radius": "15299 mi",
       "Orbital Period": "165 years",
       "Length of a Day": "16h 6m 0s",
-      "Temperature": "-220 C"
+      "Temperature": "-220 C",
+      "isParticle": false
     }
 
   ],
