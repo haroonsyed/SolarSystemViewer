@@ -10,6 +10,7 @@ class System {
     std::vector<GravBody*> m_bodies; // Used for cpu calculations
 
     unsigned int m_SSBO_BODIES;       // Used for gpu calculations
+    unsigned int m_SSBO_BODIES_OUTPUT;       // Used for gpu calculations
     unsigned int m_SSBO_TREE;         // Used for gpu calculations
     unsigned int m_SSBO_BODIES_COUNT; // Used for gpu calculations
     unsigned int m_SSBO_TREE_COUNT;   // Used for gpu calculations
@@ -23,6 +24,7 @@ class System {
 
     void updateUsingBarnesHut(float adjustedTimeFactor);
     void updateUsingNaive(float adjustedTimeFactor);
+    void updateUsingNaiveGPU(float adjustedTimeFactor);
     void updateUsingBarnesHutGPU(float adjustedTimeFactor);
 
   public:

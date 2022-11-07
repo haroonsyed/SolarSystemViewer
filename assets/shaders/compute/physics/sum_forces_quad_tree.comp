@@ -56,7 +56,7 @@ void main() {
 	levelStack[0] = 0;
 	int stackPosition = 0;
 
-	const float theta = 1.5;
+	const float theta = 0.0;
 	vec2 force = vec2(0.0);
 
 	// Traverse tree and sum force according to F = Gm1m2/r2
@@ -73,16 +73,15 @@ void main() {
 
 		if( r2 > 1e-6 ) {
 		
-			const float thisTheta = (2e10/pow(2, level))  / sqrt(r2);
+			const float thisTheta = (2e2/pow(2, level))  / sqrt(r2);
 	
 			// add force if theta is small enough (ignore multi cell for now)
 			if(thisTheta < theta || tree[cellIndex].lock == -1) {
 				const float forceMag = (G * m1 * tree[cellIndex].mass) / r2;
 				force += forceMag * normalize(r);
 			}
-	
 			// add the children to the stack and update boundary
-			else if (childIndex < treeSize) {
+			else if (childIndex < treeSize && tree[cellIndex].lock == -2) {
 				stack[stackPosition] = childIndex;
 				stack[stackPosition + 1] = childIndex + 1;
 				stack[stackPosition + 2] = childIndex + 2;

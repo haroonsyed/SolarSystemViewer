@@ -12,6 +12,7 @@ System::System() {
   m_SIUnitScaleFactor = 1e6f;
   m_SSBO_BODIES_COUNT = 0;
   m_SSBO_BODIES = 0;
+  m_SSBO_BODIES_OUTPUT = 0;
   m_SSBO_TREE = 0;
   m_SSBO_TREE_COUNT = 0;
   m_SSBO_TREE_HEIGHT = 0;
@@ -29,6 +30,10 @@ void System::setSIUnitScaleFactor(float SIUnitScaleFactor) {
   ShaderManager* shaderManager = ShaderManager::getInstance();
   shaderManager->bindComputeShader("../assets/shaders/compute/physics/sum_forces_quad_tree.comp");
   unsigned int GLoc = glGetUniformLocation(shaderManager->getBoundShader(), "G");
+  glUniform1f(GLoc, G);
+
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/brute_force_gpu.comp");
+  GLoc = glGetUniformLocation(shaderManager->getBoundShader(), "G");
   glUniform1f(GLoc, G);
 
 }
@@ -57,6 +62,11 @@ void System::setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree) {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_BODIES);
   glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_SSBO_BODIES);
+  // Create SSBO_BODIES_OUTPUT
+  glGenBuffers(1, &m_SSBO_BODIES_OUTPUT);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_BODIES_OUTPUT);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, qUtil.sizeOfBody * bodies.size(), &bodies[0], GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, m_SSBO_BODIES_OUTPUT); // 6 cuz made after SSBO_TREE
 
   // Create SSBO_TREE
   glGenBuffers(1, &m_SSBO_TREE);
@@ -84,6 +94,14 @@ void System::setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree) {
   glUniform1ui(treeSizeLoc, treeSize);
   bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
   glUniform1ui(bodySizeLoc, bodies.size());
+
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/brute_force_gpu.comp");
+  bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
+  glUniform1ui(bodySizeLoc, bodies.size());
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/brute_force_copy_result_gpu.comp");
+  bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
+  glUniform1ui(bodySizeLoc, bodies.size());
+
 
 }
 
@@ -243,6 +261,28 @@ void System::updateUsingBarnesHut(float adjustedTimeFactor) {
 
   double endTime = glfwGetTime();
   std::cout << "\nTime to process physics (CPU): " << (endTime - startTime) * 1000 << " ms" << std::endl;
+
+}
+
+void System::updateUsingNaiveGPU(float adjustedTimeFactor) {
+  ShaderManager* shaderManager = ShaderManager::getInstance();
+
+  double startTime = glfwGetTime();
+
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/brute_force_gpu.comp");
+  unsigned int deltaTLoc = glGetUniformLocation(shaderManager->getBoundShader(), "deltaT");
+  glUniform1f(deltaTLoc, adjustedTimeFactor);
+  glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+  // Output is in the second buffer, copy position and velocities back to original for next frame
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/brute_force_copy_result_gpu.comp");
+  glDispatchCompute(ceil(m_SSBO_BODIES_COUNT / 32.0), 1, 1);
+  glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+  glFinish();
+
+  std::cout << "Time to finish calculating physics: " << (glfwGetTime() - startTime) << std::endl;
 
 }
 

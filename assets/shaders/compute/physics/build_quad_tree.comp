@@ -110,7 +110,7 @@ void main() {
  
   // Used to track where we are while traversing the tree
   int treeIndex = 0;
-  vec2 boundStart = vec2(-1e10, -1e10);
+  vec2 boundStart = vec2(-1e2, -1e2);
   vec2 boundRange = abs(boundStart * 2.0f);
 
   while( (successfullyInserted == false) && (treeIndex < treeSize) ) {

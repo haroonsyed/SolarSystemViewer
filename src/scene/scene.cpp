@@ -83,7 +83,9 @@ void Scene::loadScene(std::string sceneFilePath) {
 
   // Setup physics
   m_physicsSystem.setSIUnitScaleFactor(SIUnitScaleFactor);
+  int numberOfGPUBodies = jScene["GravBodies"].size();
   std::vector<Body> gpuBodies;
+  gpuBodies.reserve(numberOfGPUBodies);
   
   // Construct scene. In units specified in SI units of json
   for (auto gravBodyJSON : jScene["GravBodies"]) {
