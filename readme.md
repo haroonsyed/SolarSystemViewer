@@ -1,4 +1,4 @@
-# SolarSystemSimulator
+# Solar System and Galaxy Simulator
 
 [Link to Repository](https://github.com/haroonsyed/SolarSystemSimulator)
 
@@ -6,7 +6,7 @@
 
 ### Under Dr. Aleirza Entezari
 
-![Render Example](./docs/normal.png)
+![Render Example](./docs/earth.jpg)
 
 ### Features
 
@@ -64,6 +64,15 @@ Probably works but I don't own a mac to test. Also the cmake script does not ins
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To zoom out<br>
 `Press G`:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To toggle gui and disconnect mouse from window.<br>
+
+## Gallery
+
+![Render Example](./docs/mercury.jpg)
+![Render Example](./docs/venus.jpg)
+![Render Example](./docs/earth.jpg)
+![Render Example](./docs/moon.jpg)
+
+### A lot of the documentation below is outdated due to the GPU version, as well as general engine improvements (both in performance and realism).<br/><br/><br/><br/>
 
 ## Functionality
 
@@ -148,14 +157,14 @@ The rendering pipeline was completely overhauled from the view project. I needed
 <br>
 I also implemented instanced rendering and grouping objects into a tree structure based on matching mesh and material. This was necessary before my plans to overhaul the physics system for galaxy-level simulaton.<br>
 <br>In the future I want to also implement something called bindless textures to increase performance and flexibility further. <br>
-<br>The instanced rendering, while more performant than individual draw calls is severely less efficient than I hoped it would be, only able to draw 10k objects on my GTX1070 before fps becomes poor. I plan on using nvidia nsight to debug this.<br><br>
+<br>The instanced rendering, is able to handle tens to hundreds of thousands of objects no problem..<br><br>
 
 ![instanced rendering](./docs/instancedRendering.png)
-This example has a couple thousand stars (with physics disabled) and runs okay with instancing. But any further and fps goes too low.
+This example has a couple thousand stars and runs with instancing.
 
 ### Textures
 
-The defaultShader has support for diffuse, normal, specular maps. Custom shaders can also be created that make use of other texture units.
+The defaultShader has support for diffuse, normal, specular maps, and emissive maps. Custom shaders can also be created that make use of other texture units.
 
 #### Diffuse:
 
@@ -202,9 +211,14 @@ This is the default lighting, although specular is a bit high right now from the
 
 All lights are currently point lights.
 
-#### Automatic Exposure HDR and Bloom
+### Automatic Exposure HDR and Bloom
 
-In order to add bloom, the program uses HDR. However I could not get the gaussian blur to happen fast enough. I realize I have to make separable passes, but I felt having multiple frame buffers to ping-pong between would be slow as well.
+My naive implementation of bloom using a large gaussian filter was too slow, even on the GPU to be realtime. However I was delighted to find that a PBR implementation, using subsampling and progressive downsampling and upsampling, was not only giving a better effect but also very performant.
+
+I could also use bloom with emissive textures to avoid over brightening the scene, as the emissive textures do not currently add light to the scene. This is expecially useful for artistic control.
+
+![Bloom](./docs/bloom.jpeg)
+Wow that's a beautiful glowing cube with a sun texture!
 
 <br>
 
@@ -226,21 +240,22 @@ Coming soon
 - Instancing is not as fast as I would have hoped. Will look into more with tools like nvidia insight.
 
 ## Outside Help
-learnopengl
-NASA USGS
-https://www.solarsystemscope.com/textures/ 
+
+learnopengl<br/>
+NASA USGS<br/>
+https://www.solarsystemscope.com/textures/<br/>
 https://en.wikipedia.org/wiki/Sobel_operator
 
 ## Assignment Requriements Checklist (Part 1):
 
-| Feature                                              | Status             | Extra Desc.                                                                                                                             |
-| ---------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Have all planets in a physics system                 | :white_check_mark: |                                                                                                                                         |
-| Diffuse, Specular, Normal maps                       | :white_check_mark: |                                                                                                                                         |
-| Multi-Light system                                   | :white_check_mark: |                                                                                                                                         |
-| User interaction                                     | :white_check_mark: |                                                                                                                                         |
-| Bloom                                                | :x:                | I did implement automatic exposure and HDR. I have a bloom implementation, but it is extremely slow because of its naive implementation |
-| Atmospheric Scattering                               | :x:                |                                                                                                                                         |
+| Feature                                              | Status             | Extra Desc. |
+| ---------------------------------------------------- | ------------------ | ----------- |
+| Have all planets in a physics system                 | :white_check_mark: |             |
+| Diffuse, Specular, Normal maps                       | :white_check_mark: |             |
+| Multi-Light system                                   | :white_check_mark: |             |
+| User interaction                                     | :white_check_mark: |             |
+| Bloom                                                | :white_check_mark: |             |
+| Atmospheric Scattering                               | :x:                |             |
 | NBody Simlualtion using compute shader and quad-tree | :x:                |
 |                                                      |
 
