@@ -1,5 +1,5 @@
 #include "object.h"
-#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include "../mesh/meshManager.h"
 #include "../shader/shaderManager.h"
 #include "../texture/textureManager.h"
@@ -114,7 +114,7 @@ void Object::rotate(glm::quat rotation) {
 }
 
 glm::mat4 Object::getRotationMat() {
-  return glm::toMat4(m_rotation);
+  return glm::mat4_cast(m_rotation);
 }
 
 float Object::getScale() {
@@ -231,7 +231,7 @@ void Object::bind() {
 
 glm::mat4 Object::getModelMatrix() {
   glm::mat4 model(1.0f);
-  return glm::translate(glm::toMat4(m_rotation) * glm::scale(model, glm::vec3(m_scale)), m_position);
+  return glm::translate(glm::mat4_cast(m_rotation) * glm::scale(model, glm::vec3(m_scale)), m_position);
 }
 
 bool Object::isParticle() {
