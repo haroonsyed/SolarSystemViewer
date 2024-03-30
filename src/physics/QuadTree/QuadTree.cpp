@@ -212,7 +212,7 @@ void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr
 		treeArr[index].lock = lock;
 		treeArr[index].numberOfBodies = 1;
 		if (lock == -1) {
-			treeArr[index].bodies[0] = Body{position, velocity, mass};
+			treeArr[index].body = Body{position, velocity, mass};
 			treeArr[index].COM = position;
 			treeArr[index].mass = mass;
 		}

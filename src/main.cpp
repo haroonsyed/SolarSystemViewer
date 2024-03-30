@@ -21,10 +21,8 @@ extern "C" __declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x
 GLFWwindow* createWindow();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-//Uses pre-processor to avoid main conflict when in test mode
 #ifdef RUN_TESTS 
-#define CATCH_CONFIG_MAIN  // This tells Catch2 to provide a main()
-#include "tests/tests.h" //Include tests
+#include "tests/tests.h" //Include tests, uses pre-processor to avoid main conflict when in test mode
 #else
 int main()
 {
@@ -46,7 +44,7 @@ int main()
 
     // Load scene
     Scene scene(window);
-    scene.loadScene("../assets/scenes/sol_particle.json");
+    scene.loadScene("../assets/scenes/sol.json");
 
     // Load scene into gameController
     GameController* game = GameController::getInstance(window, &scene);

@@ -115,14 +115,17 @@ void Scene::loadScene(std::string sceneFilePath) {
       velocity.w = 0.0;
 
       mass = gravBodyJSON["mass"].get<double>() / SIUnitScaleFactor;
-      Body body{position, velocity, mass};
+
+      unsigned int id = gpuBodies.size();
+
+      Body body{position, velocity, mass, id, 0, 0 };
       gpuBodies.push_back(body);
     }
 
   }
 
   // Add the particles to the physics system
-  m_physicsSystem.setBodiesGPU(gpuBodies, 12);
+  m_physicsSystem.setBodiesGPU(gpuBodies);
 
   // Construct lights
   for (auto lightJSON : jScene["Lights"]) {

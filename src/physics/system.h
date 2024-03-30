@@ -14,7 +14,6 @@ class System {
     unsigned int m_SSBO_TREE;         // Used for gpu calculations
     unsigned int m_SSBO_BODIES_COUNT; // Used for gpu calculations
     unsigned int m_SSBO_TREE_COUNT;   // Used for gpu calculations
-    unsigned int m_SSBO_TREE_HEIGHT;  // Used for gpu calculations
 
 
     float m_timeFactor;
@@ -33,7 +32,7 @@ class System {
     void setSIUnitScaleFactor(float physicsDistanceFactor);
     void setTimeFactor(float timeFactor);
     void addBody(GravBody* body);
-    void setBodiesGPU(std::vector<Body>& bodies, int numberOfLevelsInTree);
+    void setBodiesGPU(std::vector<Body>& bodies);
     std::vector<GravBody*> getBodies();
     void update(float deltaT);
     unsigned int getNumberOfGPUBodies();
