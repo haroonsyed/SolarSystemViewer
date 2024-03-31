@@ -26,6 +26,6 @@ struct alignas(16) TreeCell {
 					// lock == bodyID: locked by that body
 	GLint childCell;// Indicates position in treebuffer where child can be found
 					// -1 if there is no child yet and no cell (free to insert here)
-					// if there is a particle but no children (you wil need to subdivide)
+					// -2 if there is a particle but no children (you wil need to subdivide)
 					// # pointing to index of subtree
 };

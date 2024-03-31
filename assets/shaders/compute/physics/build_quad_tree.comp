@@ -8,20 +8,24 @@ struct Body {
 	vec4 position;
 	vec4 velocity;
 	float mass;
-	int align1;
+	int id; // Should be the position in bodies[] gpu buffer
 	int align2;
 	int align3;
 };
 
 struct TreeCell {
-	Body bodies[bodiesPerCell];
+	Body body;
 	vec4 COM;
+	int numberOfBodies;
+	float mass;
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
 					// -2: Not leaf node (continue traversal)
-                    // natural number: locked
-	int numberOfBodies;
-	float mass;
+					// lock == bodyID: locked by that body
+	int childCell;// Indicates position in treebuffer where child can be found
+					// -1 if there is no child yet and no cell (free to insert here)
+					// if there is a particle but no children (you wil need to subdivide)
+					// # pointing to index of subtree
 };
 
 readonly layout(std430, binding = 4) buffer bodiesBuffer {
@@ -30,77 +34,56 @@ readonly layout(std430, binding = 4) buffer bodiesBuffer {
 
 };
 
-coherent layout(std140, binding = 5) buffer treeBuffer {
+layout(std430, binding = 5) buffer treeBuffer {
 
   TreeCell tree[];
 
 };
 
+layout(std430, binding = 7) buffer treeBufferSize {
+  int usedTreeBufferSize;
+};
+
 uniform uint treeSize;
 uniform uint bodySize;
 
-// Assumes the bounds contain the body!
-int getOffsetIndex(vec2 boundStart, vec2 boundRange, vec4 bodyPosition) {
-                  
-  // Determine if we should insert into Q1,Q2,Q3,Q4 (offsets of 1,2,3,4). Corresponds to cartesian quadrants.
+int get_next_quadrant(vec2 boundStart, vec2 bodyPosition, float boundRange) {
+  // Determine if we should insert into Q1, Q2, Q3, Q4 corresponds to cartesian quadrants
+  const vec2 center = boundStart + (boundRange * 0.5);
 
-  const vec2 center = boundStart + (boundRange/2.0);
-
-  if(bodyPosition.x >= center.x) { // X direction (Q1 || Q4)
-    if(bodyPosition.y >= center.y) { // Q1
-      return 1;
-    }
-    else{ // Q4
-      return 4;
-    }
+  if(bodyPosition.x >= center.x) { // Q1 || Q4
+	if(bodyPosition.y >= center.y) {
+	  return 0;
+	} else {
+	  return 3;
+	}
+  } else { // Q2 || Q3
+	if(bodyPosition.y >= center.y) {
+	  return 1;
+	} else {
+	  return 2;
+	}
   }
-  else{  // (Q2 || Q3)
-    if(bodyPosition.y >= center.y) { // Q2
-      return 2;
-    }
-    else{ // Q3
-      return 3;
-    }
-  }
-
 }
 
-vec2 boundStartFromOffset(vec2 prevBoundStart, vec2 boundRange, int offset) {
+vec2 updated_bound_start(vec2 boundStart, float boundRange, int offset) {
+   const vec2 center = boundStart + (boundRange * 0.5);
 
-    const vec2 center = prevBoundStart + (boundRange/2.0);
-    
-    if(offset == 1) {
-        return center;
-    }
-    else if(offset == 2) {
-        return vec2(prevBoundStart.x, center.y);
-    }
-    else if(offset == 3) {
-        return prevBoundStart;
-    }
-    else{
-        return vec2(center.x, prevBoundStart.y);
-    }
-}
-
-// Only called when all elements of existing are filled!
-bool allOffsetsEqual(TreeCell existing, Body newBody, vec2 boundStart, vec2 boundRange) {
-    
-    const int offset = getOffsetIndex(boundStart, boundRange, newBody.position);
-    bool allEqual = true;
-
-    for(int i=0; i<bodiesPerCell; i++) {
-        allEqual = allEqual && ( getOffsetIndex(boundStart, boundRange, existing.bodies[i].position) == offset );
-    }
-
-    return allEqual;
+   if(offset == 0) {
+	return center;
+   } else if(offset == 1) {
+	return vec2(boundStart.x, center.y);
+   } else if(offset == 2) {
+	return boundStart;
+   } else {
+	return vec2(center.x, boundStart.y);
+   }
 }
 
 void main() {
 
   const uint gid = gl_GlobalInvocationID.x;
   
-  // This will be the body this invocation will place in tree
   if (gid >= bodySize) {
     return;
   }
@@ -108,124 +91,101 @@ void main() {
   const Body body = bodies[gid];
   bool successfullyInserted = false;
  
-  // Used to track where we are while traversing the tree
-  int treeIndex = 0;
-  vec2 boundStart = vec2(-1e2, -1e2);
-  vec2 boundRange = abs(boundStart * 2.0f);
+  // Insertion state
+  unsigned int treeIndex = 0;
+  vec2 boundStart = vec2(-1e5, -1e5);
+  float boundRange = abs(boundStart.x) * 2;
 
-  while( (successfullyInserted == false) && (treeIndex < treeSize) ) {
+  while(!successfullyInserted) {
 
-    const int lockValue = tree[treeIndex].lock;
+    // If this is not a leaf, travel deeper
+	if(tree[treeIndex].lock == -2) {
+	  
+	  // Determine quadrant, and modify the bounds and treeIndex based on that
+	  int quadrant_offset = get_next_quadrant(boundStart, body.position.xy, boundRange);
+	  treeIndex = tree[treeIndex].childCell + quadrant_offset;
+	  boundStart = updated_bound_start(boundStart, boundRange, quadrant_offset);
+	  boundRange *= 0.5;
+	}
 
-    // Figure out where in the next level we have to insert
-    int offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
-  
-    // Traverse down tree
-    if(lockValue == -2) {
-        treeIndex = ( treeIndex * 4 ) + offsetIndex;
-        boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
-        boundRange /= 2;
+    // Try to get a lock
+    if(gid == atomicCompSwap(tree[treeIndex].lock, -1, gid)) {
+
+      // If no particle is here insert here
+      if(tree[treeIndex].childCell == -1) {
+        tree[treeIndex].body = body;
+        tree[treeIndex].childCell = -2;
+        
+        // Ensure write are visible to other threads and free lock
+        memoryBarrier();
+
+        tree[treeIndex].lock = -1;
+      }
+
+      // Otherwise we need to move existing particle and the new particle into the subtree
+	  else {
+		
+		// Load the relevant data from the node
+		Body existingBody = tree[treeIndex].body;
+
+		// Prevent infinite recursion if the bodies share similar position
+		if(abs(body.position.x - existingBody.position.x) <= 1e-8 && abs(body.position.y - existingBody.position.y) <= 1e-8) {
+		  tree[treeIndex].lock = -1;
+		}
+		else {
+		  int offsetExisting = 0;
+		  int offsetNew = 0;
+
+		  // Travel down subtrees until we find where the offsets differ
+		  while(offsetExisting == offsetNew) {
+			
+			// Move current position from offset in prev iteration
+			treeIndex += offsetExisting;
+		  
+			// Determine the octant to place the particles at next subdivision
+			offsetExisting = get_next_quadrant(boundStart, existingBody.position.xy, boundRange);
+			offsetNew = get_next_quadrant(boundStart, body.position.xy, boundRange);
+		  
+			// get available spot in buffer to place particles
+			int child_level_pos = atomicAdd(usedTreeBufferSize, 4);
+		  
+			// Lock child, then release parent as non-leaf
+			tree[child_level_pos + offsetExisting].lock = int(gid);
+			tree[child_level_pos + offsetNew].lock = int(gid);
+			tree[treeIndex].childCell = child_level_pos;
+			memoryBarrier();
+			tree[treeIndex].lock = -2;
+		  
+		  
+			// Subdivide bounds for next subdivision
+			treeIndex = child_level_pos;
+			boundStart = updated_bound_start(boundStart, boundRange, offsetExisting);
+			boundRange *= 0.5;
+		  }
+
+		  // Write the particle values into tree buffer and unlock
+
+		  // Existing
+		  unsigned int existing_tree_pos = treeIndex + offsetExisting;
+		  tree[existing_tree_pos].body = existingBody;
+		  tree[existing_tree_pos].childCell = -2;
+
+		  // New
+		  unsigned int new_tree_pos = treeIndex + offsetNew;
+		  tree[new_tree_pos].body = body;
+		  tree[new_tree_pos].childCell = -2;
+
+		  // Release locks
+		  memoryBarrier();
+		  tree[existing_tree_pos].lock = -1;
+		  tree[new_tree_pos].lock = -1;
+		}
+	  
+	  }
+
+	  successfullyInserted = true;
     }
-    // Attempt to aquire a lock to insert
-    else if(gid == atomicCompSwap(tree[treeIndex].lock, -1, int(gid))) {
-
-        const int numberOfBodiesInCell = tree[treeIndex].numberOfBodies;
-
-        // If new leaf node, just insert body
-        if(numberOfBodiesInCell < bodiesPerCell) {
-            // Find empty index to insert at
-            tree[treeIndex].bodies[numberOfBodiesInCell] = body;
-            tree[treeIndex].numberOfBodies += 1;
-
-            // Update COM and mass
-            float existingMass = tree[treeIndex].mass;
-            tree[treeIndex].COM.xy = (( tree[treeIndex].COM.xy * existingMass ) + ( body.position.xy * body.mass )) / (existingMass + body.mass);
-            tree[treeIndex].mass = existingMass + body.mass;
-
-            tree[treeIndex].lock = -1;
-        }
-        // Insert the new and existing body into child indexes
-        else {
-            // Get the existing cell data we will move down the tree
-            const TreeCell cell = tree[treeIndex];
-
-            // Travel to the level where we insert the new bodies
-            int subTreeIndex = ( treeIndex * 4 );
-
-            // Travel down tree levels while bodies are in same quadrant
-            while(allOffsetsEqual(cell, body, boundStart, boundRange) == true && subTreeIndex < treeSize) {
-                boundStart = boundStartFromOffset(boundStart, boundRange, offsetIndex);
-                boundRange /= 2;
-
-                tree[subTreeIndex + offsetIndex].lock = -2;
-                subTreeIndex = (subTreeIndex + offsetIndex) * 4;
-                offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
-            }
-
-            // Bounds check. Don't do anything if level is outside tree.
-            if( (subTreeIndex + 4) >= treeSize) {
-                tree[treeIndex].lock = -1;
-                return;
-            }
-                
-            // Insert nested 
-            // Unused index within these quadrants (avoids fetching the numberOfBodies of each quadrant)
-            int Qcount[4];
-            Qcount[0] = 0;
-            Qcount[1] = 0;
-            Qcount[2] = 0;
-            Qcount[3] = 0;
-
-            // Used to track total mass within quadrants
-            float Qmass[4];
-            Qmass[0] = 0;
-            Qmass[1] = 0;
-            Qmass[2] = 0;
-            Qmass[3] = 0;
-            
-            offsetIndex = getOffsetIndex(boundStart, boundRange, body.position);
-            tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = body;
-            Qmass[offsetIndex-1] += body.mass;
-            tree[subTreeIndex + offsetIndex].COM.xy = body.position.xy * body.mass;
-            Qcount[offsetIndex-1] += 1;
-            
-            // Insert existing
-            for(int i=0; i<bodiesPerCell; i++) {
-                offsetIndex = getOffsetIndex(boundStart, boundRange, cell.bodies[i].position);
-                tree[subTreeIndex + offsetIndex].bodies[Qcount[offsetIndex-1]] = cell.bodies[i];
-                Qmass[offsetIndex-1] += cell.bodies[i].mass;
-                tree[subTreeIndex + offsetIndex].COM.xy += cell.bodies[i].position.xy * cell.bodies[i].mass;
-                Qcount[offsetIndex-1] += 1;
-            }
-            
-            // Write the numberOfBodies, mass, COM to each index
-            tree[subTreeIndex + 1].numberOfBodies = Qcount[0];
-            tree[subTreeIndex + 1].mass = Qmass[0];
-            tree[subTreeIndex + 1].COM.xy /= Qmass[0] < 1e-5 ? 1.0 : Qmass[0];
-            
-            tree[subTreeIndex + 2].numberOfBodies = Qcount[1];
-            tree[subTreeIndex + 2].mass = Qmass[1];
-            tree[subTreeIndex + 2].COM.xy /= Qmass[1] < 1e-5 ? 1.0 : Qmass[1];
-            
-            tree[subTreeIndex + 3].numberOfBodies = Qcount[2];
-            tree[subTreeIndex + 3].mass = Qmass[2];
-            tree[subTreeIndex + 3].COM.xy /= Qmass[2] < 1e-5 ? 1.0 : Qmass[2];
-            
-            tree[subTreeIndex + 4].numberOfBodies = Qcount[3];
-            tree[subTreeIndex + 4].mass = Qmass[3];
-            tree[subTreeIndex + 4].COM.xy /= Qmass[3] < 1e-5 ? 1.0 : Qmass[3];
-
-            // Set lock to non-leaf mode
-            tree[treeIndex].lock = -2;
-
-        }
-        successfullyInserted = true;
-    }
-  
-    // Else try again (locked)
-  
   }
-
 }
 
 
