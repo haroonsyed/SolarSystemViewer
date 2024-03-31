@@ -14,6 +14,7 @@ class System {
     unsigned int m_SSBO_TREE;         // Used for gpu calculations
     unsigned int m_SSBO_BODIES_COUNT; // Used for gpu calculations
     unsigned int m_SSBO_TREE_COUNT;   // Used for gpu calculations
+    unsigned int m_SSBO_TREE_BUFFER_SIZE;
 
 
     float m_timeFactor;

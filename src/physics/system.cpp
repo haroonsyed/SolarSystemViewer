@@ -75,10 +75,19 @@ void System::setBodiesGPU(std::vector<Body>& bodies) {
   glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(TreeCell) * m_SSBO_TREE_COUNT, nullptr, GL_DYNAMIC_DRAW);
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_SSBO_TREE);
 
+  // Create TREE_BUFFER_SIZE_NODES in ssbo
+  glGenBuffers(1, &m_SSBO_TREE_BUFFER_SIZE);
+  glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBO_TREE_BUFFER_SIZE);
+  glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * 1, nullptr, GL_DYNAMIC_DRAW);
+  glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, m_SSBO_TREE_BUFFER_SIZE);
+
   // Setup shaders with static data
   ShaderManager* shaderManager = ShaderManager::getInstance();
-  shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
   unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+  glUniform1ui(treeSizeLoc, m_SSBO_TREE_COUNT);
+  shaderManager->bindComputeShader("../assets/shaders/compute/physics/build_quad_tree.comp");
+  treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
   glUniform1ui(treeSizeLoc, m_SSBO_TREE_COUNT);
   unsigned int bodySizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "bodySize");
   glUniform1ui(bodySizeLoc, m_SSBO_BODIES_COUNT);

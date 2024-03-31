@@ -22,6 +22,7 @@ std::uniform_real_distribution<> dist(boundStart.x, abs(boundStart.x));
 
 unsigned int SSBO_BODIES;
 unsigned int SSBO_TREE;
+unsigned int SSBO_TREE_BUFFER_SIZE;
 
 const GLfloat epsilon = 1e-2;
 
@@ -142,23 +143,32 @@ TEST_CASE("Clear single-body-cell tree.") {
 	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeOfTreeCell * treeSize, nullptr, GL_DYNAMIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, SSBO_TREE);
 
+	glGenBuffers(1, &SSBO_TREE_BUFFER_SIZE);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, SSBO_TREE_BUFFER_SIZE);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(GLuint) * 1, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 7, SSBO_TREE_BUFFER_SIZE);
+
 	double startTime = glfwGetTime();
 	ShaderManager* shaderManager = ShaderManager::getInstance();
 	shaderManager->bindComputeShader("../assets/shaders/compute/physics/clear_quad_tree.comp");
+	unsigned int treeSizeLoc = glGetUniformLocation(shaderManager->getBoundShader(), "treeSize");
+	glUniform1ui(treeSizeLoc, treeSize);
 	glDispatchCompute(ceil(treeSize / 32.0), 1, 1);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-	// Check results
+	// Check results, in reality clear will only be used on the first node.
 	std::vector<TreeCell> tree(treeSize);
 	glGetNamedBufferSubData(SSBO_TREE, 0, sizeOfTreeCell * treeSize, &tree[0]);
+	unsigned int treeBufferSize;
+	glGetNamedBufferSubData(SSBO_TREE_BUFFER_SIZE, 0, sizeof(GLuint) * 1, &treeBufferSize);
 	for (const auto& cell : tree) {
-		REQUIRE(cell.mass == 0);
-		REQUIRE(aboutEqualsVector(cell.COM, glm::vec4(0.0)));
-		REQUIRE(cell.numberOfBodies == 0);
 		REQUIRE(cell.lock == -1);
+		REQUIRE(cell.childCell == -1);
+		REQUIRE(treeBufferSize == 1);
 	}
 
 	glDeleteBuffers(1, &SSBO_TREE);
+	glDeleteBuffers(1, &SSBO_TREE_BUFFER_SIZE);
 
 }
 

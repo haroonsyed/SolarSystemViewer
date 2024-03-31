@@ -2,26 +2,28 @@
 
 layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
 
-const unsigned int bodiesPerCell = 1;
-
 struct Body {
 	vec4 position;
 	vec4 velocity;
 	float mass;
-	int align1;
+	int id; // Should be position in bodies[] gpu buffer
 	int align2;
 	int align3;
 };
 
 struct TreeCell {
-	Body bodies[bodiesPerCell];
+	Body body;
 	vec4 COM;
+	int numberOfBodies;
+	float mass;
 	int lock;		// Is used to indicate lock and state of the cell
 					// -1: Unlocked
 					// -2: Not leaf node (continue traversal)
-                    // natural number: locked
-	int numberOfBodies;
-	float mass;
+					// lock == bodyID: locked by that body
+	int childCell;// Indicates position in treebuffer where child can be found
+					// -1 if there is no child yet and no cell (free to insert here)
+					// if there is a particle but no children (you wil need to subdivide)
+					// # pointing to index of subtree
 };
 
 layout(std430, binding = 5) buffer treeBuffer {
@@ -30,15 +32,26 @@ layout(std430, binding = 5) buffer treeBuffer {
 
 };
 
+layout(std430, binding = 7) buffer treeBufferSize {
+  int usedTreeBufferSize;
+};
+
+uniform uint treeSize;
+
 void main() {
 
   const uint gid = gl_GlobalInvocationID.x;
 
-  tree[gid].lock = -1;
-  tree[gid].numberOfBodies = 0;
-  tree[gid].mass = 0.0;
-  tree[gid].COM.xy = vec2(0.0);
+  if(gid >= treeSize) {
+	return;
+  }
 
+  if(gid == 0) {
+	usedTreeBufferSize = 1; // Account for root node existing
+  }
+
+  tree[gid].lock = -1;
+  tree[gid].childCell = -1;
 }
 
 
