@@ -93,8 +93,13 @@ void main() {
  
   // Insertion state
   unsigned int treeIndex = 0;
-  vec2 boundStart = vec2(-1e5, -1e5);
+  vec2 boundStart = vec2(-1e10, -1e10);
   float boundRange = abs(boundStart.x) * 2;
+
+  // Check body is inbounds
+  if(body.position.x < boundStart.x || body.position.y < boundStart.y || body.position.x > ( boundStart.x + boundRange) || body.position.y > (boundStart.y + boundRange)) {
+	return;
+  }
 
   while(!successfullyInserted) {
 

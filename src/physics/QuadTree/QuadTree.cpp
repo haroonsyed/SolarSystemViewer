@@ -3,12 +3,15 @@
 
 QuadTree::~QuadTree() {
 	// Delete all the aggregate bodies (non-leaf nodes)
-	if (m_body != nullptr && m_Q1 != nullptr) {
-		delete m_body;
-		delete m_Q1;
-		delete m_Q2;
-		delete m_Q3;
-		delete m_Q4;
+	if (m_body != nullptr) {
+		  delete m_body;
+	}
+
+	if (m_Q1 != nullptr) {
+		  delete m_Q1;
+		  delete m_Q2;
+		  delete m_Q3;
+		  delete m_Q4;
 	}
 }
 
@@ -19,6 +22,14 @@ QuadTree::QuadTree(Boundary& boundary) {
 	m_Q2 = nullptr;
 	m_Q3 = nullptr;
 	m_Q4 = nullptr;
+}
+
+bool QuadTree::isLeaf() {
+  return m_Q1 == nullptr;
+}
+
+bool QuadTree::isEmptyNode() {
+  return m_body == nullptr;
 }
 
 bool QuadTree::insert(GravBody* bodyToInsert) {
@@ -173,60 +184,4 @@ void QuadTree::barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*
 		m_Q3->barnesHutQuery(body, theta, result);
 		m_Q4->barnesHutQuery(body, theta, result);
 	}
-}
-
-std::vector<TreeCell> QuadTree::convertQuadTreeObjectToArray(QuadTree* root, int size) {
-
-	std::vector<TreeCell> treeArr(size);
-
-	// Init with -1
-	for (int i = 0; i < treeArr.size(); i++) {
-		treeArr[i].COM = glm::vec4(0.0);
-		treeArr[i].lock = -1;
-		treeArr[i].mass = 0.0;
-		treeArr[i].numberOfBodies = 0;
-	}
-
-	// Recursively convert TreeCells to array
-	convertQuadTreeObjectToArrayHelper(treeArr, root, 0, size);
-
-	return treeArr;
-}
-
-void QuadTree::convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index, int maxSize) {
-
-	if (root == nullptr) return;
-
-	if (root->m_body != nullptr) {
-
-		if (index >= maxSize) {
-			std::cout << "OUT OF BOUNDS INDEX " << index << std::endl;
-			return;
-		}
-
-		glm::vec4 position = glm::vec4(root->m_body->getPosition(), 0);
-		glm::vec4 velocity = glm::vec4(root->m_body->getVelocity(), 0);
-		float mass = root->m_body->getMass();
-		int lock = root->m_Q1 == nullptr ? -1 : -2;
-
-		treeArr[index].lock = lock;
-		treeArr[index].numberOfBodies = 1;
-		if (lock == -1) {
-			treeArr[index].body = Body{position, velocity, mass};
-			treeArr[index].COM = position;
-			treeArr[index].mass = mass;
-		}
-		else {
-			treeArr[index].COM = position;
-			treeArr[index].mass = mass;
-		}
-
-	}
-
-
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q1, index * 4 + 1, maxSize);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q2, index * 4 + 2, maxSize);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q3, index * 4 + 3, maxSize);
-	convertQuadTreeObjectToArrayHelper(treeArr, root->m_Q4, index * 4 + 4, maxSize);
-
 }

@@ -69,6 +69,12 @@ void GravBody::print() {
         + "BODY_MASS: " + std::to_string(getMass()) + "\n\n") << std::endl;
 }
 
+std::string GravBody::getPrintString() {
+  return  "BODY_POSITION: " + std::to_string(getPosition().x) + " " + std::to_string(getPosition().y) + " " + std::to_string(getPosition().z) + "\n"
+    + "BODY_VELOCITY: " + std::to_string(getVelocity().x) + " " + std::to_string(getVelocity().y) + " " + std::to_string(getVelocity().z) + "\n"
+    + "BODY_MASS: " + std::to_string(getMass()) + "\n\n";
+}
+
 void GravBody::addPlanetInfo(std::string info)
 {
   m_planetInfo.push_back(info);

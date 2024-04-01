@@ -17,6 +17,7 @@ class GravBody : public Object {
 		float getRotationSpeed();
 		void setRotationSpeedFromPeriod(float hours);
 		void print();
+		std::string getPrintString();
 
 		void addPlanetInfo(std::string info);
 		std::vector<std::string> getPlanetInfo();

@@ -8,14 +8,13 @@
 class QuadTree {
 private:
     Boundary m_boundary;
+
+public:
     GravBody* m_body;
     QuadTree* m_Q1;
     QuadTree* m_Q2;
     QuadTree* m_Q3;
     QuadTree* m_Q4;
-    void convertQuadTreeObjectToArrayHelper(std::vector<TreeCell>& treeArr, QuadTree* root, int index, int maxSize);
-
-public:
     ~QuadTree();
     QuadTree(Boundary& boundary);
     bool insert(GravBody* bodyToInsert);
@@ -25,5 +24,6 @@ public:
     GravBody* aggregateCenterAndTotalMass();
     std::vector<GravBody*> barnesHutQuery(GravBody* body, float theta);
     void barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result);
-    std::vector<TreeCell> convertQuadTreeObjectToArray(QuadTree* root, int size);
+    bool isLeaf();
+    bool isEmptyNode();
 };
