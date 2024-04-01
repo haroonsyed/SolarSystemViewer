@@ -26,13 +26,13 @@ struct TreeCell {
 					// # pointing to index of subtree
 };
 
-layout(std430, binding = 5) buffer treeBuffer {
+coherent layout(std430, binding = 5) buffer treeBuffer {
 
   TreeCell tree[];
 
 };
 
-layout(std430, binding = 7) buffer treeBufferSize {
+coherent layout(std430, binding = 7) buffer treeBufferSize {
   int usedTreeBufferSize;
 };
 

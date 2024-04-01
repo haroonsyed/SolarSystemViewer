@@ -34,13 +34,13 @@ readonly layout(std430, binding = 4) buffer bodiesBuffer {
 
 };
 
-layout(std430, binding = 5) buffer treeBuffer {
+coherent layout(std430, binding = 5) buffer treeBuffer {
 
   TreeCell tree[];
 
 };
 
-layout(std430, binding = 7) buffer treeBufferSize {
+coherent layout(std430, binding = 7) buffer treeBufferSize {
   int usedTreeBufferSize;
 };
 
@@ -115,6 +115,7 @@ void main() {
 
     // Try to get a lock
     if(gid == atomicCompSwap(tree[treeIndex].lock, -1, gid)) {
+	  memoryBarrier();
 
       // If no particle is here insert here
       if(tree[treeIndex].childCell == -1) {

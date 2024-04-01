@@ -5,7 +5,7 @@ class QuadTreeUtil {
 
 public: 
 	std::string printBody(Body& body) {
-		return ("BODY_POSITION: " + std::to_string(body.position.x) + " " + std::to_string(body.position.y) + " " + std::to_string(body.position.z) + "\n"
+		return ("BODY_ID: " + std::to_string(body.id) + " BODY_POSITION: " + std::to_string(body.position.x) + " " + std::to_string(body.position.y) + " " + std::to_string(body.position.z) + "\n"
 			+ "BODY_VELOCITY: " + std::to_string(body.velocity.x) + " " + std::to_string(body.velocity.y) + " " + std::to_string(body.velocity.z) + "\n"
 			+ "BODY_MASS: " + std::to_string(body.mass) + "\n\n");
 	}
