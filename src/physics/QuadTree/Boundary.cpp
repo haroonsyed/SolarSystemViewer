@@ -11,7 +11,8 @@ Boundary::Boundary(const Boundary& old_obj) {
 }
 
 bool Boundary::containsPoint(glm::vec2 point) {
-	return glm::all(glm::greaterThanEqual(point, m_position)) && glm::all(glm::lessThanEqual(point, m_position+m_dimensions));
+	glm::vec2 edge = m_position + m_dimensions;
+	return glm::all(glm::greaterThanEqual(point, m_position)) && glm::all(glm::lessThan(point, edge));
 }
 
 bool Boundary::overlapsBoundary(Boundary& range) {

@@ -8,7 +8,6 @@ private:
 
 public:
 
-    Boundary() {};
     Boundary(glm::vec2 position, glm::vec2 dimensions);
     Boundary(const Boundary& old_obj);
     bool containsPoint(glm::vec2 position);

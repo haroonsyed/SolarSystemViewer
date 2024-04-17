@@ -16,7 +16,7 @@ public:
     QuadTree* m_Q3;
     QuadTree* m_Q4;
     ~QuadTree();
-    QuadTree(Boundary& boundary);
+    QuadTree(const Boundary& boundary);
     bool insert(GravBody* bodyToInsert);
     void subdivide();
     std::vector<GravBody*> query(Boundary& range);
@@ -26,4 +26,5 @@ public:
     void barnesHutQuery(GravBody* body, float theta, std::vector<GravBody*>& result);
     bool isLeaf();
     bool isEmptyNode();
+    QuadTree* quadrantPredictor(glm::vec2 bodyPosition, glm::vec2 boundPosition, glm::vec2 boundRange);
 };
