@@ -346,7 +346,7 @@ void System::update(float deltaT) {
 
   // Calculate physics
   if (m_SSBO_BODIES_COUNT > 0) {
-	updateUsingBarnesHutGPU(adjustedTimeFactor);
+	updateUsingNaive(adjustedTimeFactor);
   }
 
   // Also run on non-particle based objects
