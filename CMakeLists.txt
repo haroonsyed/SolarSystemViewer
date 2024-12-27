@@ -6,11 +6,11 @@ message("Running on Linux")
 #Install VCPKG
 execute_process(COMMAND ../vcpkg/bootstrap-vcpkg.sh -disableMetrics)
 #Install the required libraries with vcpkg
-execute_process(COMMAND ../vcpkg/vcpkg install glew:x64-linux glfw3:x64-linux catch2:x64-linux glm:x64-linux nlohmann-json:x64-linux freetype:x64-linux)
+execute_process(COMMAND ../vcpkg/vcpkg install glew glfw3 catch2 glm nlohmann-json freetype)
 ELSE()
 message("Running on Windows")
 execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\bootstrap-vcpkg.bat -disableMetrics")
-execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\vcpkg install glew:x64-windows glfw3:x64-windows catch2:x64-windows glm:x64-windows nlohmann-json:x64-windows freetype:x64-windows")
+execute_process(COMMAND cmd /c "cd ${CMAKE_SOURCE_DIR} && .\\vcpkg\\vcpkg install glew glfw3 catch2 glm nlohmann-json freetype")
 ENDIF()
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake)
